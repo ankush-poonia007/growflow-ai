@@ -73,6 +73,20 @@ async def readiness_probe(settings: SettingsDep) -> JSONResponse:
 )
 async def health_overview(settings: SettingsDep) -> dict[str, Any]:
     """Aggregated operational health check."""
+    # Gate 03: include database connectivity status (non-secret boolean).
+    from backend.app.infrastructure.database import lifecycle as db_lifecycle
+
+    db_configured = bool(settings.database.DATABASE_URL)
+    db_connected = db_lifecycle.is_initialised()
+
+    db_status: str
+    if db_connected:
+        db_status = "connected"
+    elif not db_configured:
+        db_status = "unconfigured"
+    else:
+        db_status = "disconnected"
+
     return {
         "status": "healthy",
         "service": settings.app.NAME,
@@ -84,6 +98,11 @@ async def health_overview(settings: SettingsDep) -> dict[str, Any]:
             "configuration": {
                 "status": "healthy",
                 "configured": True,
+            },
+            "database": {
+                "status": db_status,
+                "configured": db_configured,
+                "connected": db_connected,
             },
         },
     }

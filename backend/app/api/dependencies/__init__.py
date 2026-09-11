@@ -7,12 +7,15 @@ from backend.app.api.dependencies.correlation import (
     get_current_correlation_id,
     get_current_request_id,
 )
+from backend.app.api.dependencies.database import DbSession, get_db_session
 
 __all__ = [
     "CorrelationIdDep",
+    "DbSession",
     "RequestIdDep",
     "SettingsDep",
     "get_app_settings",
     "get_current_correlation_id",
     "get_current_request_id",
+    "get_db_session",
 ]
