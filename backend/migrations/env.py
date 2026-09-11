@@ -45,6 +45,7 @@ if config.config_file_name is not None:
 # Future domain models that inherit from Base will be detected automatically.
 # ---------------------------------------------------------------------------
 from backend.app.infrastructure.database.base import Base  # noqa: E402
+import backend.app.infrastructure.database.models  # noqa: F401, E402
 
 target_metadata = Base.metadata
 
