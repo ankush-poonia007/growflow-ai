@@ -298,7 +298,9 @@ The following are intentionally deferred and **not** started in Gate 01:
 | Remote | `origin` (`https://github.com/ankush-poonia007/growflow-ai`) |
 | Branch pushed | `gate-01/repository-foundation` |
 | Result | SUCCESS — new branch created on remote |
-| PR URL | https://github.com/ankush-poonia007/growflow-ai/pull/new/gate-01/repository-foundation |
+| PR URL | https://github.com/ankush-poonia007/growflow-ai/pull/1 |
+| PR merged by owner | YES — 2026-09-11 15:43 IST |
+| Merge commit on main | `2cec8b4` |
 
 ---
 
@@ -328,6 +330,9 @@ All Gate 01 requirements satisfied:
 
 ## 17. Allowed Next Gate
 
-**Gate 02 — Backend Foundation is PERMITTED** after human review and PR merge.
+**Gate 02 — Backend Foundation is PERMITTED.**
 
-Gate 02 must NOT begin until the human owner has reviewed the Gate 01 Pull Request and explicitly authorized Gate 02.
+Gate 01 PR was reviewed and merged by the human owner on 2026-09-11 15:43 IST.
+Merge commit: `2cec8b4` on `main`.
+
+Gate 02 begins only after explicit human authorization.
