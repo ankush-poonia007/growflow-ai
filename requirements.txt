@@ -1,0 +1,80 @@
+# ============================================================
+# GrowFlow — Python 3.12
+# Direct runtime + development dependencies
+# ============================================================
+
+# -------------------------
+# Backend / API
+# -------------------------
+fastapi
+uvicorn[standard]
+pydantic
+pydantic-settings
+python-dotenv
+
+# -------------------------
+# Database / Supabase
+# -------------------------
+SQLAlchemy
+alembic
+psycopg[binary]
+supabase
+pgvector
+
+# -------------------------
+# HTTP / Security / Retry
+# -------------------------
+httpx
+tenacity
+PyJWT[crypto]
+
+# -------------------------
+# AI Provider Gateway
+# -------------------------
+openai
+
+# -------------------------
+# Agent Orchestration
+# -------------------------
+langchain
+langgraph
+
+# -------------------------
+# RAG / Document Intelligence
+# -------------------------
+llama-index-core
+llama-index-embeddings-openai
+llama-index-llms-openai
+
+# -------------------------
+# AI Observability / Evaluation
+# -------------------------
+langsmith
+
+# -------------------------
+# Web Research
+# -------------------------
+tavily-python
+
+# -------------------------
+# Document Processing
+# -------------------------
+pypdf
+python-multipart
+
+# -------------------------
+# Logging / Observability
+# -------------------------
+structlog
+opentelemetry-api
+opentelemetry-sdk
+opentelemetry-instrumentation-fastapi
+
+# -------------------------
+# Testing / Quality
+# -------------------------
+pytest
+pytest-asyncio
+pytest-cov
+ruff
+mypy
