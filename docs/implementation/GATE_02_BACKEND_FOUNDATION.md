@@ -17,8 +17,8 @@ Fail closed on invalid configuration; redact secrets/diagnostics. Test healthy/u
 
 ## Git, exclusions, completion, next
 Commit bootstrap/boundary/tests in focused units. Excluded: persistence, login, business routes, queues, UI.
-- [ ] Valid configuration starts; invalid configuration fails safely.
-- [ ] Health, logs, and error contract are tested.
-- [ ] Evidence, commit, push recorded.
+- [x] Valid configuration starts; invalid configuration fails safely.
+- [x] Health, logs, and error contract are tested.
+- [x] Evidence, commit, push recorded.
 
 Allowed next gate: **Gate 03 only**.
