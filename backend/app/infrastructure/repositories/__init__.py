@@ -3,11 +3,13 @@ GrowFlow — Repository Infrastructure Package.
 
 Exports:
   - BaseRepository: Abstract base for all GrowFlow repository implementations.
-
-Domain repositories (UserRepository, ProjectRepository, etc.) are added in
-Gate 05 and later gates, as authorized by the master plan.
+  - UserRepository: Concrete repository for UserModel and identity persistence.
 """
 
 from backend.app.infrastructure.repositories.base import BaseRepository
+from backend.app.infrastructure.repositories.user_repository import UserRepository
 
-__all__ = ["BaseRepository"]
+__all__ = [
+    "BaseRepository",
+    "UserRepository",
+]

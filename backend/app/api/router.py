@@ -8,11 +8,12 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from backend.app.api.routes import health
+from backend.app.api.routes import auth, health
 
 api_v1_router = APIRouter(prefix="/api/v1")
 
 # Mount foundational routers
 api_v1_router.include_router(health.router)
+api_v1_router.include_router(auth.router)
 
 __all__ = ["api_v1_router"]
