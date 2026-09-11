@@ -1,0 +1,45 @@
+name: GrowFlow — Foundation Checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  foundation-checks:
+    name: Lint, type-check, and test (Python 3.12)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Ruff — lint
+        run: |
+          ruff check backend/ --output-format=github
+
+      - name: Ruff — format check
+        run: |
+          ruff format backend/ --check
+
+      - name: Mypy — type check
+        run: |
+          mypy backend/app/ --ignore-missing-imports
+        continue-on-error: true
+        # Mypy is informational at Gate 01; enforced from Gate 02+
+
+      - name: Pytest — discovery and foundation checks
+        run: |
+          pytest backend/tests/ --collect-only -q
+        # Only collection is verified at Gate 01; no product tests exist yet.
+        # Full test suite is established in Gate 02+.
