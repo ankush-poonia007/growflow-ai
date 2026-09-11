@@ -18,10 +18,18 @@ from __future__ import annotations
 
 from logging.config import fileConfig
 import os
+from pathlib import Path
+import sys
 
 from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import create_async_engine
+
+# Ensure repository root is on sys.path so that 'backend' is resolved
+# when invoked directly or without an explicit PYTHONPATH.
+_REPO_ROOT = str(Path(__file__).resolve().parents[2])
+if _REPO_ROOT not in sys.path:
+    sys.path.insert(0, _REPO_ROOT)
 
 # ---------------------------------------------------------------------------
 # Alembic Config object — access to values in alembic.ini
@@ -43,7 +51,7 @@ target_metadata = Base.metadata
 # ---------------------------------------------------------------------------
 # Resolve DATABASE_URL from the environment.
 # The alembic.ini references %(DATABASE_URL)s; we also allow it to be passed
-# directly via environment variable at the CLI level.
+# directly via environment variable at the CLI level or loaded via typed settings.
 # ---------------------------------------------------------------------------
 
 
@@ -54,7 +62,8 @@ def _get_database_url() -> str:
     Priority:
     1. ALEMBIC_DATABASE_URL — a migration-specific override (useful for CI).
     2. DATABASE_URL — the standard application environment variable.
-    3. alembic.ini sqlalchemy.url (only if neither env var is set).
+    3. GrowFlow typed settings (loads from .env).
+    4. alembic.ini sqlalchemy.url (only if neither env var is set).
 
     The URL is converted to the async psycopg driver prefix so Alembic's
     async runner can use it correctly.
@@ -62,6 +71,14 @@ def _get_database_url() -> str:
     NEVER log this URL — it contains credentials.
     """
     url = os.environ.get("ALEMBIC_DATABASE_URL") or os.environ.get("DATABASE_URL")
+
+    if not url:
+        try:
+            from backend.app.config import get_settings
+
+            url = get_settings().database.DATABASE_URL
+        except Exception:
+            pass
 
     if not url:
         # Fall back to the alembic.ini value (may contain the %(DATABASE_URL)s
@@ -163,6 +180,11 @@ def run_migrations_online() -> None:
     This is the standard path for 'alembic upgrade head' and similar commands.
     """
     import asyncio
+    import sys
+
+    # On Windows, psycopg async requires SelectorEventLoop instead of ProactorEventLoop.
+    if sys.platform == "win32":
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
     asyncio.run(_run_async_migrations())
 
