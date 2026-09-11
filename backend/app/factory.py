@@ -17,6 +17,7 @@ from backend.app.api.responses.handlers import register_exception_handlers
 from backend.app.api.router import api_v1_router
 from backend.app.api.routes import health
 from backend.app.config.settings import Environment, Settings, get_settings
+from backend.app.infrastructure.database import lifecycle as db_lifecycle
 from backend.app.shared.logging import get_logger, setup_logging
 
 if TYPE_CHECKING:
@@ -42,10 +43,22 @@ async def app_lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
         port=settings.app.PORT,
     )
 
+    # Gate 03: initialise database engine and session factory.
+    # If DATABASE_URL is not configured the lifecycle logs a warning and
+    # continues — this allows tests without a live database to still boot.
+    try:
+        await db_lifecycle.startup(settings.database)
+    except Exception as exc:
+        logger.error(
+            "Database startup failed — application will start without DB connectivity",
+            error=str(exc),
+        )
+
     try:
         yield
     finally:
         logger.info("Application shutting down")
+        await db_lifecycle.shutdown()
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
