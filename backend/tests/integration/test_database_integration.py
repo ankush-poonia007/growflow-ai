@@ -20,7 +20,9 @@ Architecture ref: Gate 03 specification, 6A § 36 — Testing.
 
 from __future__ import annotations
 
+import asyncio
 import os
+import sys
 
 import pytest
 from sqlalchemy import text
@@ -32,8 +34,24 @@ from backend.app.infrastructure.database.engine import (
     get_session_context,
 )
 
-# Skip all tests in this module if DATABASE_URL is not set.
-_DATABASE_URL = os.environ.get("DATABASE_URL") or os.environ.get("ALEMBIC_DATABASE_URL")
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+
+def _resolve_database_url() -> str | None:
+    url = os.environ.get("DATABASE_URL") or os.environ.get("ALEMBIC_DATABASE_URL")
+    if not url:
+        try:
+            from backend.app.config import get_settings
+
+            url = get_settings().database.DATABASE_URL
+        except Exception:
+            pass
+    return url
+
+
+# Skip all tests in this module if DATABASE_URL is not configured.
+_DATABASE_URL = _resolve_database_url()
 pytestmark = pytest.mark.skipif(
     not _DATABASE_URL,
     reason="DATABASE_URL not set — skipping live database integration tests",
@@ -92,12 +110,13 @@ async def test_live_transaction_rollback() -> None:
         factory = build_async_session_factory(engine)
 
         async with factory() as session:
-            # Create a session-scoped temp table.
+            # Create a session-scoped temp table and commit DDL so the table structure exists.
             await session.execute(
                 text("CREATE TEMP TABLE IF NOT EXISTS _gate03_test (id INTEGER, value TEXT)")
             )
+            await session.commit()
 
-            # Insert a row in a nested transaction / savepoint.
+            # Insert a row into the table.
             await session.execute(text("INSERT INTO _gate03_test (id, value) VALUES (1, 'test')"))
 
             # Count rows — should be 1.

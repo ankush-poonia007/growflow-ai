@@ -249,17 +249,17 @@ async def list_projects(db: DbSession) -> list[ProjectResponse]:
 
 | Test | Status |
 |---|---|
-| `test_live_connectivity_select_1` | SKIPPED (DATABASE_URL not set) |
-| `test_live_transaction_rollback` | SKIPPED (DATABASE_URL not set) |
-| `test_live_session_context_commits` | SKIPPED (DATABASE_URL not set) |
-| `test_live_postgresql_extensions_accessible` | SKIPPED (DATABASE_URL not set) |
+| `test_live_connectivity_select_1` | ✅ PASSED (SELECT 1 on hosted Supabase) |
+| `test_live_transaction_rollback` | ✅ PASSED (Rollback verified on hosted Supabase) |
+| `test_live_session_context_commits` | ✅ PASSED (Session context commit verified) |
+| `test_live_postgresql_extensions_accessible` | ✅ PASSED (`uuid-ossp`, `pg_trgm` verified) |
 
 ### Full Suite Result
 ```
-======================== 70 passed, 4 skipped in 2.66s ========================
+======================= 74 passed in 178.53s (0:02:58) ========================
 ```
 
-**Gate 02 regression:** 0 tests broken.
+**Gate 02 regression:** 0 tests broken (all 74 passed).
 
 ### Code Quality & CI Remediation
 
@@ -309,20 +309,13 @@ async def list_projects(db: DbSession) -> list[ProjectResponse]:
 ---
 
 ## Pending Actions Before Merge
-
+ 
 1. **Review this evidence document** — confirm all implementation decisions are correct.
 
-2. **Apply baseline migration to hosted Supabase** (recommended before merge):
-   ```powershell
-   $env:DATABASE_URL = "postgresql+psycopg://USER:PASS@HOST:5432/DATABASE"
-   .venv\Scripts\alembic.exe upgrade head
-   .venv\Scripts\alembic.exe current
-   ```
+2. **Apply baseline migration to hosted Supabase**:
+   - ✅ COMPLETED: `0001_gate03_baseline (head)` applied via `alembic upgrade head`.
 
-3. **Run integration tests with live DATABASE_URL** to confirm hosted connectivity:
-   ```powershell
-   $env:DATABASE_URL = "postgresql+psycopg://..."
-   .venv\Scripts\python.exe -m pytest backend/tests/integration/test_database_integration.py -v
-   ```
+3. **Run integration tests with live DATABASE_URL**:
+   - ✅ COMPLETED: `4 passed in 41.53s` (`test_database_integration.py`).
 
 4. **Merge `gate-03/database-foundation` → `main`** after review approval.
