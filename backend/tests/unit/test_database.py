@@ -57,6 +57,7 @@ from backend.app.shared.exceptions import (
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _make_db_settings(**kwargs: Any) -> DatabaseSettings:
     """Build a DatabaseSettings instance with overrides."""
     defaults: dict[str, Any] = {
@@ -74,6 +75,7 @@ def _make_db_settings(**kwargs: Any) -> DatabaseSettings:
 # 1. Engine builder
 # ---------------------------------------------------------------------------
 
+
 class TestBuildAsyncEngine:
     """Tests for build_async_engine()."""
 
@@ -88,9 +90,7 @@ class TestBuildAsyncEngine:
     @pytest.mark.asyncio
     async def test_normalises_bare_postgresql_prefix(self) -> None:
         """postgresql:// prefix is converted to postgresql+psycopg://."""
-        settings = _make_db_settings(
-            DATABASE_URL="postgresql://user:pass@host:5432/db"
-        )
+        settings = _make_db_settings(DATABASE_URL="postgresql://user:pass@host:5432/db")
         engine = build_async_engine(settings)
         try:
             assert "psycopg" in engine.url.drivername
@@ -101,9 +101,7 @@ class TestBuildAsyncEngine:
     @pytest.mark.asyncio
     async def test_normalises_postgres_prefix(self) -> None:
         """postgres:// prefix is converted to postgresql+psycopg://."""
-        settings = _make_db_settings(
-            DATABASE_URL="postgres://user:pass@host:5432/db"
-        )
+        settings = _make_db_settings(DATABASE_URL="postgres://user:pass@host:5432/db")
         engine = build_async_engine(settings)
         try:
             assert "psycopg" in engine.url.drivername
@@ -114,9 +112,7 @@ class TestBuildAsyncEngine:
     @pytest.mark.asyncio
     async def test_already_async_url_accepted(self) -> None:
         """postgresql+psycopg:// URLs are accepted without double-conversion."""
-        settings = _make_db_settings(
-            DATABASE_URL="postgresql+psycopg://user:pass@host:5432/db"
-        )
+        settings = _make_db_settings(DATABASE_URL="postgresql+psycopg://user:pass@host:5432/db")
         engine = build_async_engine(settings)
         try:
             assert engine.url.drivername == "postgresql+psycopg"
@@ -141,6 +137,7 @@ class TestBuildAsyncEngine:
 # ---------------------------------------------------------------------------
 # 2. Session factory
 # ---------------------------------------------------------------------------
+
 
 class TestBuildAsyncSessionFactory:
     """Tests for build_async_session_factory()."""
@@ -175,6 +172,7 @@ class TestBuildAsyncSessionFactory:
 # ---------------------------------------------------------------------------
 # 3. Transaction boundaries — get_session_context
 # ---------------------------------------------------------------------------
+
 
 class TestGetSessionContext:
     """Tests for get_session_context() transaction behavior."""
@@ -233,6 +231,7 @@ class TestGetSessionContext:
 # 4. Lifecycle state machine
 # ---------------------------------------------------------------------------
 
+
 class TestDatabaseLifecycle:
     """Tests for database lifecycle startup/shutdown state management."""
 
@@ -240,12 +239,14 @@ class TestDatabaseLifecycle:
         """Reset lifecycle state before each test."""
         # Directly reset module-level singletons for test isolation.
         import backend.app.infrastructure.database.lifecycle as lc
+
         lc._engine = None
         lc._session_factory = None
 
     def teardown_method(self) -> None:
         """Reset lifecycle state after each test."""
         import backend.app.infrastructure.database.lifecycle as lc
+
         lc._engine = None
         lc._session_factory = None
 
@@ -329,6 +330,7 @@ class TestDatabaseLifecycle:
 # 5. Exception mapping
 # ---------------------------------------------------------------------------
 
+
 class TestDatabaseExceptions:
     """Tests for SQLAlchemy → GrowFlow exception translation."""
 
@@ -357,6 +359,7 @@ class TestDatabaseExceptions:
     def test_sqlalchemy_error_raises_infrastructure(self) -> None:
         """Generic SQLAlchemyError is translated to InfrastructureException."""
         from sqlalchemy.exc import SQLAlchemyError
+
         exc = SQLAlchemyError("generic db error")
         with pytest.raises(InfrastructureException):
             handle_sqlalchemy_error(exc)
@@ -387,6 +390,7 @@ class TestDatabaseExceptions:
 # 6. Database base and mixins
 # ---------------------------------------------------------------------------
 
+
 class TestDatabaseBase:
     """Tests for Base, TimestampMixin, UUIDPrimaryKeyMixin, utcnow."""
 
@@ -394,6 +398,7 @@ class TestDatabaseBase:
     def test_base_is_declarative_base(self) -> None:
         """Base is a SQLAlchemy DeclarativeBase subclass."""
         from sqlalchemy.orm import DeclarativeBase
+
         assert issubclass(Base, DeclarativeBase)
 
     @pytest.mark.unit
@@ -408,6 +413,7 @@ class TestDatabaseBase:
 # 7. Alembic configuration integrity
 # ---------------------------------------------------------------------------
 
+
 class TestAlembicConfiguration:
     """Tests for Alembic configuration file integrity."""
 
@@ -415,6 +421,7 @@ class TestAlembicConfiguration:
     def _project_root() -> str:
         """Return the absolute path to the project root."""
         import os
+
         # Tests live at: backend/tests/unit/
         # Project root is 3 levels up from the tests/unit directory.
         unit_dir = os.path.dirname(__file__)
@@ -424,6 +431,7 @@ class TestAlembicConfiguration:
     def test_alembic_ini_exists(self) -> None:
         """alembic.ini exists at the repository root."""
         import os
+
         ini_path = os.path.join(self._project_root(), "alembic.ini")
         assert os.path.isfile(ini_path), f"alembic.ini must exist at {ini_path}"
 
@@ -432,6 +440,7 @@ class TestAlembicConfiguration:
         """alembic.ini script_location points to backend/migrations."""
         import configparser
         import os
+
         ini_path = os.path.join(self._project_root(), "alembic.ini")
         config = configparser.ConfigParser()
         config.read(ini_path)
@@ -442,18 +451,21 @@ class TestAlembicConfiguration:
     def test_env_py_exists(self) -> None:
         """backend/migrations/env.py exists."""
         import os
-        env_path = os.path.join(
-            self._project_root(), "backend", "migrations", "env.py"
-        )
+
+        env_path = os.path.join(self._project_root(), "backend", "migrations", "env.py")
         assert os.path.isfile(env_path), f"backend/migrations/env.py must exist at {env_path}"
 
     @pytest.mark.unit
     def test_baseline_migration_exists(self) -> None:
         """The 0001 baseline migration file exists."""
         import os
+
         migration_path = os.path.join(
             self._project_root(),
-            "backend", "migrations", "versions", "0001_gate03_baseline.py",
+            "backend",
+            "migrations",
+            "versions",
+            "0001_gate03_baseline.py",
         )
         assert os.path.isfile(migration_path), (
             f"Baseline migration file must exist at {migration_path}"
@@ -463,9 +475,8 @@ class TestAlembicConfiguration:
     def test_baseline_migration_has_correct_revision(self) -> None:
         """The 0001 baseline migration has no parent (down_revision is None)."""
         import importlib
-        migration = importlib.import_module(
-            "backend.migrations.versions.0001_gate03_baseline"
-        )
+
+        migration = importlib.import_module("backend.migrations.versions.0001_gate03_baseline")
         assert migration.revision == "0001_gate03_baseline"
         assert migration.down_revision is None
 
@@ -497,14 +508,13 @@ class TestAlembicConfiguration:
         )
 
         # Verify it handles the async driver prefix.
-        assert "postgresql+psycopg" in source, (
-            "env.py must convert URL to async psycopg driver"
-        )
+        assert "postgresql+psycopg" in source, "env.py must convert URL to async psycopg driver"
 
 
 # ---------------------------------------------------------------------------
 # 8. Health endpoint — database status
 # ---------------------------------------------------------------------------
+
 
 class TestHealthDatabaseStatus:
     """Tests that health endpoint reports database status correctly."""
@@ -547,6 +557,7 @@ class TestHealthDatabaseStatus:
 # 9. FastAPI DB session dependency unit tests
 # ---------------------------------------------------------------------------
 
+
 class TestDbSessionDependency:
     """Unit tests for the get_db_session FastAPI dependency."""
 
@@ -555,6 +566,7 @@ class TestDbSessionDependency:
     async def test_returns_503_when_session_factory_none(self) -> None:
         """get_db_session returns 503 when session factory not initialised."""
         import backend.app.infrastructure.database.lifecycle as lc
+
         lc._engine = None
         lc._session_factory = None
 

@@ -94,21 +94,14 @@ async def test_live_transaction_rollback() -> None:
         async with factory() as session:
             # Create a session-scoped temp table.
             await session.execute(
-                text(
-                    "CREATE TEMP TABLE IF NOT EXISTS _gate03_test "
-                    "(id INTEGER, value TEXT)"
-                )
+                text("CREATE TEMP TABLE IF NOT EXISTS _gate03_test (id INTEGER, value TEXT)")
             )
 
             # Insert a row in a nested transaction / savepoint.
-            await session.execute(
-                text("INSERT INTO _gate03_test (id, value) VALUES (1, 'test')")
-            )
+            await session.execute(text("INSERT INTO _gate03_test (id, value) VALUES (1, 'test')"))
 
             # Count rows — should be 1.
-            count = (
-                await session.execute(text("SELECT COUNT(*) FROM _gate03_test"))
-            ).scalar()
+            count = (await session.execute(text("SELECT COUNT(*) FROM _gate03_test"))).scalar()
             assert count == 1
 
             # Rollback — temp table rows should be cleared.
@@ -118,9 +111,7 @@ async def test_live_transaction_rollback() -> None:
             count_after = (
                 await session.execute(text("SELECT COUNT(*) FROM _gate03_test"))
             ).scalar()
-            assert count_after == 0, (
-                f"Expected 0 rows after rollback, got {count_after}"
-            )
+            assert count_after == 0, f"Expected 0 rows after rollback, got {count_after}"
     finally:
         await engine.dispose()
 
@@ -142,19 +133,14 @@ async def test_live_session_context_commits() -> None:
         # Create temp table first in its own session.
         async with factory() as setup_session:
             await setup_session.execute(
-                text(
-                    "CREATE TEMP TABLE IF NOT EXISTS _gate03_commit_test "
-                    "(id INTEGER, value TEXT)"
-                )
+                text("CREATE TEMP TABLE IF NOT EXISTS _gate03_commit_test (id INTEGER, value TEXT)")
             )
             await setup_session.commit()
 
         # Insert via get_session_context (which commits automatically).
         async with get_session_context(factory) as session:
             await session.execute(
-                text(
-                    "INSERT INTO _gate03_commit_test (id, value) VALUES (42, 'committed')"
-                )
+                text("INSERT INTO _gate03_commit_test (id, value) VALUES (42, 'committed')")
             )
 
         # Verify the row is visible in a subsequent session.
@@ -163,9 +149,7 @@ async def test_live_session_context_commits() -> None:
                 text("SELECT value FROM _gate03_commit_test WHERE id = 42")
             )
             row = result.scalar_one_or_none()
-            assert row == "committed", (
-                f"Expected committed row value 'committed', got {row}"
-            )
+            assert row == "committed", f"Expected committed row value 'committed', got {row}"
     finally:
         await engine.dispose()
 
@@ -190,10 +174,7 @@ async def test_live_postgresql_extensions_accessible() -> None:
 
         async with factory() as session:
             result = await session.execute(
-                text(
-                    "SELECT extname FROM pg_extension "
-                    "WHERE extname IN ('uuid-ossp', 'pg_trgm')"
-                )
+                text("SELECT extname FROM pg_extension WHERE extname IN ('uuid-ossp', 'pg_trgm')")
             )
             installed = {row[0] for row in result.fetchall()}
 

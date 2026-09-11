@@ -108,9 +108,7 @@ def handle_operational_error(exc: OperationalError, context: str = "") -> None:
         # Never log exc.params or connection string.
     )
 
-    raise InfrastructureException(
-        message="A database error occurred. Please try again."
-    ) from exc
+    raise InfrastructureException(message="A database error occurred. Please try again.") from exc
 
 
 def handle_sqlalchemy_error(exc: SQLAlchemyError, context: str = "") -> None:
@@ -133,6 +131,4 @@ def handle_sqlalchemy_error(exc: SQLAlchemyError, context: str = "") -> None:
         error_type=type(exc).__name__,
     )
 
-    raise InfrastructureException(
-        message="An unexpected database error occurred."
-    ) from exc
+    raise InfrastructureException(message="An unexpected database error occurred.") from exc

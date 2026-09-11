@@ -43,7 +43,7 @@ def upgrade() -> None:
     """Enable required PostgreSQL extensions for GrowFlow."""
     # uuid-ossp: provides uuid_generate_v4() server-side default.
     # Supabase typically pre-installs this; IF NOT EXISTS is idempotent.
-    op.execute("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\"")
+    op.execute('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"')
 
     # pg_trgm: trigram similarity for full-text search indexes.
     # Required for future search patterns identified in 6B § 40.
@@ -56,4 +56,4 @@ def downgrade() -> None:
     # should be done with extreme care. These guards prevent errors if
     # the extension is still in use.
     op.execute("DROP EXTENSION IF EXISTS pg_trgm")
-    op.execute("DROP EXTENSION IF EXISTS \"uuid-ossp\"")
+    op.execute('DROP EXTENSION IF EXISTS "uuid-ossp"')

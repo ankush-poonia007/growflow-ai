@@ -261,11 +261,24 @@ async def list_projects(db: DbSession) -> list[ProjectResponse]:
 
 **Gate 02 regression:** 0 tests broken.
 
-### Code Quality
-```
-ruff check backend/ --fix --unsafe-fixes
-Found 0 errors remaining.
-```
+### Code Quality & CI Remediation
+
+**Initial CI Failure:**
+- GitHub Actions workflow *Lint, type-check, and test (Python 3.12)* on commit `71fd7df` failed at step `Ruff — format check` (exit code 1).
+- 4 files were flagged as unformatted:
+  - `backend/app/infrastructure/database/exceptions.py`
+  - `backend/migrations/versions/0001_gate03_baseline.py`
+  - `backend/tests/integration/test_database_integration.py`
+  - `backend/tests/unit/test_database.py`
+
+**Remediation & Re-run Results:**
+1. Formatted the 4 reported files using `ruff format`.
+2. `ruff check backend/` — 0 errors (All checks passed).
+3. `ruff format --check backend/` — 81 files already formatted (0 files unformatted).
+4. `pytest` — 70 passed, 4 skipped in 4.40s.
+5. `pip check` — No broken requirements found.
+6. Local WDAC policy blocks DLL execution for local `mypy.exe` on Windows; verified clean syntax and type annotations for CI type checking.
+7. Diff inspected: strictly style formatting; no secrets or unrelated code changes.
 
 ---
 
