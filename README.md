@@ -148,15 +148,18 @@ SUPABASE_JWT_SECRET=your-backend-only-jwt-verification-secret
 
 ## Running the Backend
 
-> ⚠️ **Not yet implemented.** The backend application is established in Gate 02.
-
-Once Gate 02 is complete:
+The backend foundation is runnable via Uvicorn:
 
 ```bash
-# Development server
+# Development server (from repository root)
 uvicorn backend.app.main:app --reload --host 127.0.0.1 --port 8000
 
-# API docs (once running)
+# Health check
+curl http://127.0.0.1:8000/api/v1/health/live
+curl http://127.0.0.1:8000/api/v1/health/ready
+curl http://127.0.0.1:8000/api/v1/health
+
+# Interactive API documentation
 http://127.0.0.1:8000/docs
 ```
 
