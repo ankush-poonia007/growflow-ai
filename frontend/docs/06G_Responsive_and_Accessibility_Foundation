@@ -1,0 +1,4023 @@
+# GrowFlow — Phase 06G: Responsive + Accessibility Foundation
+
+**Status:** FROZEN / AUTHORITATIVE  
+**Version:** 1.0  
+**Phase:** 06G  
+**Depends On:** Phase 06C — Frontend Design Tokens; Phase 06D — Core Component System; Phase 06E — Application Shell; Phase 06F — Frontend Behavior Foundation  
+**Aligns With:** Phase 01 — Frontend Page Inventory; Phase 02 — Information Architecture & Navigation; Phase 03 — Visual Design System & Experience Direction; Phase 05 — Application & Integration Architecture  
+**Scope:** Responsive behavior, device adaptation, accessibility, keyboard interaction, focus management, assistive technology behavior, motion reduction, content scaling, responsive data interfaces, responsive workflows, testing, and implementation governance.
+
+---
+
+# 01. Purpose
+
+Phase 06G defines how GrowFlow remains usable, accessible, readable, and behaviorally correct across:
+
+- desktop;
+- tablet;
+- mobile;
+- different viewport sizes;
+- different input methods;
+- keyboard-only navigation;
+- screen readers;
+- reduced-motion preferences;
+- zoom/text scaling;
+- slow networks and constrained devices.
+
+This phase is implementation-grade.
+
+It does not redesign the visual system. It defines how the already-frozen GrowFlow system behaves when space, input modality, accessibility preferences, and device capabilities change.
+
+The governing principle is:
+
+> **Responsive design changes presentation and interaction mechanics, never domain meaning or security semantics.**
+
+---
+
+# 02. Relationship to Previous Phases
+
+Phase 06G consumes the following frozen decisions.
+
+## 02.1 Phase 06C
+
+Provides:
+
+- breakpoints;
+- spacing tokens;
+- sizing tokens;
+- typography;
+- motion;
+- reduced-motion rules;
+- touch targets;
+- component sizing.
+
+Canonical breakpoints:
+
+```text
+Mobile  < 768px
+Tablet  768px–1199px
+Desktop >= 1200px
+```
+
+## 02.2 Phase 06D
+
+Provides:
+
+- component contracts;
+- control behavior;
+- navigation components;
+- forms;
+- dialogs;
+- tables;
+- AI components;
+- workflow components.
+
+## 02.3 Phase 06E
+
+Provides:
+
+- global top navigation;
+- Workplace selector;
+- role sidebars;
+- mobile navigation drawer;
+- search;
+- notifications;
+- profile;
+- settings;
+- breadcrumbs;
+- shell behavior.
+
+## 02.4 Phase 06F
+
+Provides:
+
+- server state;
+- UI state;
+- streaming state;
+- API behavior;
+- SSE;
+- long-running operations;
+- loading/error/empty/success;
+- permission-aware UI;
+- network degradation;
+- workflow state.
+
+Phase 06G must preserve all of these behavioral contracts.
+
+---
+
+# 03. Responsive Philosophy
+
+GrowFlow uses **responsive composition**, not merely responsive resizing.
+
+The interface should:
+
+- preserve hierarchy;
+- preserve task meaning;
+- preserve access to important actions;
+- reduce unnecessary visual density on smaller screens;
+- adapt navigation;
+- adapt data presentation;
+- adapt interaction mechanisms.
+
+The interface must not simply shrink desktop UI until it becomes unusable.
+
+---
+
+# 04. Responsive Priority Order
+
+When viewport space decreases, preserve information in this order:
+
+```text
+1. Current task/context
+2. Primary action
+3. Critical status
+4. Essential data
+5. Navigation access
+6. Secondary metadata
+7. Supporting information
+8. Decorative content
+```
+
+Decorative content is removed before functional information.
+
+---
+
+# 05. Breakpoint Model
+
+Canonical breakpoint model:
+
+| Breakpoint | Width | Primary Behavior |
+|---|---:|---|
+| Mobile | <768px | Single-column, drawer navigation |
+| Tablet | 768–1199px | Adaptive two-column/compressed layouts |
+| Desktop | >=1200px | Full information-density layouts |
+
+These breakpoints are behavioral defaults, not rigid requirements for every component.
+
+Components may use container-based adaptation when that produces better behavior.
+
+---
+
+# 06. Container Responsiveness
+
+Page content should use responsive containers rather than hard-coded viewport widths.
+
+Conceptual model:
+
+```text
+Viewport
+ ↓
+Global shell
+ ↓
+Content container
+ ↓
+Responsive grid
+ ↓
+Feature content
+```
+
+Content should remain readable and avoid excessive line lengths.
+
+---
+
+# 07. Desktop Behavior
+
+Desktop is the primary high-density workplace environment.
+
+Desktop may expose:
+
+- persistent sidebar;
+- multi-column layouts;
+- dense tables;
+- dashboard grids;
+- side-by-side panels;
+- contextual detail panes.
+
+Desktop does not justify unnecessary information overload.
+
+---
+
+# 08. Tablet Behavior
+
+Tablet is an intermediate composition, not a scaled desktop.
+
+Typical adaptations:
+
+- sidebar may remain available but become narrower;
+- multi-column grids reduce columns;
+- secondary panels may stack;
+- table columns reduce;
+- filters move into drawers/popovers;
+- large navigation groups may collapse.
+
+---
+
+# 09. Mobile Behavior
+
+Mobile uses a focused single-column workflow.
+
+Typical behavior:
+
+```text
+Top navigation
+ ↓
+Page context
+ ↓
+Primary content
+ ↓
+Primary action
+ ↓
+Secondary content
+```
+
+The sidebar becomes a drawer according to Phase 06E.
+
+---
+
+# 10. Mobile Navigation
+
+Mobile navigation must preserve access to all authorized primary destinations.
+
+The sidebar becomes a drawer.
+
+Drawer requirements:
+
+- accessible trigger;
+- accessible name;
+- focus management;
+- escape behavior;
+- backdrop behavior;
+- focus restoration;
+- scroll containment.
+
+---
+
+# 11. Mobile Top Navigation
+
+The global top navigation remains global.
+
+Mobile may collapse:
+
+- public links;
+- secondary actions;
+- search;
+- account actions.
+
+However, the following concepts remain accessible:
+
+- GrowFlow identity;
+- Workplace;
+- search;
+- notifications;
+- profile/authentication.
+
+---
+
+# 12. Workplace Selector on Mobile
+
+The Workplace selector must remain discoverable.
+
+If horizontal space is limited:
+
+```text
+TopNav
+→ compact workplace control
+→ full selector drawer/menu
+```
+
+The role/workplace meaning must remain explicit.
+
+---
+
+# 13. Sidebar Drawer Behavior
+
+Opening:
+
+```text
+trigger
+ ↓
+drawer
+ ↓
+focus enters drawer
+```
+
+Closing:
+
+```text
+close / escape / navigation
+ ↓
+drawer closes
+ ↓
+focus returns appropriately
+```
+
+Navigation should close the drawer after successful route transition.
+
+---
+
+# 14. Mobile Search
+
+Global search may open as:
+
+- expanded top navigation search;
+- dedicated search surface;
+- full-width overlay.
+
+Search semantics remain identical to desktop.
+
+Search remains authorization-aware.
+
+---
+
+# 15. Mobile Notifications
+
+Notification list should:
+
+- remain readable;
+- expose unread state;
+- support canonical deep links;
+- preserve timestamps/status;
+- avoid overly dense metadata.
+
+Notification preview may use a drawer.
+
+Full notification content remains route-addressable.
+
+---
+
+# 16. Mobile Profile and Settings
+
+Profile/settings actions should remain reachable without requiring desktop-only controls.
+
+Account actions must not be hidden behind inaccessible hover behavior.
+
+---
+
+# 17. Responsive Layout Grid
+
+Grid behavior should adapt by semantic content.
+
+Example:
+
+```text
+Desktop:
+4 → 3 → 2 → 1 columns
+
+Tablet:
+3 → 2 columns
+
+Mobile:
+1 column
+```
+
+Exact column counts depend on content.
+
+Never compress cards below usable content width merely to preserve column count.
+
+---
+
+# 18. Responsive Spacing
+
+Use the canonical spacing scale.
+
+Smaller screens may reduce:
+
+- section gaps;
+- outer padding;
+- inter-card spacing.
+
+Do not remove spacing so aggressively that hierarchy collapses.
+
+---
+
+# 19. Responsive Typography
+
+Typography remains based on the canonical type scale.
+
+At smaller sizes:
+
+- display headings may step down;
+- body readability remains prioritized;
+- metadata must remain legible;
+- line lengths must remain manageable.
+
+Do not shrink body text excessively to fit more content.
+
+---
+
+# 20. Minimum Text Size Principle
+
+Body and interactive text must remain readable.
+
+Responsive adaptation should reduce:
+
+- width;
+- density;
+- secondary metadata;
+
+before reducing essential text to impractical sizes.
+
+---
+
+# 21. Touch Targets
+
+Interactive controls should generally provide approximately:
+
+```text
+44 × 44px
+```
+
+of usable touch target area where practical.
+
+Icons may be visually smaller while their interactive hit area remains accessible.
+
+---
+
+# 22. Touch Spacing
+
+Adjacent interactive targets must have sufficient separation to prevent accidental activation.
+
+Do not place tiny icon buttons directly against each other without adequate hit areas.
+
+---
+
+# 23. Hover Independence
+
+No essential interaction may depend solely on hover.
+
+Every hover-revealed function must have an equivalent:
+
+- click;
+- keyboard;
+- touch;
+- or always-visible action.
+
+---
+
+# 24. Pointer Adaptation
+
+Interfaces should account for:
+
+```text
+mouse
+touch
+keyboard
+stylus
+assistive technology
+```
+
+Interaction must not depend on a specific pointing device.
+
+---
+
+# 25. Responsive Tables
+
+Tables are high-risk responsive components.
+
+Do not simply force a wide desktop table into a narrow viewport.
+
+Use an appropriate strategy:
+
+```text
+Desktop
+→ full table
+
+Tablet
+→ reduced columns / horizontal scroll
+
+Mobile
+→ priority columns / stacked rows / list representation
+```
+
+The semantic data must remain accessible.
+
+---
+
+# 26. Table Horizontal Scrolling
+
+If horizontal scrolling is necessary:
+
+- indicate scrollability where useful;
+- preserve header/data alignment;
+- avoid clipping critical information;
+- keep row actions accessible.
+
+Do not hide critical fields merely because the viewport is narrow.
+
+---
+
+# 27. Table-to-List Transformation
+
+A table may transform into a structured list/card representation on mobile.
+
+The transformed representation must preserve:
+
+- identity;
+- status;
+- primary metadata;
+- actions;
+- sorting/filtering semantics;
+- accessibility.
+
+This is a representation change, not a domain-model change.
+
+---
+
+# 28. Dense Admin Tables
+
+Admin tables may remain horizontally scrollable longer than public tables because governance workflows require dense information.
+
+However:
+
+- critical actions remain accessible;
+- row identity remains visible;
+- keyboard navigation remains usable.
+
+---
+
+# 29. Mentor Tables
+
+Mentor student/project tables should prioritize:
+
+1. student/project identity;
+2. health;
+3. lifecycle/status;
+4. important action.
+
+Secondary metadata can collapse.
+
+---
+
+# 30. Student Task Tables
+
+Student task interfaces should prioritize:
+
+1. task;
+2. status;
+3. milestone/context;
+4. due date;
+5. actionable controls.
+
+Secondary metadata may move into detail views.
+
+---
+
+# 31. Responsive Dashboards
+
+Dashboards must transform composition rather than simply shrink widgets.
+
+Desktop:
+
+```text
+multiple metric/data regions
+```
+
+Tablet:
+
+```text
+fewer columns
+```
+
+Mobile:
+
+```text
+vertical priority order
+```
+
+Critical metrics appear before supporting visualizations.
+
+---
+
+# 32. Dashboard Widget Order
+
+Responsive order should follow user decision priority, not DOM convenience.
+
+Example:
+
+```text
+Project health
+→ current progress
+→ urgent risks
+→ next actions
+→ supporting activity
+```
+
+---
+
+# 33. Partial Failure on Responsive Dashboards
+
+A failed widget must retain its allocated hierarchy.
+
+The error state should fit naturally within the responsive layout.
+
+---
+
+# 34. Charts on Mobile
+
+Charts should:
+
+- remain readable;
+- avoid microscopic labels;
+- support alternate data representations;
+- allow horizontal interaction only when necessary;
+- preserve accessible summaries.
+
+If a chart cannot remain meaningful, provide a data table/list alternative.
+
+---
+
+# 35. Data Visualization Accessibility
+
+Charts must not communicate meaning through color alone.
+
+Use:
+
+- labels;
+- patterns where appropriate;
+- icons;
+- textual summaries;
+- legends;
+- accessible data tables.
+
+---
+
+# 36. Responsive Forms
+
+Forms should move from multi-column desktop composition to single-column mobile composition where appropriate.
+
+Preferred:
+
+```text
+Desktop:
+Field A | Field B
+
+Mobile:
+Field A
+Field B
+```
+
+Do not create excessively narrow input fields.
+
+---
+
+# 37. Form Action Placement
+
+Primary form actions must remain easy to reach.
+
+On mobile, long forms may use:
+
+- sticky action areas;
+- bottom action bars;
+- clearly separated action sections.
+
+Sticky actions must not cover form fields.
+
+---
+
+# 38. Form Error Behavior
+
+Errors must remain adjacent to their associated fields.
+
+On mobile:
+
+- do not rely only on red borders;
+- preserve readable error text;
+- move focus appropriately after failed submission when useful.
+
+---
+
+# 39. Keyboard Accessibility
+
+Every interactive capability must be reachable by keyboard unless the interaction inherently requires a non-keyboard physical action.
+
+Required support includes:
+
+- Tab;
+- Shift+Tab;
+- Enter;
+- Space;
+- Escape;
+- arrow keys where component patterns require them.
+
+---
+
+# 40. Focus Visibility
+
+Focus indicators must be:
+
+- visible;
+- sufficiently contrasted;
+- consistent;
+- not removed by CSS resets.
+
+Do not use:
+
+```css
+outline: none;
+```
+
+without a valid replacement.
+
+---
+
+# 41. Focus Order
+
+Focus order must follow logical reading and interaction order.
+
+Avoid CSS positioning that causes visual order to diverge substantially from DOM order.
+
+---
+
+# 42. Skip Navigation
+
+Authenticated and public shells must provide a skip mechanism to the main content region.
+
+Conceptual:
+
+```text
+Skip to main content
+```
+
+It should become visible when focused.
+
+---
+
+# 43. Landmark Structure
+
+Pages should use semantic landmarks where appropriate:
+
+```text
+header
+nav
+main
+aside
+footer
+```
+
+There should be one clear primary `main` region.
+
+---
+
+# 44. Heading Hierarchy
+
+Headings must follow logical hierarchy.
+
+Avoid:
+
+```text
+H1
+→ H4
+```
+
+merely because the visual style looks appropriate.
+
+Visual appearance must be controlled by tokens, not incorrect semantic heading levels.
+
+---
+
+# 45. Accessible Names
+
+Interactive controls must have accessible names.
+
+Icon-only controls require explicit accessible labels.
+
+Examples:
+
+```text
+Open navigation
+Search
+Notifications
+Close
+More actions
+Share
+```
+
+---
+
+# 46. Icon Semantics
+
+Decorative icons should be hidden from assistive technology when they convey no independent meaning.
+
+Meaningful icons require appropriate labels or accompanying text.
+
+---
+
+# 47. Button vs Link
+
+Use:
+
+```text
+Link → navigation
+Button → action
+```
+
+Do not use clickable `div` elements as substitutes.
+
+---
+
+# 48. Native HTML First
+
+Prefer semantic/native controls before building custom interaction patterns.
+
+Examples:
+
+- `button`;
+- `input`;
+- `select` where appropriate;
+- `textarea`;
+- `a`;
+- `form`.
+
+Custom controls must reproduce equivalent keyboard and assistive technology behavior.
+
+---
+
+# 49. Dialog Accessibility
+
+Dialogs must:
+
+- have accessible names;
+- identify descriptions where useful;
+- trap focus appropriately;
+- support Escape where appropriate;
+- restore focus;
+- prevent background interaction when modal.
+
+---
+
+# 50. Drawer Accessibility
+
+Drawers must have:
+
+- accessible name;
+- focus management;
+- keyboard dismissal;
+- background interaction control where modal;
+- logical focus order.
+
+---
+
+# 51. Popover Accessibility
+
+Popover behavior must be predictable.
+
+Trigger should communicate:
+
+```text
+closed/open
+```
+
+where required.
+
+Focus behavior depends on whether the popover is:
+
+- menu;
+- tooltip;
+- dialog;
+- non-modal informational surface.
+
+Do not treat all popovers identically.
+
+---
+
+# 52. Menu Accessibility
+
+Menus should use appropriate keyboard behavior:
+
+```text
+Arrow Up/Down
+Enter
+Escape
+```
+
+Focus must remain coherent.
+
+---
+
+# 53. Tabs Accessibility
+
+Tabs must expose:
+
+- selected state;
+- associated panel;
+- keyboard navigation;
+- focus;
+- orientation where applicable.
+
+Do not implement tabs as unrelated links if they are semantically tab controls.
+
+---
+
+# 54. Accordion Accessibility
+
+Accordions must expose:
+
+- expanded/collapsed state;
+- associated content;
+- keyboard operation.
+
+---
+
+# 55. Tooltips
+
+Tooltips are supplementary.
+
+Never put essential instructions or actions only inside a tooltip.
+
+Touch devices require an equivalent accessible mechanism.
+
+---
+
+# 56. Toast Accessibility
+
+Toasts should use appropriate live-region behavior.
+
+Avoid announcing every minor UI event.
+
+Critical failures and meaningful completion events may require stronger announcement.
+
+---
+
+# 57. Live Regions
+
+Live regions should be used selectively.
+
+Appropriate:
+
+- AI completion;
+- critical background operation failure;
+- important connection state;
+- form submission result.
+
+Inappropriate:
+
+- every SSE event;
+- every progress percentage;
+- every typing interaction.
+
+---
+
+# 58. Screen Reader Navigation
+
+Screen-reader users should be able to understand:
+
+- page title/context;
+- current section;
+- current state;
+- available actions;
+- status changes;
+- errors;
+- navigation.
+
+Visual grouping must have meaningful semantic equivalents.
+
+---
+
+# 59. Form Labels
+
+Every form control must have a programmatically associated label.
+
+Placeholder text is not a label.
+
+---
+
+# 60. Required Fields
+
+Required status must be communicated semantically and visually.
+
+Do not rely solely on an asterisk without accessible context.
+
+---
+
+# 61. Form Error Association
+
+Error messages should be programmatically associated with the relevant control.
+
+The user should be able to determine:
+
+```text
+which field failed
++
+why
++
+how to fix it
+```
+
+---
+
+# 62. Validation Timing
+
+Validation should avoid being excessively aggressive.
+
+Preferred:
+
+- immediate validation for obvious constraints;
+- field-level feedback after interaction;
+- comprehensive feedback on submit.
+
+---
+
+# 63. Password and Authentication Forms
+
+Authentication forms must provide:
+
+- labels;
+- accessible errors;
+- password visibility control if provided;
+- keyboard submission;
+- clear focus;
+- loading state;
+- server error state.
+
+---
+
+# 64. Authentication Responsive Behavior
+
+Login/register pages may use distinct compositions while retaining the unified design system.
+
+Mobile should prioritize:
+
+```text
+brand
+→ context
+→ form
+→ primary action
+→ recovery/alternative action
+```
+
+Decorative imagery must not interfere with authentication.
+
+---
+
+# 65. Public Hero Accessibility
+
+Hero visual storytelling must not make the primary statement inaccessible.
+
+Ensure:
+
+- semantic heading;
+- meaningful CTA;
+- image alternative text where meaningful;
+- decorative imagery hidden appropriately;
+- keyboard-accessible interactions.
+
+---
+
+# 66. Editorial Image Accessibility
+
+Contextual/editorial images must be classified:
+
+```text
+informative
+decorative
+functional
+```
+
+Informative images need meaningful alternatives.
+
+Decorative images should not create redundant screen-reader noise.
+
+---
+
+# 67. Background Images
+
+Background imagery must not carry essential information unless an equivalent textual representation exists.
+
+---
+
+# 68. Animation Accessibility
+
+Animations must communicate no essential meaning exclusively through motion.
+
+Every animated state needs a static equivalent.
+
+---
+
+# 69. Reduced Motion
+
+Respect:
+
+```text
+prefers-reduced-motion
+```
+
+When enabled:
+
+- reduce or remove decorative movement;
+- shorten transitions;
+- disable parallax;
+- remove floating motion;
+- avoid continuous animated backgrounds.
+
+---
+
+# 70. GrowFlow Float → Settle Under Reduced Motion
+
+The canonical Float → Settle interaction becomes:
+
+```text
+subtle fade / immediate settle
+```
+
+when reduced motion is enabled.
+
+The interaction remains understandable.
+
+---
+
+# 71. AI Animation Under Reduced Motion
+
+AI interfaces must not rely on:
+
+- pulsing neon;
+- fake typing;
+- continuous glow;
+- animated particles.
+
+Reduced-motion mode should present clear textual status instead.
+
+---
+
+# 72. Loading Accessibility
+
+Skeletons must not be the only indication that content is loading.
+
+Where useful:
+
+```text
+Loading projects
+```
+
+should be exposed semantically.
+
+---
+
+# 73. Spinner Accessibility
+
+Spinners should not generate excessive screen-reader announcements.
+
+Use an appropriate loading label at the relevant container level.
+
+---
+
+# 74. Progress Indicators
+
+Determinate progress should expose actual progress.
+
+Indeterminate progress should not imply a percentage.
+
+Never fabricate:
+
+```text
+73%
+```
+
+when the backend does not provide truthful progress.
+
+---
+
+# 75. AI Progress Accessibility
+
+Expose meaningful stages:
+
+```text
+Generating
+Validating
+Quality checking
+Saving
+Completed
+```
+
+rather than internal chain-of-thought.
+
+---
+
+# 76. Background Job Accessibility
+
+Long-running jobs should expose:
+
+- current state;
+- completion/failure;
+- cancellation availability;
+- retry availability.
+
+Users should not have to visually watch a progress animation.
+
+---
+
+# 77. Status Semantics
+
+Status should be communicated through:
+
+- text;
+- semantic attributes where appropriate;
+- icons as supporting cues;
+- color as supplementary information.
+
+---
+
+# 78. Color Independence
+
+Never communicate:
+
+```text
+green = success
+red = failure
+```
+
+without additional semantic information.
+
+Use labels/icons/structure as appropriate.
+
+---
+
+# 79. Contrast
+
+Text, controls, focus indicators, borders, and status indicators must meet applicable accessibility contrast requirements.
+
+Muted does not mean unreadable.
+
+---
+
+# 80. Dark Mode Accessibility
+
+Dark mode must preserve:
+
+- text contrast;
+- focus visibility;
+- status differentiation;
+- chart readability;
+- form clarity.
+
+Dark mode is not simply color inversion.
+
+---
+
+# 81. Zoom and Text Scaling
+
+The layout must remain usable under browser zoom and increased text size.
+
+Do not:
+
+- clip text;
+- hide controls;
+- create overlapping content;
+- make dialogs unusable.
+
+---
+
+# 82. Reflow
+
+At high zoom, content should reflow into a readable single-column composition where practical.
+
+Horizontal scrolling should be limited to content that inherently requires width, such as complex tables.
+
+---
+
+# 83. Text Expansion
+
+UI components must tolerate longer text.
+
+Avoid fixed widths that assume English labels will always fit.
+
+---
+
+# 84. Dynamic Content
+
+Dynamic content insertion must not unexpectedly move focus or disorient the user.
+
+Examples:
+
+- notification arriving;
+- task updating;
+- AI stage changing.
+
+The interface should update without stealing focus.
+
+---
+
+# 85. Focus During Navigation
+
+After route transition, focus should move to an appropriate page heading/main region when needed.
+
+This is especially important for screen-reader and keyboard users.
+
+---
+
+# 86. Focus During Error Recovery
+
+If a page-level error occurs:
+
+- move focus to the error heading when appropriate;
+- provide retry;
+- preserve navigation.
+
+If a local widget fails, focus should remain near the affected feature.
+
+---
+
+# 87. Route Announcements
+
+Route changes should expose the new page/context to assistive technologies.
+
+Document titles and meaningful headings should update appropriately.
+
+---
+
+# 88. Modal Route Interaction
+
+Opening a modal should not destroy the underlying page context.
+
+Closing it should restore context.
+
+---
+
+# 89. Responsive Modals
+
+Desktop:
+
+```text
+centered modal
+```
+
+Mobile:
+
+```text
+near-full-width modal
+or
+bottom-sheet-like composition
+```
+
+depending on content.
+
+Semantics remain dialog-based.
+
+---
+
+# 90. Responsive Drawers
+
+Drawers may become:
+
+- side drawers on desktop/tablet;
+- full-width or near-full-width surfaces on mobile.
+
+They must remain keyboard accessible.
+
+---
+
+# 91. Sticky Elements
+
+Sticky headers/action bars must:
+
+- not cover focused controls;
+- respect safe areas;
+- remain readable;
+- avoid excessive screen occupation.
+
+---
+
+# 92. Mobile Safe Areas
+
+Where relevant, account for device safe areas around:
+
+- top navigation;
+- bottom action bars;
+- drawers;
+- full-screen dialogs.
+
+---
+
+# 93. Orientation Changes
+
+The application should remain usable when users rotate devices.
+
+Do not assume a single mobile orientation.
+
+---
+
+# 94. Keyboard on Mobile
+
+Forms must remain usable when the virtual keyboard opens.
+
+Avoid fixed bottom controls that obscure focused inputs.
+
+---
+
+# 95. Mobile Long Forms
+
+Long forms should:
+
+- preserve section hierarchy;
+- support natural scrolling;
+- maintain focus visibility;
+- avoid trapping the user.
+
+---
+
+# 96. Mobile AI Workflows
+
+AI generation screens should prioritize:
+
+1. operation state;
+2. current stage;
+3. key actions;
+4. result/review;
+5. secondary execution detail.
+
+Detailed traces remain accessible but should not dominate mobile.
+
+---
+
+# 97. Mobile Blueprint Review
+
+Blueprint review must remain usable without requiring a wide desktop canvas.
+
+Use:
+
+- collapsible sections;
+- stacked content;
+- horizontal scrolling only for genuinely wide structures;
+- clear section navigation.
+
+---
+
+# 98. Mobile Roadmap
+
+Roadmaps/timelines should adapt.
+
+Possible representation:
+
+```text
+Desktop → timeline/calendar
+Mobile → vertical chronological list
+```
+
+The underlying milestone/date semantics remain identical.
+
+---
+
+# 99. Mobile Project Workspace
+
+Primary navigation should prioritize:
+
+```text
+Overview
+Blueprint
+Tasks
+Milestones
+Risks
+Roadmap
+Documents
+AI Mentor
+```
+
+Secondary features remain accessible through navigation rather than disappearing.
+
+---
+
+# 100. Mobile Mentor Workspace
+
+Mentor mobile workflows should prioritize:
+
+```text
+Students
+Projects
+At Risk
+Help Requests
+Activity
+```
+
+Group/project detail remains reachable.
+
+---
+
+# 101. Mobile Admin Workspace
+
+Admin mobile should prioritize:
+
+```text
+Overview
+Critical monitoring
+Investigations
+Security/Audit
+```
+
+Dense observability tables may use horizontal scrolling or detail routes.
+
+---
+
+# 102. Responsive Breadcrumbs
+
+Breadcrumbs may collapse on mobile.
+
+At minimum, preserve:
+
+- current context;
+- meaningful parent navigation.
+
+Avoid rendering an unreadably long breadcrumb chain.
+
+---
+
+# 103. Responsive Tabs
+
+If tabs cannot fit:
+
+- horizontal scroll;
+- dropdown/select representation;
+- wrapped layout where appropriate.
+
+Do not truncate tab labels into ambiguity.
+
+---
+
+# 104. Responsive Filters
+
+Filters may transform:
+
+```text
+Desktop → visible filter bar
+Mobile → filter drawer
+```
+
+Active filter count should remain discoverable.
+
+---
+
+# 105. Responsive Sorting
+
+Sorting controls must remain accessible.
+
+On mobile, sorting may move into a menu.
+
+---
+
+# 106. Responsive Bulk Actions
+
+Bulk action bars must not obscure content.
+
+On mobile:
+
+```text
+selected count
+→ action menu
+```
+
+may replace a wide desktop action toolbar.
+
+---
+
+# 107. Responsive Context Actions
+
+Primary action remains prominent.
+
+Secondary actions may move into:
+
+```text
+More actions
+```
+
+but must remain keyboard/touch accessible.
+
+---
+
+# 108. Responsive Detail Pages
+
+Desktop may show:
+
+```text
+main content | contextual panel
+```
+
+Mobile should generally become:
+
+```text
+main content
+↓
+contextual panel
+```
+
+or an explicit drawer.
+
+---
+
+# 109. Responsive Split Views
+
+Split views must not create unusably narrow panes.
+
+At smaller widths, switch to a single-pane navigation model.
+
+---
+
+# 110. Document Viewer Responsiveness
+
+Document viewer must support:
+
+- readable text width;
+- zoom;
+- code wrapping/scrolling as appropriate;
+- mobile navigation;
+- version controls.
+
+---
+
+# 111. Code Blocks
+
+Code blocks may horizontally scroll if wrapping would destroy code meaning.
+
+Scrolling must remain accessible.
+
+---
+
+# 112. Markdown Responsiveness
+
+Generated Markdown content should:
+
+- wrap prose;
+- preserve code;
+- preserve tables through responsive strategies;
+- avoid overflowing viewport.
+
+---
+
+# 113. Responsive Image Behavior
+
+Images should:
+
+- scale proportionally;
+- avoid layout shift;
+- preserve meaningful crop where intentional;
+- remain accessible.
+
+---
+
+# 114. Responsive Video/Media
+
+Media must not overflow its container.
+
+Controls must remain accessible on touch and keyboard.
+
+---
+
+# 115. Accessible Links
+
+Links must have understandable names in context.
+
+Avoid repetitive:
+
+```text
+Read more
+```
+
+without enough surrounding context for assistive technology.
+
+---
+
+# 116. Accessible Data Tables
+
+Tables must provide:
+
+- meaningful headers;
+- row/column relationships;
+- captions where useful;
+- status text;
+- accessible action names.
+
+---
+
+# 117. Table Selection Accessibility
+
+Checkbox selection should communicate:
+
+- selected/unselected;
+- row identity;
+- bulk selection context.
+
+---
+
+# 118. Accessible Pagination
+
+Pagination controls should communicate:
+
+- current page;
+- available pages/actions;
+- disabled state;
+- previous/next semantics.
+
+---
+
+# 119. Accessible Search
+
+Search must expose:
+
+- input label;
+- result count where useful;
+- loading;
+- no results;
+- errors.
+
+Do not rely only on visual result updates.
+
+---
+
+# 120. Search Keyboard Behavior
+
+Support:
+
+- focus;
+- typing;
+- result navigation;
+- Enter;
+- Escape where applicable.
+
+Keyboard shortcuts must never prevent normal typing behavior.
+
+---
+
+# 121. Notification Accessibility
+
+Notifications should communicate:
+
+- unread/read;
+- source/context;
+- time;
+- actionability.
+
+Live notifications should not constantly interrupt users.
+
+---
+
+# 122. Accessible Activity Feeds
+
+Activity feeds should expose meaningful event descriptions rather than raw event IDs.
+
+---
+
+# 123. Accessible Status Chips
+
+Status chips should contain textual state.
+
+Color and icon are supplementary.
+
+---
+
+# 124. Accessible Health Indicators
+
+Health indicators should communicate:
+
+```text
+Healthy
+Degraded
+At Risk
+Unknown
+```
+
+through text, not color alone.
+
+---
+
+# 125. Accessible Risk Indicators
+
+Risk severity should be explicitly labeled.
+
+Example:
+
+```text
+High severity
+```
+
+not merely a red icon.
+
+---
+
+# 126. Accessible AI State
+
+AI state should be understandable without visual animation.
+
+Example:
+
+```text
+Blueprint generation — Running
+Current stage — Validation
+```
+
+---
+
+# 127. Accessible Errors
+
+Errors should be:
+
+- perceivable;
+- associated;
+- actionable;
+- non-destructive to existing valid content.
+
+---
+
+# 128. Error Summary
+
+For complex forms, an error summary may appear above the form.
+
+Each error should link/focus to its field.
+
+---
+
+# 129. Network Error Accessibility
+
+Connectivity state should be communicated textually.
+
+Example:
+
+```text
+Connection lost. Reconnecting…
+```
+
+Do not rely only on an icon.
+
+---
+
+# 130. SSE Accessibility
+
+SSE connection changes should not create constant announcements.
+
+Only meaningful user-impacting state changes should be announced.
+
+---
+
+# 131. Permission Error Accessibility
+
+403 states should clearly communicate that the action/resource is unavailable without exposing protected information.
+
+---
+
+# 132. Not Found Accessibility
+
+404 states should provide:
+
+- meaningful heading;
+- explanation;
+- safe navigation;
+- retry where appropriate.
+
+---
+
+# 133. Suspended Account Accessibility
+
+Account-state screens should clearly explain that interaction is unavailable and provide the appropriate next step.
+
+---
+
+# 134. Responsive Authentication Deep Links
+
+Deep-link login flows must remain functional on mobile.
+
+Return intent must survive the authentication flow where safe.
+
+---
+
+# 135. Responsive Share
+
+Share interactions must work on:
+
+- desktop clipboard;
+- mobile share mechanisms where supported;
+- fallback copy behavior.
+
+---
+
+# 136. Clipboard Accessibility
+
+Copy controls need accessible names and confirmation.
+
+---
+
+# 137. Motion Governance
+
+All motion must follow:
+
+```text
+Functional motion
+→ allowed when useful
+
+Decorative motion
+→ subtle
+
+Continuous motion
+→ rare
+
+Reduced motion
+→ minimized/removed
+```
+
+---
+
+# 138. Motion Duration
+
+Use Phase 06C motion tokens.
+
+Do not introduce arbitrary transition durations in individual components.
+
+---
+
+# 139. Motion Easing
+
+Use canonical easing tokens.
+
+Avoid custom per-component motion curves without justification.
+
+---
+
+# 140. Motion Performance
+
+Animations should avoid:
+
+- expensive layout thrashing;
+- unnecessary repaint;
+- large DOM animation;
+- continuous CPU usage.
+
+Prefer composited properties where appropriate.
+
+---
+
+# 141. Responsive Motion
+
+Motion should be reduced on smaller devices when it would harm performance or usability.
+
+Do not remove motion solely because the viewport is smaller; remove it when it becomes unnecessary or costly.
+
+---
+
+# 142. Accessibility and AI Streaming
+
+AI streaming must not create:
+
+- rapidly changing focus;
+- screen-reader spam;
+- inaccessible progress;
+- hidden completion;
+- visual-only status.
+
+---
+
+# 143. Accessibility and Background Jobs
+
+Users should be able to leave an operation and return later without losing context.
+
+Completion must be represented through:
+
+- notification;
+- status;
+- activity;
+- canonical resource state.
+
+---
+
+# 144. Responsive Long-Running Workflows
+
+Long-running workflow pages must remain usable when:
+
+- the user changes orientation;
+- viewport changes;
+- network reconnects;
+- browser resumes;
+- user navigates away.
+
+Backend-owned execution remains the source of truth.
+
+---
+
+# 145. Device Capability Assumptions
+
+Do not assume:
+
+- large screen;
+- mouse;
+- hover;
+- fast CPU;
+- stable network;
+- persistent tab;
+- high bandwidth.
+
+Core functionality must survive reasonable constrained environments.
+
+---
+
+# 146. Progressive Enhancement
+
+Where practical:
+
+```text
+baseline semantic HTML
+ ↓
+enhanced interaction
+ ↓
+enhanced visual behavior
+```
+
+The interface should degrade gracefully rather than becoming unusable.
+
+---
+
+# 147. JavaScript Failure Considerations
+
+Core navigation and important content should have sensible structural semantics even when enhanced behavior fails.
+
+The exact level of no-JS support depends on framework/runtime architecture, but semantic structure remains mandatory.
+
+---
+
+# 148. Browser Zoom Testing
+
+Test at representative zoom levels, including approximately:
+
+```text
+100%
+125%
+200%
+```
+
+and where relevant higher scaling.
+
+Check:
+
+- navigation;
+- forms;
+- dialogs;
+- tables;
+- dashboards;
+- project workspace.
+
+---
+
+# 149. Text Resize Testing
+
+Test increased text size independently where tooling supports it.
+
+Check for:
+
+- clipping;
+- overlap;
+- inaccessible actions;
+- broken layouts.
+
+---
+
+# 150. Keyboard-Only Test Matrix
+
+At minimum test:
+
+```text
+Tab
+Shift+Tab
+Enter
+Space
+Escape
+Arrow keys
+Home/End where applicable
+```
+
+through:
+
+- public nav;
+- auth;
+- sidebar;
+- search;
+- notifications;
+- forms;
+- tables;
+- dialogs;
+- AI workflows.
+
+---
+
+# 151. Screen Reader Test Matrix
+
+Test representative flows with supported screen readers.
+
+Verify:
+
+- page context;
+- heading hierarchy;
+- form labels;
+- errors;
+- dialog behavior;
+- dynamic status;
+- navigation;
+- table semantics.
+
+---
+
+# 152. Responsive Test Matrix
+
+At minimum:
+
+```text
+Small mobile
+Large mobile
+Tablet portrait
+Tablet landscape
+Desktop
+Wide desktop
+```
+
+Exact viewport values belong in the test harness.
+
+---
+
+# 153. Component-Level Responsive Testing
+
+Each reusable component should document whether it:
+
+```text
+scales
+reflows
+collapses
+scrolls
+transforms
+hides secondary content
+```
+
+Do not leave responsive behavior to page-by-page improvisation.
+
+---
+
+# 154. Component Responsive Contract
+
+A component contract should define:
+
+```text
+Desktop behavior
+Tablet behavior
+Mobile behavior
+Keyboard behavior
+Touch behavior
+Reduced-motion behavior
+Overflow behavior
+```
+
+where relevant.
+
+---
+
+# 155. Layout Overflow Policy
+
+Unexpected horizontal overflow is a defect.
+
+Intentional horizontal scrolling is allowed only for content that genuinely requires width.
+
+---
+
+# 156. Overflow Debugging
+
+During development, inspect:
+
+- fixed widths;
+- absolute positioning;
+- long strings;
+- tables;
+- code;
+- generated content;
+- third-party widgets.
+
+---
+
+# 157. Long Content Resilience
+
+Test with:
+
+- long project names;
+- long task titles;
+- long mentor names;
+- long document titles;
+- long AI-generated headings;
+- long notification text.
+
+UI must not collapse.
+
+---
+
+# 158. Empty Content Resilience
+
+Responsive layouts must remain balanced when optional metadata is missing.
+
+Do not assume every card/row contains all fields.
+
+---
+
+# 159. Dynamic Content Resilience
+
+Backend may return:
+
+- additional statuses;
+- longer labels;
+- additional metadata.
+
+Components must fail gracefully.
+
+---
+
+# 160. Internationalization Readiness
+
+Responsive layouts should tolerate future translation.
+
+Avoid fixed-width labels and assumptions about English word length.
+
+---
+
+# 161. Accessible Number Formatting
+
+Counts and metrics must remain understandable to assistive technologies.
+
+Avoid exposing only abbreviations such as:
+
+```text
+1.2k
+```
+
+when the exact value is meaningful.
+
+---
+
+# 162. Accessible Dates
+
+Dates should have semantic/readable representations.
+
+Visual relative time may be supplemented with exact timestamps where useful.
+
+---
+
+# 163. Accessible Time
+
+Duration and timestamps should be understandable without color or relative-position cues.
+
+---
+
+# 164. Responsive Calendar/Roadmap
+
+Calendar interfaces must have an accessible alternate representation where visual grid interaction is difficult.
+
+The chronological task/milestone data must remain available in a list representation.
+
+---
+
+# 165. Accessible Calendar/Roadmap
+
+Users must be able to determine:
+
+- date;
+- milestone/task;
+- status;
+- selection;
+- navigation.
+
+Keyboard and screen-reader patterns must be explicitly designed.
+
+---
+
+# 166. Responsive Project Graphs/Diagrams
+
+If future project visualizations use graph-like layouts, provide an accessible structured representation.
+
+Do not make a canvas/diagram the only representation of project relationships.
+
+---
+
+# 167. Accessible Progress Visualization
+
+Visual progress must have textual equivalent:
+
+```text
+Progress: 62%
+```
+
+when actual percentage exists.
+
+---
+
+# 168. Accessible Dashboard Summary
+
+Complex dashboards should expose a meaningful summary before detailed visualizations.
+
+---
+
+# 169. Responsive AI Mentor Chat
+
+Chat interface should adapt:
+
+Desktop:
+
+```text
+conversation
++
+context panel
+```
+
+Mobile:
+
+```text
+conversation
++
+context as drawer/sheet
+```
+
+The message history remains accessible.
+
+---
+
+# 170. Chat Keyboard Behavior
+
+Support:
+
+- text input;
+- Enter/send semantics;
+- multiline composition;
+- keyboard navigation;
+- focus preservation.
+
+Do not make Enter impossible to use for multiline text.
+
+---
+
+# 171. Chat Streaming Accessibility
+
+Streaming responses should update without moving focus.
+
+Completion may be announced once.
+
+---
+
+# 172. Chat Error Recovery
+
+If an AI response fails:
+
+- preserve the user's message;
+- show failure;
+- provide retry where supported;
+- avoid silently deleting conversation context.
+
+---
+
+# 173. Responsive Help Requests
+
+Help request forms should preserve:
+
+- subject;
+- description;
+- priority;
+- status;
+- response history.
+
+Mobile uses stacked sections.
+
+---
+
+# 174. Responsive Mentor Notes
+
+Notes should remain readable and editable according to visibility/permission rules.
+
+Long notes should not be trapped inside tiny cards.
+
+---
+
+# 175. Responsive Investigation Views
+
+Admin investigation detail may use:
+
+Desktop:
+
+```text
+case information | evidence/context
+```
+
+Mobile:
+
+```text
+case information
+↓
+evidence/context
+```
+
+Sensitive data remains permission-controlled.
+
+---
+
+# 176. Accessibility of Admin Interfaces
+
+Admin density must not come at the cost of accessibility.
+
+Dense information may use:
+
+- compact spacing;
+- structured tables;
+- progressive disclosure.
+
+Do not use tiny text as the primary density mechanism.
+
+---
+
+# 177. Accessible Dense Data
+
+Dense data must retain:
+
+- adequate line height;
+- focus visibility;
+- semantic relationships;
+- readable labels.
+
+---
+
+# 178. Responsive Security Controls
+
+Security/audit actions must remain accessible on mobile.
+
+Critical actions must not disappear because a desktop toolbar cannot fit.
+
+---
+
+# 179. Accessibility of Destructive Actions
+
+Destructive actions require:
+
+- clear label;
+- clear consequence;
+- accessible confirmation;
+- appropriate focus.
+
+Avoid icon-only destructive buttons without labels.
+
+---
+
+# 180. Touch Confirmation
+
+On touch devices, avoid destructive actions that can be triggered accidentally by a single tiny tap where confirmation is appropriate.
+
+---
+
+# 181. Accessible Loading Transitions
+
+When content changes from loading to loaded:
+
+- preserve meaningful focus;
+- do not unexpectedly move users;
+- expose completion only when meaningful.
+
+---
+
+# 182. Accessible Empty States
+
+Empty states should expose:
+
+```text
+what is empty
+why
+next action
+```
+
+through semantic text.
+
+---
+
+# 183. Accessible Success States
+
+Success feedback should remain available after a transient toast disappears.
+
+The updated canonical state should communicate the result.
+
+---
+
+# 184. Accessible Error States
+
+Error information must persist long enough to understand/recover.
+
+Transient-only error messages are insufficient for critical operations.
+
+---
+
+# 185. Responsive Error Boundaries
+
+Error boundaries must remain readable on small screens.
+
+Recovery controls must remain accessible.
+
+---
+
+# 186. Responsive Offline State
+
+Offline/degraded indicators should be:
+
+- visible;
+- compact;
+- non-blocking when possible.
+
+Critical mutation blocking must be clear.
+
+---
+
+# 187. Offline Accessibility
+
+Offline status should be textual and not color-only.
+
+---
+
+# 188. Reconnection Accessibility
+
+Reconnection should avoid repeatedly announcing:
+
+```text
+connecting
+connecting
+connecting
+```
+
+Use a concise status strategy.
+
+---
+
+# 189. Accessible Event Streams
+
+Event-driven updates should have semantic UI representation.
+
+Raw event payloads are not user-facing accessibility content.
+
+---
+
+# 190. Responsive Notification Flood Handling
+
+Grouped notifications must remain individually understandable.
+
+Do not create unreadable compressed notification summaries.
+
+---
+
+# 191. Responsive Activity Feed
+
+Activity feeds may switch from dense table-like desktop rows to stacked event entries.
+
+The semantic event description remains identical.
+
+---
+
+# 192. Responsive Documents List
+
+Documents list may transform:
+
+```text
+Desktop → table
+Tablet → reduced table
+Mobile → structured list
+```
+
+Preserve version/status/action information.
+
+---
+
+# 193. Responsive GitHub View
+
+GitHub information may move from multi-column summary to stacked cards/details.
+
+External integration state remains clearly identified.
+
+---
+
+# 194. Responsive Risk List
+
+Risks should prioritize:
+
+```text
+risk title
+severity
+status
+mitigation/action
+```
+
+Additional metadata can move into detail.
+
+---
+
+# 195. Responsive Milestone List
+
+Milestones should preserve:
+
+- milestone identity;
+- status;
+- progress;
+- timeline;
+- task relationship.
+
+---
+
+# 196. Responsive Task Detail
+
+Task detail should prioritize:
+
+1. title;
+2. status;
+3. primary action;
+4. milestone;
+5. due date;
+6. description;
+7. supporting metadata.
+
+---
+
+# 197. Responsive Project Overview
+
+Project overview should prioritize:
+
+```text
+project identity
+lifecycle
+health
+progress
+next action
+critical risks
+```
+
+before secondary analytics.
+
+---
+
+# 198. Responsive Blueprint
+
+Blueprint should prioritize:
+
+```text
+summary
+architecture/structure
+features
+milestones/tasks
+risks
+technology
+```
+
+according to final product design.
+
+---
+
+# 199. Responsive Assessment
+
+Assessment must remain focused.
+
+Mobile:
+
+```text
+question
+answers
+progress
+navigation
+```
+
+Avoid excessive surrounding chrome.
+
+---
+
+# 200. Assessment Accessibility
+
+Questions and answers must support:
+
+- keyboard;
+- screen readers;
+- clear selected state;
+- error handling;
+- progress communication.
+
+---
+
+# 201. Adaptive Assessment Accessibility
+
+When the backend supplies a new question, focus should move predictably without causing disorientation.
+
+---
+
+# 202. Assessment Completion Accessibility
+
+Completion should clearly communicate:
+
+- assessment finished;
+- result availability;
+- next step.
+
+---
+
+# 203. Responsive Blueprint Generation
+
+Generation UI should keep primary state visible:
+
+```text
+Generating
+Current stage
+Cancel if supported
+```
+
+Detailed agent information may be secondary.
+
+---
+
+# 204. Responsive Project Change Review
+
+Current/proposed comparison must remain understandable on mobile.
+
+Possible transformation:
+
+```text
+side-by-side desktop
+→ stacked comparison mobile
+```
+
+---
+
+# 205. Accessible Current/Proposed Comparison
+
+Do not rely only on:
+
+```text
+red = removed
+green = added
+```
+
+Use labels such as:
+
+```text
+Added
+Removed
+Changed
+Unchanged
+```
+
+---
+
+# 206. Responsive Document Generation
+
+Generation status should remain visible while users navigate.
+
+Completion should arrive through normal notification/event mechanisms.
+
+---
+
+# 207. Accessibility Definition of Responsive Success
+
+A responsive feature is successful only when:
+
+- information remains understandable;
+- actions remain reachable;
+- focus remains coherent;
+- content does not unexpectedly overflow;
+- keyboard/touch behavior works;
+- assistive technology can understand state;
+- security semantics remain unchanged.
+
+---
+
+# 208. Accessibility Definition of Done
+
+A feature is accessibility-ready when:
+
+- semantic HTML is used;
+- keyboard access works;
+- focus is visible;
+- focus order is logical;
+- dialogs are accessible;
+- forms have labels;
+- errors are associated;
+- dynamic status is communicated appropriately;
+- color is not the sole status cue;
+- reduced motion is supported;
+- zoom/reflow works;
+- screen-reader behavior is tested.
+
+---
+
+# 209. Responsive Definition of Done
+
+A feature is responsive-ready when:
+
+- mobile composition is defined;
+- tablet composition is defined;
+- desktop composition is defined;
+- overflow is intentional;
+- touch targets are adequate;
+- navigation remains accessible;
+- primary actions remain discoverable;
+- tables have a responsive strategy;
+- forms remain usable;
+- dashboards recompose;
+- dialogs/drawers adapt;
+- long content does not break layout.
+
+---
+
+# 210. Accessibility Testing Layers
+
+Testing should include:
+
+```text
+Automated
+ ↓
+Component
+ ↓
+Keyboard
+ ↓
+Screen Reader
+ ↓
+Responsive
+ ↓
+Real-device/manual
+```
+
+Automated accessibility tests do not replace human evaluation.
+
+---
+
+# 211. Automated Accessibility
+
+Use automated tooling to detect common problems:
+
+- missing labels;
+- invalid ARIA;
+- contrast issues where detectable;
+- landmark problems;
+- heading issues;
+- form associations.
+
+---
+
+# 212. Manual Keyboard Audit
+
+Perform full keyboard walkthroughs of critical workflows.
+
+Especially:
+
+- login;
+- project creation;
+- assessment;
+- blueprint generation;
+- task management;
+- document viewing;
+- AI Mentor;
+- help requests;
+- mentor supervision;
+- admin investigation.
+
+---
+
+# 213. Screen Reader Audit
+
+Test representative end-to-end journeys, not only isolated components.
+
+---
+
+# 214. Real Device Testing
+
+Test representative:
+
+- iOS/mobile browser;
+- Android/mobile browser;
+- tablet;
+- desktop.
+
+Exact browser matrix may be established during implementation.
+
+---
+
+# 215. Network + Responsive Testing
+
+Combine:
+
+- small viewport;
+- slow network;
+- streaming;
+- navigation;
+- reconnect.
+
+This catches failures that separate tests may miss.
+
+---
+
+# 216. Accessibility + Streaming Testing
+
+Test:
+
+```text
+AI running
+→ screen reader
+→ navigation
+→ reconnect
+→ completion
+```
+
+Ensure no announcement flood or focus loss.
+
+---
+
+# 217. Accessibility + Error Testing
+
+Test:
+
+```text
+form error
+API error
+403
+404
+network error
+AI failure
+```
+
+with keyboard and assistive technology.
+
+---
+
+# 218. Responsive + Error Testing
+
+Every major page should have responsive states for:
+
+```text
+loading
+empty
+error
+success
+streaming
+```
+
+---
+
+# 219. Responsive + Permission Testing
+
+Check permission-aware controls at all breakpoints.
+
+Do not accidentally expose hidden desktop actions on mobile.
+
+---
+
+# 220. Accessibility + Security
+
+Accessibility improvements must never weaken:
+
+- authorization;
+- privacy;
+- secure file handling;
+- sensitive content boundaries.
+
+---
+
+# 221. ARIA Policy
+
+ARIA should supplement semantic HTML, not replace it unnecessarily.
+
+Avoid:
+
+```text
+role="button"
+```
+
+on a `div` when a native button is possible.
+
+---
+
+# 222. ARIA State Accuracy
+
+ARIA states must reflect actual UI state.
+
+Examples:
+
+```text
+aria-expanded
+aria-selected
+aria-checked
+aria-busy
+aria-invalid
+```
+
+Never leave stale ARIA state after a transition.
+
+---
+
+# 223. Hidden Content
+
+Content hidden visually may still be exposed to assistive technology unless intentionally controlled.
+
+Use hiding mechanisms deliberately.
+
+---
+
+# 224. Focus Trap Safety
+
+Focus traps must always provide an escape path.
+
+Never create a modal that traps keyboard users indefinitely.
+
+---
+
+# 225. Focus Restoration Safety
+
+If the trigger disappears after an operation, focus should move to a meaningful replacement rather than a nonexistent element.
+
+---
+
+# 226. Accessible Icons in Tables
+
+Row action icons must have row-specific context where needed.
+
+Avoid multiple indistinguishable:
+
+```text
+Edit
+Edit
+Edit
+```
+
+without accessible association to the row.
+
+---
+
+# 227. Accessible Bulk Actions
+
+Bulk actions should announce selected count and affected scope.
+
+---
+
+# 228. Accessible Filters
+
+Filter controls must expose current selections.
+
+Active filter state should be understandable without visual chips alone.
+
+---
+
+# 229. Accessible Sort State
+
+Current sort direction must be programmatically understandable.
+
+---
+
+# 230. Accessible Pagination State
+
+Current page must be identifiable.
+
+---
+
+# 231. Accessible Breadcrumbs
+
+Breadcrumb navigation should use semantic navigation structure and identify the current page.
+
+---
+
+# 232. Accessible Top Navigation
+
+Global navigation must expose:
+
+- navigation landmark;
+- link names;
+- workplace selector;
+- account controls.
+
+---
+
+# 233. Accessible Sidebar
+
+Sidebar navigation must:
+
+- have a navigation landmark;
+- expose active route;
+- remain keyboard reachable;
+- work when collapsed;
+- work inside mobile drawer.
+
+---
+
+# 234. Collapsed Sidebar Accessibility
+
+When sidebar is collapsed:
+
+- icons require accessible names;
+- tooltips cannot be the only accessible label;
+- active state remains clear.
+
+---
+
+# 235. Responsive Sidebar State Persistence
+
+If sidebar collapse is a user preference, it may persist.
+
+Mobile drawer open state should normally remain transient.
+
+---
+
+# 236. Accessibility and User Preferences
+
+The system should respect:
+
+- reduced motion;
+- browser zoom;
+- text scaling;
+- system theme.
+
+Where user preferences are persisted, they remain UI preferences rather than domain state.
+
+---
+
+# 237. Accessibility Documentation
+
+Each reusable component should document:
+
+```text
+Keyboard behavior
+Focus behavior
+ARIA behavior
+Responsive behavior
+Reduced-motion behavior
+```
+
+where applicable.
+
+---
+
+# 238. Responsive Documentation
+
+Each complex component should document:
+
+```text
+Desktop
+Tablet
+Mobile
+Overflow
+Touch
+```
+
+behavior.
+
+---
+
+# 239. Design Review Checklist
+
+Before approving a Stitch design, review:
+
+- desktop;
+- tablet;
+- mobile;
+- loading;
+- empty;
+- error;
+- success;
+- permission;
+- streaming;
+- reduced motion;
+- keyboard;
+- accessibility;
+- long-content behavior.
+
+---
+
+# 240. Stitch Constraints
+
+Stitch-generated designs must not:
+
+- create tiny mobile text;
+- depend on hover;
+- create inaccessible icon-only actions;
+- introduce arbitrary breakpoints;
+- create desktop-only functionality;
+- hide essential content on mobile;
+- use motion that violates reduced-motion behavior;
+- create fake progress;
+- introduce role-specific themes.
+
+---
+
+# 241. Stitch Responsive Prompt Requirements
+
+Every future page prompt should specify:
+
+```text
+Desktop layout
+Tablet adaptation
+Mobile adaptation
+Primary action priority
+Overflow behavior
+Navigation behavior
+Accessibility expectations
+Loading/error/empty states
+```
+
+---
+
+# 242. Stitch Accessibility Prompt Requirements
+
+Every applicable prompt should specify:
+
+- semantic hierarchy;
+- keyboard-accessible controls;
+- visible focus;
+- accessible labels;
+- non-color status;
+- reduced-motion compatibility.
+
+---
+
+# 243. Visual Review vs Behavioral Review
+
+A Stitch design must pass two separate reviews:
+
+```text
+Visual review
+→ Does it look correct?
+
+Behavioral review
+→ Does it behave correctly?
+```
+
+Passing only visual review is insufficient.
+
+---
+
+# 244. Responsive Visual Review
+
+Review:
+
+```text
+desktop
+tablet
+mobile
+```
+
+side-by-side when possible.
+
+---
+
+# 245. Accessibility Visual Review
+
+Check:
+
+- contrast;
+- focus visibility;
+- text size;
+- touch target size;
+- status clarity;
+- hierarchy.
+
+---
+
+# 246. Responsive Regression
+
+When a desktop design changes, verify tablet/mobile.
+
+When mobile changes, verify desktop/tablet.
+
+Responsive layouts are one system, not independent designs.
+
+---
+
+# 247. Accessibility Regression
+
+When component markup or interaction changes, rerun relevant accessibility tests.
+
+---
+
+# 248. Design Token Compliance
+
+Responsive adaptations must use Phase 06C tokens.
+
+Do not introduce arbitrary:
+
+- spacing;
+- colors;
+- radii;
+- shadows;
+- motion.
+
+---
+
+# 249. Component Compliance
+
+Responsive behavior must use Phase 06D components wherever possible.
+
+Page-specific variants require justification.
+
+---
+
+# 250. Shell Compliance
+
+Responsive shell behavior must follow Phase 06E.
+
+Do not create a second navigation system for a page.
+
+---
+
+# 251. Behavior Compliance
+
+Responsive behavior must follow Phase 06F.
+
+Navigation must not terminate backend jobs.
+
+SSE must reconnect.
+
+Canonical state must remain backend-owned.
+
+---
+
+# 252. Performance on Mobile
+
+Mobile implementation should prioritize:
+
+- reduced JavaScript execution;
+- lazy loading;
+- optimized images;
+- controlled animation;
+- efficient event handling;
+- limited simultaneous requests.
+
+---
+
+# 253. Low-Power Devices
+
+Avoid unnecessary:
+
+- continuous animations;
+- high-frequency polling;
+- expensive chart updates;
+- large synchronous computations.
+
+---
+
+# 254. Large Data on Mobile
+
+Do not download massive datasets merely because the desktop table expects them.
+
+Use:
+
+- pagination;
+- filtering;
+- targeted queries;
+- detail routes.
+
+---
+
+# 255. Mobile AI Resource Use
+
+AI streaming UI should not re-render the entire page for each token/event.
+
+Use incremental, bounded updates.
+
+---
+
+# 256. Accessibility Performance
+
+Accessibility features must not be implemented in ways that create excessive DOM complexity or repeated announcements.
+
+---
+
+# 257. Responsive Asset Loading
+
+Use appropriate image sizes for viewport/device where supported.
+
+Do not load desktop-resolution editorial assets unnecessarily on mobile.
+
+---
+
+# 258. Responsive Typography Performance
+
+Font loading should remain efficient.
+
+Manrope remains the canonical typeface.
+
+Fallback behavior must remain readable while fonts load.
+
+---
+
+# 259. Font Accessibility
+
+Font choice must not prevent:
+
+- zoom;
+- text scaling;
+- high contrast;
+- assistive technology.
+
+---
+
+# 260. Focus and Font Loading
+
+Font swaps should avoid major layout shifts that move focused controls unexpectedly.
+
+---
+
+# 261. Layout Stability
+
+Reserve space for:
+
+- images;
+- async content;
+- notifications;
+- banners;
+- charts.
+
+Avoid unexpected layout shifts.
+
+---
+
+# 262. Responsive Layout Stability
+
+A mobile layout should not jump dramatically when:
+
+- browser chrome changes;
+- keyboard opens;
+- async content arrives;
+- notifications appear.
+
+---
+
+# 263. Safe Dynamic Banners
+
+Global network/system banners should not cover primary content.
+
+Content must reflow or reserve appropriate space.
+
+---
+
+# 264. Accessibility of Banners
+
+Banners must communicate:
+
+- severity;
+- message;
+- action;
+- dismissal where available.
+
+---
+
+# 265. Dismissible Notices
+
+Dismissal must be accessible.
+
+If a critical system state persists, dismissal should not remove necessary status information entirely.
+
+---
+
+# 266. Responsive Confirmation Dialogs
+
+Confirmation content must remain fully readable on mobile.
+
+Buttons should remain separated and obvious.
+
+---
+
+# 267. Accessible Confirmation Dialogs
+
+Confirmation should state:
+
+```text
+what will happen
+```
+
+and provide:
+
+```text
+confirm
+cancel
+```
+
+with clear focus.
+
+---
+
+# 268. Responsive Menus
+
+Menus must remain within viewport bounds.
+
+If necessary, reposition rather than clip.
+
+---
+
+# 269. Responsive Popovers
+
+Popovers must avoid:
+
+- viewport clipping;
+- inaccessible off-screen content;
+- overlap with focused elements.
+
+---
+
+# 270. Accessible Context Menus
+
+Context menus should have keyboard/touch equivalents and should never be the only path to important actions.
+
+---
+
+# 271. Responsive Toolbars
+
+Toolbars may collapse secondary actions into a menu.
+
+Primary actions remain directly visible.
+
+---
+
+# 272. Accessibility of Toolbars
+
+Toolbar groups should expose meaningful labels/structure where needed.
+
+---
+
+# 273. Responsive Project Actions
+
+Project-level actions should preserve priority:
+
+```text
+primary
+→ secondary
+→ overflow
+```
+
+Do not hide the primary action in a generic overflow menu on mobile.
+
+---
+
+# 274. Responsive Task Actions
+
+Task actions should preserve the most frequent action directly.
+
+Rare/destructive actions may move into overflow.
+
+---
+
+# 275. Responsive Risk Actions
+
+Risk mitigation/resolution actions must remain discoverable.
+
+---
+
+# 276. Responsive Mentor Actions
+
+Mentor actions should preserve high-value supervision tasks:
+
+- review;
+- assign;
+- note;
+- respond;
+- inspect.
+
+---
+
+# 277. Responsive Admin Actions
+
+Governance actions must preserve explicit labels and confirmation.
+
+---
+
+# 278. Accessibility of Role Context
+
+The current workplace/role context should be understandable to assistive technology.
+
+Do not rely only on accent color or visual logo treatment.
+
+---
+
+# 279. Responsive Role Context
+
+On mobile, role/workplace context may appear in the page header or drawer header when useful.
+
+---
+
+# 280. Accessibility of Page Titles
+
+Each route should have a meaningful document title and visible page heading where appropriate.
+
+---
+
+# 281. Route Transition Loading
+
+When navigation loads a new route:
+
+- expose loading status appropriately;
+- avoid trapping focus;
+- preserve shell.
+
+---
+
+# 282. Route Transition Errors
+
+If a route fails to load:
+
+- preserve shell;
+- show local error;
+- provide recovery.
+
+---
+
+# 283. Accessibility of Route Errors
+
+Route errors should move focus appropriately so users know the page changed into an error state.
+
+---
+
+# 284. Responsive Route Errors
+
+Error layouts must remain usable at all breakpoints.
+
+---
+
+# 285. Accessibility Acceptance Threshold
+
+No major page is complete if a keyboard-only user cannot complete its primary workflow.
+
+---
+
+# 286. Responsive Acceptance Threshold
+
+No major page is complete if its primary workflow becomes unusable on mobile.
+
+---
+
+# 287. Combined Acceptance Threshold
+
+A major page is complete only when:
+
+```text
+Desktop
++
+Tablet
++
+Mobile
++
+Keyboard
++
+Assistive Technology
++
+Reduced Motion
++
+Error/Loading/Empty
+```
+
+are coherent.
+
+---
+
+# 288. Cross-Phase Invariants
+
+These invariants must remain true:
+
+1. One unified GrowFlow design system.
+2. No separate role themes.
+3. Warm light default and charcoal dark counterpart.
+4. Manrope remains canonical.
+5. Responsive behavior preserves domain semantics.
+6. Backend remains authoritative.
+7. SSE remains delivery only.
+8. AI progress remains truthful.
+9. Security is never weakened for responsive convenience.
+10. Accessibility is not an optional visual enhancement.
+11. Mobile is a first-class composition.
+12. Tablet is explicitly considered.
+13. Desktop density remains intentional.
+14. Hover is never required for essential functionality.
+15. Touch targets remain usable.
+16. Keyboard navigation remains complete.
+17. Focus remains coherent.
+18. Reduced motion is respected.
+19. Color is never the only semantic channel.
+20. Dynamic content does not steal focus.
+21. Long-running jobs survive navigation.
+22. Responsive transformations do not alter domain data.
+23. Hidden content does not leak protected information.
+24. Charts have accessible alternatives where needed.
+25. Dense admin interfaces remain accessible.
+26. Stitch must represent responsive/accessibility states.
+27. Components own reusable responsive behavior.
+28. Pages compose rather than reinvent.
+29. Arbitrary responsive values are prohibited without justification.
+30. Accessibility regressions are treated as implementation defects.
+
+---
+
+# 289. Implementation Sequence
+
+Recommended 06G implementation order:
+
+```text
+1. Responsive primitives
+2. Container/grid behavior
+3. Typography scaling
+4. Shell responsiveness
+5. Navigation drawer
+6. Responsive tables
+7. Responsive forms
+8. Responsive dialogs/drawers
+9. Dashboard adaptation
+10. Document adaptation
+11. AI/workflow adaptation
+12. Keyboard/focus foundation
+13. Semantic structure
+14. Form accessibility
+15. Dialog/menu/tab accessibility
+16. Live-region strategy
+17. Reduced motion
+18. Zoom/reflow
+19. Screen-reader validation
+20. Real-device testing
+21. Responsive regression
+22. Accessibility regression
+```
+
+---
+
+# 290. Component Implementation Contract
+
+Every reusable component that has responsive or accessibility implications must document:
+
+```text
+Purpose
+Desktop
+Tablet
+Mobile
+Keyboard
+Touch
+Focus
+ARIA
+Reduced Motion
+Overflow
+Loading
+Error
+Disabled
+```
+
+Only relevant fields need implementation detail, but none may be silently assumed.
+
+---
+
+# 291. Page Implementation Contract
+
+Every page specification must include:
+
+```text
+Responsive:
+- Desktop
+- Tablet
+- Mobile
+
+Accessibility:
+- semantic structure
+- keyboard
+- focus
+- labels
+- dynamic state
+- reduced motion
+
+Behavior:
+- loading
+- empty
+- error
+- success
+- permission
+- streaming where applicable
+```
+
+---
+
+# 292. Testing Artifact Requirements
+
+The implementation should maintain:
+
+- responsive test matrix;
+- accessibility checklist;
+- keyboard test cases;
+- screen-reader test cases;
+- component responsive stories;
+- visual regression states;
+- breakpoint regression cases.
+
+---
+
+# 293. Responsive Storybook Requirements
+
+Where Storybook or an equivalent component catalog is used, components should be previewable at:
+
+```text
+mobile
+tablet
+desktop
+```
+
+and applicable states:
+
+```text
+loading
+empty
+error
+disabled
+streaming
+```
+
+---
+
+# 294. Accessibility Storybook Requirements
+
+Interactive components should demonstrate:
+
+- keyboard behavior;
+- focus;
+- selected/expanded state;
+- validation errors;
+- accessible names.
+
+---
+
+# 295. Design Review Gate
+
+No page moves from Stitch design to frontend implementation without passing:
+
+```text
+Visual Design
++
+Responsive Design
++
+Accessibility
++
+Behavior
++
+Security
+```
+
+review.
+
+---
+
+# 296. Pre-Stitch Readiness
+
+Before page-by-page Stitch work begins, the following are now frozen:
+
+```text
+06A Design Foundation
+06B Brand & Visual Assets Direction
+06C Design Tokens
+06D Core Components
+06E Application Shell
+06F Frontend Behavior
+06G Responsive + Accessibility
+```
+
+This means Stitch can focus on page composition rather than inventing foundational rules.
+
+---
+
+# 297. Stitch Page Prompt Baseline
+
+Every future Stitch page prompt should assume:
+
+```text
+GrowFlow Soft Intelligence
+Manrope
+warm light default
+charcoal dark counterpart
+muted palette
+single subtle accent
+quiet surfaces
+dense integrated data
+responsive desktop/tablet/mobile
+accessible interaction
+reduced motion
+truthful AI states
+canonical shell
+canonical components
+canonical behavior
+```
+
+---
+
+# 298. Stitch Anti-Drift Rule
+
+Stitch must not introduce:
+
+- new typography systems;
+- new color systems;
+- new radius systems;
+- arbitrary breakpoints;
+- separate role themes;
+- alternate navigation models;
+- inaccessible interactions;
+- desktop-only critical functionality;
+- fake AI progress.
+
+---
+
+# 299. Final Architecture
+
+The complete frontend foundation is now:
+
+```text
+06A
+Design Foundation
+        ↓
+06B
+Brand & Visual Assets
+        ↓
+06C
+Design Tokens
+        ↓
+06D
+Core Components
+        ↓
+06E
+Application Shell
+        ↓
+06F
+Frontend Behavior
+        ↓
+06G
+Responsive + Accessibility
+        ↓
+06H
+Foundation Validation
+        ↓
+06I
+Page-by-Page Design
+        ↓
+06J
+Frontend Implementation
+```
+
+---
+
+# 300. Final Freeze Statement
+
+**Phase 06G — Responsive + Accessibility Foundation is FROZEN as the authoritative responsive and accessibility architecture for GrowFlow.**
+
+It establishes that GrowFlow is:
+
+- responsive by composition;
+- accessible by structure and behavior;
+- keyboard-complete;
+- assistive-technology aware;
+- touch-friendly;
+- reduced-motion compatible;
+- resilient to zoom and text scaling;
+- usable across mobile/tablet/desktop;
+- compatible with streaming and long-running AI workflows;
+- consistent with the Soft Intelligence design system.
+
+Most importantly:
+
+> **Responsive adaptation and accessibility must never alter canonical domain behavior, authorization, project semantics, AI execution semantics, or backend ownership.**
+
+The next phase is:
+
+# **06H — Stitch Foundation Validation**
+
+06H will validate the entire foundation before page-by-page Stitch design begins.
+
+---
+
+# 301. Phase 06G Completion Checklist
+
+- [x] Responsive philosophy defined
+- [x] Breakpoints defined
+- [x] Desktop behavior defined
+- [x] Tablet behavior defined
+- [x] Mobile behavior defined
+- [x] Mobile navigation defined
+- [x] Responsive shell defined
+- [x] Responsive grids defined
+- [x] Responsive typography defined
+- [x] Touch targets defined
+- [x] Hover independence defined
+- [x] Responsive tables defined
+- [x] Responsive dashboards defined
+- [x] Responsive charts defined
+- [x] Responsive forms defined
+- [x] Responsive dialogs/drawers defined
+- [x] Responsive detail pages defined
+- [x] Responsive documents defined
+- [x] Responsive AI workflows defined
+- [x] Responsive assessment defined
+- [x] Responsive project change defined
+- [x] Keyboard navigation defined
+- [x] Focus management defined
+- [x] Skip navigation defined
+- [x] Semantic landmarks defined
+- [x] Heading hierarchy defined
+- [x] Accessible names defined
+- [x] Button/link semantics defined
+- [x] Dialog/menu/tab accessibility defined
+- [x] Form accessibility defined
+- [x] Error accessibility defined
+- [x] Loading accessibility defined
+- [x] Live-region strategy defined
+- [x] Status accessibility defined
+- [x] Color independence defined
+- [x] Contrast requirements defined
+- [x] Dark-mode accessibility defined
+- [x] Zoom/reflow defined
+- [x] Reduced motion defined
+- [x] AI accessibility defined
+- [x] SSE accessibility defined
+- [x] Network-state accessibility defined
+- [x] Screen-reader testing defined
+- [x] Keyboard testing defined
+- [x] Real-device testing defined
+- [x] Responsive regression defined
+- [x] Accessibility regression defined
+- [x] Stitch constraints defined
+- [x] Stitch prompt requirements defined
+- [x] Cross-phase invariants defined
+- [x] Definition of Done defined
+- [x] Final freeze defined

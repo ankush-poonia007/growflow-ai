@@ -1,0 +1,1958 @@
+# GrowFlow — Phase 03
+# Frontend Visual Design System & Experience Direction
+
+**Status:** APPROVED / FROZEN  
+**Phase:** 03 — Frontend Visual Design, Theme, Motion & Experience Direction  
+**Project:** GrowFlow  
+**Purpose:** Authoritative visual-design contract for implementation and for Phase 04 documentation.
+
+---
+
+## 1. Document Status
+
+This document consolidates the approved Phase 03 design direction into one authoritative source.
+
+It combines:
+
+- the previously developed GrowFlow frontend design direction,
+- the comparative visual references reviewed during the design discussion,
+- the final overall design verdict,
+- and the final decision matrix supplied by the project owner.
+
+Where several references suggested different visual patterns, the final GrowFlow direction is intentionally **not a copy of any one product**. References are treated as inspiration for interaction quality, information hierarchy, editorial composition, dashboards, authentication, and motion—not as templates to reproduce.
+
+### Final decision
+
+> **GrowFlow uses a unified “Soft Intelligence” visual identity: warm, restrained, editorial, highly structured, information-dense where necessary, and subtly animated.**
+
+The interface should feel intelligent and premium without feeling futuristic, noisy, overly colorful, or visually aggressive.
+
+---
+
+# 2. Core Design Philosophy
+
+## 2.1 Soft Intelligence
+
+The central visual concept is:
+
+> **Soft Intelligence — calm on the surface, powerful underneath.**
+
+GrowFlow is an AI-native platform, but the UI should not constantly announce that fact through glowing gradients, excessive neon, animated particles, or stereotypical “AI” decoration.
+
+The interface should communicate intelligence through:
+
+- excellent information hierarchy,
+- contextual assistance,
+- progressive disclosure,
+- precise feedback,
+- meaningful visualizations,
+- smooth transitions,
+- structured workflows,
+- and useful AI states.
+
+The product should feel like a serious professional environment that happens to contain sophisticated AI.
+
+### Design principles
+
+1. **Nothing screams; hierarchy still exists.**
+2. **Clarity beats decoration.**
+3. **Structure beats visual noise.**
+4. **Motion explains change rather than demanding attention.**
+5. **Color communicates meaning before branding.**
+6. **Whitespace is intentional.**
+7. **Dense information should remain readable.**
+8. **AI should feel integrated, not bolted on.**
+9. **Public pages may be expressive; authenticated workspaces should be productive.**
+10. **The same design language must work across BUILD, SUPERVISE, and GOVERN.**
+
+---
+
+# 3. Final Design Direction Matrix
+
+| Decision | Final Direction |
+|---|---|
+| Overall identity | **Soft Intelligence** |
+| Default appearance | **Soft white / warm light** |
+| Dark appearance | **Soft charcoal counterpart** |
+| Design system | **One unified system** |
+| Typography | **Manrope-style** |
+| Color | **Muted + restrained** |
+| Brand | **One subtle primary accent** |
+| Surfaces | **Soft neutral hierarchy** |
+| Cards | **Quiet** |
+| Tables | **Integrated + dense** |
+| Images | **Editorial/contextual** |
+| AI | **Slightly deeper variant** |
+| Login | **Distinct composition, same system** |
+| Dashboard | **Highly visual data instrument** |
+| Hero | **Statement + visual storytelling** |
+| Scroll interaction | **Float → settle** |
+| Motion | **Subtle physical movement** |
+| Role themes | **No separate role themes** |
+| Light/Dark | **Same identity, different surfaces** |
+| Visual philosophy | **Nothing screams; hierarchy still exists** |
+
+This matrix is frozen unless a future phase explicitly reopens Phase 03.
+
+---
+
+# 4. Design System Architecture
+
+GrowFlow uses **one design system across the entire application**.
+
+There are not three independent visual systems for:
+
+- Student / BUILD,
+- Mentor / SUPERVISE,
+- Admin / GOVERN.
+
+Instead:
+
+```text
+                    GROWFLOW DESIGN SYSTEM
+                            │
+              ┌─────────────┴─────────────┐
+              │                           │
+        Public Experience          Authenticated App
+              │                           │
+              └─────────────┬─────────────┘
+                            │
+                    Shared Foundation
+                            │
+        ┌───────────┬───────┼───────┬───────────┐
+        │           │       │       │           │
+     Typography   Color   Surfaces Motion    Components
+        │           │       │       │           │
+        └───────────┴───────┼───────┴───────────┘
+                            │
+                BUILD / SUPERVISE / GOVERN
+```
+
+The roles differ through:
+
+- information architecture,
+- permissions,
+- navigation,
+- data density,
+- available actions,
+- contextual content.
+
+They do **not** receive completely different visual identities.
+
+---
+
+# 5. Visual Personality
+
+GrowFlow should sit between several familiar product qualities:
+
+- the operational clarity of mature SaaS dashboards,
+- the editorial confidence of high-quality AI company websites,
+- the structured productivity of modern project-management tools,
+- and the calm visual language of premium developer products.
+
+The resulting personality is:
+
+### Calm
+The UI should reduce cognitive load.
+
+### Intelligent
+Complex systems should feel understandable.
+
+### Professional
+The authenticated workplace should look credible enough for serious mentoring and project governance.
+
+### Human
+The product should not feel sterile or machine-generated.
+
+### Premium
+Quality should be visible through spacing, typography, composition, and interaction—not ornament.
+
+### Technical
+Architecture, AI observability, execution traces, RAG, health, and project telemetry must still feel technically capable.
+
+---
+
+# 6. Color System
+
+## 6.1 Color strategy
+
+Color is intentionally restrained.
+
+GrowFlow should not rely on a rainbow palette for visual identity.
+
+The system uses:
+
+1. **neutral foundation**
+2. **one subtle brand accent**
+3. **semantic status colors**
+4. **a slightly deeper AI variant**
+
+The brand accent is allowed to appear in:
+
+- primary actions,
+- selected navigation,
+- active states,
+- links where appropriate,
+- key chart emphasis,
+- subtle decorative details.
+
+It should not cover large surfaces by default.
+
+---
+
+## 6.2 Neutral palette philosophy
+
+The default light environment should feel:
+
+- warm,
+- soft,
+- slightly off-white,
+- low-glare,
+- premium,
+- and layered.
+
+Avoid an overly cold pure-white interface.
+
+Recommended conceptual hierarchy:
+
+```text
+Page background
+    ↓
+Soft surface
+    ↓
+Elevated surface
+    ↓
+Interactive surface
+    ↓
+Focused / selected surface
+```
+
+The differences should primarily be perceived through:
+
+- luminance,
+- borders,
+- spacing,
+- elevation,
+- and grouping.
+
+Not through excessive color.
+
+---
+
+## 6.3 Semantic colors
+
+Semantic colors remain distinct even within the restrained palette.
+
+### Success
+Used for:
+
+- completed tasks,
+- successful AI execution,
+- healthy systems,
+- successful integrations.
+
+### Warning
+Used for:
+
+- approaching deadlines,
+- moderate project risk,
+- degraded system components,
+- attention-needed states.
+
+### Error
+Used for:
+
+- failed operations,
+- blocking validation,
+- failed AI executions,
+- authorization failures,
+- destructive confirmations.
+
+### Informational
+Used for:
+
+- neutral system information,
+- processing notices,
+- contextual recommendations.
+
+Semantic colors must remain accessible and must never be the only indication of meaning.
+
+---
+
+# 7. AI Visual Language
+
+AI is visually distinct, but only **slightly deeper** than the normal interface.
+
+This is deliberate.
+
+## AI should feel:
+
+- intelligent,
+- focused,
+- contextual,
+- slightly more immersive,
+- but still native to GrowFlow.
+
+AI should **not** look like a separate application.
+
+### Appropriate AI visual treatment
+
+- slightly deeper neutral surfaces,
+- subtle accent intensity,
+- structured execution indicators,
+- restrained gradients where useful,
+- agent/execution status,
+- contextual reasoning panels,
+- progress states,
+- trace visualization,
+- document-generation feedback.
+
+### Avoid
+
+- neon purple everywhere,
+- glowing borders,
+- constant particle effects,
+- animated backgrounds,
+- excessive “AI sparkle” icons,
+- generic chatbot styling.
+
+AI should be recognizable from **behavior and context**, not decoration alone.
+
+---
+
+# 8. Light and Dark Appearance
+
+## 8.1 Light mode
+
+Default appearance:
+
+> **Soft white / warm light**
+
+The light interface is the primary GrowFlow visual environment.
+
+Characteristics:
+
+- warm-neutral background,
+- soft surfaces,
+- subtle borders,
+- restrained shadows,
+- dark readable text,
+- muted secondary text,
+- one subtle accent.
+
+The result should feel closer to an editorial workspace than a generic enterprise admin template.
+
+---
+
+## 8.2 Dark mode
+
+Dark mode is:
+
+> **A soft charcoal counterpart—not a black neon theme.**
+
+The dark interface should preserve the same hierarchy.
+
+Conceptually:
+
+```text
+Light:
+warm page → light surface → elevated white surface
+
+Dark:
+soft charcoal page → darker surface → elevated charcoal surface
+```
+
+Do not simply invert colors.
+
+Dark mode must be designed independently enough to preserve:
+
+- contrast,
+- hierarchy,
+- chart readability,
+- semantic states,
+- focus visibility,
+- image treatment.
+
+---
+
+## 8.3 Light/Dark invariants
+
+Both modes share:
+
+- typography,
+- spacing,
+- component geometry,
+- interaction behavior,
+- brand accent,
+- semantic meaning,
+- motion language,
+- information hierarchy.
+
+Only surface/color treatment changes.
+
+---
+
+# 9. Typography
+
+## 9.1 Primary direction
+
+Typography follows a:
+
+> **Manrope-style geometric humanist sans-serif direction.**
+
+The exact production font can be finalized during implementation, but the visual target is:
+
+- clean,
+- modern,
+- highly legible,
+- slightly geometric,
+- professional,
+- strong at large display sizes,
+- excellent at dense dashboard sizes.
+
+---
+
+## 9.2 Hierarchy
+
+Typography must establish hierarchy before decorative elements do.
+
+### Display
+For:
+
+- landing hero,
+- major public statements,
+- large section introductions.
+
+### H1
+For:
+
+- page titles,
+- major workspace destinations.
+
+### H2
+For:
+
+- major page sections,
+- dashboard blocks.
+
+### H3
+For:
+
+- cards,
+- subsections,
+- resource groups.
+
+### Body
+For:
+
+- explanations,
+- descriptions,
+- instructions.
+
+### Metadata
+For:
+
+- timestamps,
+- status,
+- IDs,
+- supporting labels.
+
+### Numeric / data typography
+For:
+
+- KPIs,
+- analytics,
+- execution metrics,
+- health indicators,
+- timeline data.
+
+---
+
+## 9.3 Typography rules
+
+- Avoid too many font weights.
+- Use weight to establish hierarchy.
+- Avoid uppercase-heavy UI except for small metadata when useful.
+- Avoid excessively small secondary text.
+- Numbers should remain visually strong in dashboards.
+- Long-form documentation must optimize reading comfort.
+- Dense admin interfaces may use smaller type, but never at the expense of legibility.
+
+---
+
+# 10. Spacing and Layout Rhythm
+
+The system uses a consistent spacing scale.
+
+Spacing should feel:
+
+- generous in public storytelling,
+- balanced in authenticated workspaces,
+- compact in tables and monitoring tools.
+
+The same spacing tokens should be shared across all roles.
+
+### Public pages
+
+More breathing room:
+
+```text
+large section
+    ↓
+visual
+    ↓
+supporting text
+    ↓
+action
+```
+
+### Workspaces
+
+More structured density:
+
+```text
+page header
+    ↓
+controls
+    ↓
+primary content
+    ↓
+secondary information
+```
+
+### Admin
+
+Highest information density:
+
+```text
+filters
+    ↓
+metrics
+    ↓
+table / visualization
+    ↓
+detail / trace
+```
+
+Density is controlled—not accidental.
+
+---
+
+# 11. Surfaces
+
+## Final decision
+
+> **Soft neutral hierarchy**
+
+Surfaces should not look like dozens of floating white rectangles.
+
+Use:
+
+- page surfaces,
+- content surfaces,
+- elevated surfaces,
+- contextual surfaces.
+
+Borders should be subtle.
+
+Shadows should be soft and used sparingly.
+
+The visual hierarchy should come primarily from:
+
+1. spacing,
+2. typography,
+3. grouping,
+4. contrast,
+5. borders,
+6. elevation.
+
+---
+
+# 12. Cards
+
+## Final decision
+
+> **Quiet cards**
+
+Cards are useful, but GrowFlow must not become a “card-everything” interface.
+
+Cards should be used when they provide a meaningful grouping boundary.
+
+### Cards are appropriate for
+
+- dashboard metrics,
+- project summaries,
+- risks,
+- AI execution summaries,
+- resource previews,
+- public feature blocks,
+- onboarding content.
+
+### Cards should not
+
+- contain unnecessary shadows,
+- use decorative gradients by default,
+- have excessive rounded corners,
+- isolate every piece of information,
+- replace tables where a table is more useful.
+
+A card should communicate:
+
+> “These pieces belong together.”
+
+Nothing more.
+
+---
+
+# 13. Tables
+
+## Final decision
+
+> **Integrated + dense**
+
+Tables are first-class components in GrowFlow, especially for Mentor and Admin workflows.
+
+Examples:
+
+- students,
+- projects,
+- project instances,
+- AI executions,
+- audit logs,
+- API key pools,
+- costs,
+- system components,
+- RAG documents.
+
+Tables should feel integrated into the page rather than like an external spreadsheet widget.
+
+### Table requirements
+
+- strong column hierarchy,
+- compact but readable rows,
+- clear hover/focus states,
+- sortable columns where meaningful,
+- filters,
+- pagination or appropriate virtualization,
+- row-level actions,
+- responsive strategy,
+- clear empty states,
+- status indicators,
+- deep-linkable resources.
+
+On smaller screens, tables may transform into:
+
+- stacked rows,
+- compact list items,
+- horizontal scroll,
+- or detail-first representations.
+
+---
+
+# 14. Images
+
+## Final decision
+
+> **Editorial / contextual**
+
+Images should have a reason to exist.
+
+Public website imagery may include:
+
+- project imagery,
+- human-centered mentoring visuals,
+- technical/product visuals,
+- contextual illustrations,
+- editorial compositions.
+
+Images should support narrative rather than act as decoration.
+
+### Avoid
+
+- generic corporate stock photography,
+- meaningless AI robot imagery,
+- excessive floating 3D objects,
+- random abstract gradients,
+- decorative images that compete with the content.
+
+For product screenshots and architecture visuals, composition should communicate actual functionality.
+
+---
+
+# 15. Public Website Design
+
+The public website is the most expressive portion of GrowFlow.
+
+It should establish the product's identity before users enter the workplace.
+
+## Public experience principles
+
+- strong opening statement,
+- visual storytelling,
+- controlled scroll interaction,
+- editorial composition,
+- generous whitespace,
+- meaningful product previews,
+- restrained animation,
+- high-quality footer,
+- clear conversion paths.
+
+---
+
+# 16. Hero Design
+
+## Final decision
+
+> **Statement + visual storytelling**
+
+The hero should not be a conventional:
+
+> “Welcome to GrowFlow — the AI platform for…”
+
+Instead, it should make a strong product statement.
+
+Possible structural pattern:
+
+```text
+                    small context
+
+              LARGE STATEMENT
+
+       supporting explanation / promise
+
+              primary action
+              secondary action
+
+          product / system visual
+```
+
+The visual may progressively reveal:
+
+- project structure,
+- AI orchestration,
+- student progress,
+- mentor supervision,
+- platform intelligence.
+
+The hero should immediately establish that GrowFlow is a serious system—not merely an AI chat interface.
+
+---
+
+# 17. Public Page Composition
+
+Public pages can use:
+
+- large editorial headings,
+- asymmetric layouts,
+- image-led sections,
+- horizontal story sections,
+- large visual blocks,
+- restrained animation,
+- progressive content reveal.
+
+The public site should feel more like a product narrative than an application dashboard.
+
+---
+
+# 18. Authenticated Application Design
+
+Once inside the workplace, the visual language becomes more operational.
+
+The authenticated app should prioritize:
+
+1. clarity,
+2. productivity,
+3. information density,
+4. navigation,
+5. state visibility,
+6. action discoverability.
+
+Public-site visual storytelling should not overwhelm the workplace.
+
+---
+
+# 19. Dashboard Direction
+
+## Final decision
+
+> **Highly visual data instrument**
+
+Dashboards are not collections of decorative KPI cards.
+
+They should answer:
+
+- What is happening?
+- What changed?
+- What requires attention?
+- What is healthy?
+- What is blocked?
+- What should happen next?
+
+---
+
+## Student dashboard
+
+Should visually communicate:
+
+- project progress,
+- current phase,
+- active tasks,
+- milestones,
+- risks,
+- mentor feedback,
+- AI activity,
+- upcoming work.
+
+The student dashboard should feel like a personal project cockpit.
+
+---
+
+## Mentor dashboard
+
+Should emphasize:
+
+- student/group health,
+- at-risk projects,
+- progress distribution,
+- pending help requests,
+- recent activity,
+- project status,
+- intervention opportunities.
+
+It should feel like a supervision instrument.
+
+---
+
+## Admin dashboard
+
+Should emphasize:
+
+- platform health,
+- AI activity,
+- execution volume,
+- quality,
+- cost,
+- system components,
+- RAG/document processing,
+- security/audit signals.
+
+It should feel like an operational observability console.
+
+---
+
+# 20. Data Visualization
+
+Charts are functional instruments.
+
+Use visualizations when they reduce interpretation time.
+
+Examples:
+
+- project progress,
+- completion trends,
+- AI execution latency,
+- token/cost trends,
+- error rates,
+- agent usage,
+- risk distribution,
+- system health,
+- activity trends.
+
+### Rules
+
+- restrained colors,
+- one dominant series when possible,
+- semantic colors for states,
+- clear axes,
+- useful labels,
+- meaningful tooltips,
+- accessible contrast,
+- no chart junk.
+
+A visualization should answer a question.
+
+---
+
+# 21. Navigation Visual Direction
+
+Phase 02 established the information architecture.
+
+Phase 03 establishes its visual treatment.
+
+## Global top navigation
+
+The global top navigation is visually consistent across public and authenticated experiences.
+
+It contains:
+
+- GrowFlow identity,
+- contextual public links where appropriate,
+- Workplace,
+- Search,
+- Notifications,
+- Profile,
+- Login / Sign Up when logged out.
+
+It should be compact and visually stable.
+
+---
+
+# 22. Workplace Selector
+
+The Workplace control is a major cross-role interaction.
+
+It exposes:
+
+- BUILD — Student
+- SUPERVISE — Mentor
+- GOVERN — Admin
+
+It should visually communicate role identity without creating separate color themes.
+
+### Important rule
+
+Role distinction comes from:
+
+- label,
+- icon,
+- context,
+- destination,
+- authorization.
+
+Not from completely different palettes.
+
+---
+
+# 23. Sidebar
+
+The authenticated sidebar is a productivity navigation system.
+
+It should be:
+
+- compact,
+- scannable,
+- persistent on desktop,
+- collapsible where useful,
+- drawer-based on mobile.
+
+The selected navigation item should be obvious but restrained.
+
+Avoid excessive filled backgrounds or bright accent blocks.
+
+---
+
+# 24. Contextual Navigation
+
+Project and group workspaces may have contextual navigation.
+
+The visual pattern should make the relationship clear:
+
+```text
+Global navigation
+        ↓
+Role navigation
+        ↓
+Resource context
+        ↓
+Current view
+```
+
+This prevents the user from losing their place inside complex project structures.
+
+---
+
+# 25. Login Experience
+
+## Final decision
+
+> **Distinct composition, same system**
+
+Authentication should not simply reuse a generic application page.
+
+It can use:
+
+- stronger composition,
+- larger typography,
+- contextual visual,
+- simplified navigation,
+- focused form presentation.
+
+However, it must still share:
+
+- typography,
+- color system,
+- components,
+- spacing language,
+- accessibility,
+- brand identity.
+
+The goal is:
+
+> **A memorable entry experience without breaking visual continuity.**
+
+---
+
+# 26. Forms
+
+Forms should feel calm and predictable.
+
+Requirements:
+
+- clear labels,
+- helpful descriptions,
+- visible validation,
+- inline error messages,
+- keyboard accessibility,
+- obvious primary action,
+- safe destructive actions,
+- preserved input when recoverable,
+- meaningful loading state.
+
+Avoid hiding important validation behind toast messages.
+
+---
+
+# 27. Modals and Drawers
+
+Modals should be reserved for focused actions.
+
+Examples:
+
+- Create Task
+- Edit Task
+- Add Risk
+- Confirm Delete
+- Assign Student
+- Share
+
+Drawers are appropriate for:
+
+- contextual details,
+- previews,
+- notification inspection,
+- filters,
+- secondary information.
+
+Do not use a modal when a full page is required for a complex workflow.
+
+---
+
+# 28. AI Execution Experience
+
+GrowFlow contains long-running AI operations.
+
+The UI must make their lifecycle understandable.
+
+Conceptual state:
+
+```text
+Requested
+   ↓
+Queued
+   ↓
+Running
+   ↓
+Validating
+   ↓
+QA / Judge
+   ↓
+Persisting
+   ↓
+Completed
+```
+
+The user should see appropriate progress without exposing unnecessary internal implementation details.
+
+---
+
+# 29. AI Loading and Progress
+
+AI progress should feel materially different from a normal API spinner.
+
+Possible visual signals:
+
+- stage progression,
+- structured progress,
+- agent activity,
+- validation state,
+- generated artifact preview,
+- execution status.
+
+Avoid fake progress percentages unless the backend provides meaningful progress.
+
+Prefer truthful states:
+
+> Preparing → Generating → Validating → Finalizing
+
+---
+
+# 30. Long-Running Operations
+
+Long-running AI work must survive navigation.
+
+The frontend must therefore treat execution state as persistent server state rather than page-local state.
+
+If a user leaves the page:
+
+- execution continues,
+- the job remains observable,
+- completion is recorded,
+- notification/event delivery can occur,
+- the user can return to the canonical resource.
+
+This is especially important for:
+
+- blueprint generation,
+- project changes,
+- document generation,
+- QA/Judge,
+- RAG processing.
+
+---
+
+# 31. Notifications
+
+Notifications are a system-level visual pattern.
+
+They should communicate:
+
+- what happened,
+- why it matters,
+- what action is available.
+
+Examples:
+
+- blueprint completed,
+- mentor feedback received,
+- help request updated,
+- AI execution failed,
+- project change requires review,
+- document generation completed.
+
+Notifications should deep-link to the canonical resource.
+
+---
+
+# 32. Search
+
+Global search should feel integrated into the global shell.
+
+It should support:
+
+- projects,
+- students where authorized,
+- groups,
+- documents,
+- tasks,
+- milestones,
+- relevant platform resources.
+
+Search results should be grouped by resource type when useful.
+
+The interface should make authorization boundaries invisible to the user: unauthorized resources simply should not appear.
+
+---
+
+# 33. Empty States
+
+Empty states should be intentional.
+
+They should explain:
+
+1. what is empty,
+2. why it may be empty,
+3. what the user can do next.
+
+Example:
+
+```text
+No active projects
+
+You have not started a project yet.
+
+[Explore projects] [Create your own]
+```
+
+Avoid decorative illustrations that dominate the message.
+
+---
+
+# 34. Loading States
+
+Use skeletons when layout is predictable.
+
+Use progress indicators when the operation itself is the content.
+
+Use immediate shell rendering where possible so users do not stare at blank screens.
+
+Loading should preserve layout to minimize visual shift.
+
+---
+
+# 35. Error States
+
+Errors must be specific.
+
+Distinguish:
+
+- validation error,
+- authorization error,
+- network/API failure,
+- AI unavailable,
+- AI execution failed,
+- resource not found,
+- system failure.
+
+The interface should tell users:
+
+- what happened,
+- whether their data is safe,
+- whether retry is appropriate,
+- what they can do next.
+
+---
+
+# 36. System States
+
+The Phase 01 system states remain part of the visual system:
+
+- 401
+- 403
+- 404
+- suspended/inactive account
+- generic application error
+- network/API failure
+- AI service unavailable
+- AI execution failed
+- AI execution in progress
+- RAG/document processing state
+
+These states use the same visual language as the application.
+
+---
+
+# 37. Motion Philosophy
+
+## Final decision
+
+> **Subtle physical movement**
+
+Motion should feel like objects have weight.
+
+The reference concept is:
+
+> **Float → settle**
+
+Elements may:
+
+- fade,
+- rise slightly,
+- slide,
+- scale subtly,
+- settle into place.
+
+But movement should remain controlled.
+
+---
+
+# 38. Scroll Interaction
+
+## Final decision
+
+> **Float → settle**
+
+Public pages may use scroll-based composition where visual elements appear to float temporarily and then settle into their intended position.
+
+This can be used for:
+
+- hero imagery,
+- architecture visualizations,
+- product screenshots,
+- feature storytelling,
+- section transitions.
+
+It must never cause:
+
+- motion sickness,
+- content obstruction,
+- excessive parallax,
+- unpredictable navigation.
+
+---
+
+# 39. Animation Rules
+
+### Use animation for
+
+- entering/leaving content,
+- state transitions,
+- progress,
+- hierarchy,
+- feedback,
+- relationship between screens,
+- subtle public storytelling.
+
+### Avoid animation for
+
+- decoration without meaning,
+- permanent attention grabbing,
+- repetitive loops,
+- unnecessary bouncing,
+- every hover interaction,
+- loading that pretends something is happening.
+
+---
+
+# 40. Motion Hierarchy
+
+### Micro motion
+Fast and subtle:
+
+- button feedback,
+- hover,
+- focus,
+- toggle,
+- checkbox.
+
+### Component motion
+Moderate:
+
+- dropdowns,
+- drawers,
+- modals,
+- cards entering a list.
+
+### Page motion
+Controlled:
+
+- route transitions,
+- major workspace transitions.
+
+### Story motion
+More expressive:
+
+- public hero,
+- editorial sections,
+- architecture storytelling.
+
+The more important the content, the more carefully motion should be choreographed.
+
+---
+
+# 41. Reduced Motion
+
+The system must support reduced-motion preferences.
+
+When reduced motion is enabled:
+
+- remove non-essential parallax,
+- reduce transforms,
+- shorten or eliminate decorative transitions,
+- preserve essential state feedback.
+
+No core functionality should depend on animation.
+
+---
+
+# 42. Interaction Feedback
+
+Every meaningful interaction should have a clear response.
+
+Examples:
+
+```text
+Click
+ ↓
+Immediate visual feedback
+ ↓
+Server operation
+ ↓
+Confirmed state
+```
+
+Do not rely exclusively on optimistic UI for operations where the server must confirm the result.
+
+Where optimistic UI is appropriate, reconciliation must remain possible.
+
+---
+
+# 43. Iconography
+
+Icons should use one coherent icon family.
+
+They should be:
+
+- simple,
+- line-oriented where appropriate,
+- readable at small sizes,
+- semantically consistent.
+
+Do not mix multiple unrelated icon styles.
+
+Icons should support text rather than replace it where ambiguity exists.
+
+---
+
+# 44. Borders, Radius and Elevation
+
+The system should use moderate, consistent corner radii.
+
+Avoid:
+
+- excessive pill shapes,
+- giant rounded cards,
+- inconsistent radii,
+- heavy shadows.
+
+Pills are reserved for:
+
+- tags,
+- status chips,
+- compact filters,
+- selected states where appropriate.
+
+Elevation should communicate hierarchy—not decoration.
+
+---
+
+# 45. Public vs Workspace Visual Intensity
+
+This distinction is important.
+
+| Area | Visual Intensity |
+|---|---|
+| Landing | High |
+| Features | High |
+| Documentation | Medium |
+| Contact | Medium |
+| Authentication | Medium |
+| Student dashboard | Medium |
+| Student workspace | Low–Medium |
+| Mentor workspace | Low–Medium |
+| Admin observability | Medium–High |
+| System/error states | Focused |
+
+The application should become calmer as the user moves from marketing into work.
+
+---
+
+# 46. Role Visual Consistency
+
+## No separate role themes
+
+BUILD, SUPERVISE, and GOVERN share:
+
+- colors,
+- typography,
+- spacing,
+- components,
+- icons,
+- motion,
+- surface hierarchy.
+
+Role-specific personality is created through information.
+
+### BUILD
+Progress, learning, execution, ownership.
+
+### SUPERVISE
+Oversight, intervention, mentoring, group health.
+
+### GOVERN
+Observability, security, platform health, governance.
+
+The UI tells the story through what is shown—not through changing the brand palette.
+
+---
+
+# 47. Responsive Design
+
+Responsive behavior is structural, not simply “make everything smaller.”
+
+## Desktop
+
+Supports:
+
+- global top navigation,
+- persistent sidebar,
+- contextual navigation,
+- multi-column dashboard layouts,
+- dense tables,
+- detailed workspace views.
+
+## Tablet
+
+Supports:
+
+- reduced navigation width,
+- adaptive columns,
+- compressed dashboards,
+- contextual drawers.
+
+## Mobile
+
+Uses:
+
+- persistent global top navigation,
+- sidebar as drawer,
+- stacked content,
+- mobile-friendly controls,
+- compact tables/lists,
+- bottom or contextual actions where necessary.
+
+The mobile experience must preserve the information architecture established in Phase 02.
+
+---
+
+# 48. Accessibility
+
+Accessibility is part of the design system.
+
+Requirements include:
+
+- keyboard navigation,
+- visible focus,
+- sufficient contrast,
+- semantic HTML,
+- accessible form labels,
+- accessible dialogs,
+- accessible tables,
+- screen-reader-compatible status changes,
+- reduced-motion support,
+- non-color-only state communication.
+
+Accessibility must be considered at the component level, not added after visual design.
+
+---
+
+# 49. Data Density Strategy
+
+GrowFlow intentionally supports different density modes through composition.
+
+### Low density
+Public marketing and onboarding.
+
+### Medium density
+Student and mentor workspaces.
+
+### High density
+Mentor management and Admin observability.
+
+### Very high density
+Trace, audit, execution, and monitoring detail.
+
+Density must never mean visual clutter.
+
+---
+
+# 50. Visual Treatment of Technical Areas
+
+Technical pages such as:
+
+- GitHub,
+- AI traces,
+- system health,
+- RAG,
+- document generation,
+- audit logs,
+
+may use slightly more technical visual patterns:
+
+- monospace for code/IDs where appropriate,
+- structured metadata,
+- timeline/event layouts,
+- status indicators,
+- compact controls.
+
+However, they remain inside the same GrowFlow design system.
+
+---
+
+# 51. GitHub and Code Surfaces
+
+Code-related content should be visually distinct through typography and structure.
+
+Use:
+
+- monospace for code,
+- readable line spacing,
+- clear file/path hierarchy,
+- syntax-aware rendering where applicable,
+- compact metadata.
+
+Do not introduce an entirely different “developer theme.”
+
+---
+
+# 52. Documentation Experience
+
+Documentation should use the same typography and surfaces but prioritize reading.
+
+The documentation interface may use:
+
+- wider text measure,
+- strong headings,
+- sticky table of contents,
+- code blocks,
+- diagrams,
+- contextual navigation.
+
+The public Documentation page can be more editorial than the authenticated workspace.
+
+---
+
+# 53. Footer Direction
+
+The public footer should feel substantial and trustworthy.
+
+It may organize links by:
+
+- Product,
+- Platform,
+- Resources,
+- Company,
+- Legal,
+- Support.
+
+The footer should reinforce the impression that GrowFlow is a complete platform rather than a single-purpose application.
+
+---
+
+# 54. Brand Expression
+
+GrowFlow's branding should be subtle.
+
+The brand should appear through:
+
+- logo,
+- wordmark,
+- primary accent,
+- typography,
+- consistent geometry,
+- editorial composition.
+
+The brand should not depend on:
+
+- excessive gradients,
+- oversized logos,
+- decorative glow,
+- aggressive color.
+
+---
+
+# 55. Visual Hierarchy Rules
+
+When deciding how to style any new component, use this priority:
+
+```text
+Meaning
+  ↓
+Hierarchy
+  ↓
+Readability
+  ↓
+Interaction
+  ↓
+Status
+  ↓
+Brand
+  ↓
+Decoration
+```
+
+Decoration is last.
+
+If decoration conflicts with comprehension, decoration loses.
+
+---
+
+# 56. Component Design Rules
+
+Every shared component should answer:
+
+1. What information does it communicate?
+2. What interaction does it support?
+3. What state can it occupy?
+4. What happens during loading?
+5. What happens on error?
+6. What happens when empty?
+7. How does it behave on mobile?
+8. How does it behave in light mode?
+9. How does it behave in dark mode?
+10. What accessibility behavior is required?
+
+This prevents visually polished but operationally incomplete components.
+
+---
+
+# 57. State Completeness
+
+No major component should be designed only for the happy path.
+
+At minimum, reusable components should consider:
+
+```text
+Default
+Loading
+Empty
+Success
+Warning
+Error
+Disabled
+Hover
+Focus
+Selected
+Updating
+```
+
+Not every component needs every state, but applicable states must be explicit.
+
+---
+
+# 58. Frontend Visual Architecture Rule
+
+The visual system must remain independent from backend implementation details.
+
+The frontend consumes:
+
+- canonical resource data,
+- execution states,
+- events,
+- authorization outcomes,
+- derived analytics.
+
+It should not reproduce backend business logic merely to render a visual state.
+
+---
+
+# 59. AI and Data Trust
+
+Visual design must never imply certainty that the underlying system does not have.
+
+For example:
+
+- do not display fake AI completion percentages,
+- do not imply a recommendation is deterministic,
+- do not show a system as healthy if the backend has not confirmed health,
+- do not show a generated document as final before validation/persistence.
+
+Visual confidence must match system confidence.
+
+---
+
+# 60. Performance and Motion Discipline
+
+Visual quality cannot compromise application performance.
+
+Avoid:
+
+- oversized images without optimization,
+- unnecessary continuous animation,
+- excessive DOM effects,
+- expensive blur everywhere,
+- heavy client-side rendering for decorative content.
+
+Public pages can be visually rich, but production performance remains a requirement.
+
+---
+
+# 61. Design Anti-Patterns
+
+The following are explicitly discouraged:
+
+- generic SaaS template appearance,
+- excessive glassmorphism,
+- neon AI aesthetics,
+- rainbow role themes,
+- card overload,
+- excessive shadows,
+- giant pill buttons everywhere,
+- unnecessary gradients,
+- decorative charts,
+- animated backgrounds,
+- fake AI typing effects everywhere,
+- excessive parallax,
+- stock-photo-heavy storytelling,
+- tiny unreadable metadata,
+- inconsistent component radii,
+- inconsistent icon families,
+- dark mode implemented as simple color inversion.
+
+---
+
+# 62. Reference-Inspired Decisions
+
+The visual references reviewed during the design process contributed specific lessons.
+
+### Operational SaaS references
+Used as inspiration for:
+
+- dense information architecture,
+- persistent navigation,
+- dashboard composition,
+- integrated tables,
+- contextual controls.
+
+### AI company / editorial references
+Used as inspiration for:
+
+- large statement typography,
+- editorial storytelling,
+- strong public-page composition,
+- substantial footer architecture,
+- restrained but confident branding.
+
+### Authentication references
+Used as inspiration for:
+
+- focused authentication composition,
+- strong split-screen or visual-panel possibilities,
+- minimal form hierarchy,
+- contextual supporting visuals.
+
+### Productivity/project references
+Used as inspiration for:
+
+- board/list organization,
+- project-centric workflows,
+- status visualization,
+- clear action hierarchy.
+
+### Integration/platform references
+Used as inspiration for:
+
+- structured onboarding,
+- technical trust,
+- integration visualization,
+- system-oriented UI.
+
+GrowFlow deliberately synthesizes these lessons rather than cloning any reference.
+
+---
+
+# 63. Final Visual Formula
+
+The approved GrowFlow visual formula is:
+
+```text
+                 GROWFLOW
+
+              SOFT INTELLIGENCE
+                     │
+        ┌────────────┼────────────┐
+        │            │            │
+      Editorial   Operational   Technical
+        │            │            │
+     Public       Workspace     Admin/
+      Site        Product       AI/Ops
+        │            │            │
+        └────────────┼────────────┘
+                     │
+              Unified Design
+                     │
+          ┌──────────┴──────────┐
+          │                     │
+       Warm Light           Soft Charcoal
+          │                     │
+          └──────────┬──────────┘
+                     │
+              Same Identity
+```
+
+---
+
+# 64. Final Acceptance Criteria
+
+Phase 03 is considered correctly implemented only if:
+
+- [ ] GrowFlow has one unified design system.
+- [ ] Soft Intelligence is clearly perceptible.
+- [ ] Warm light is the default visual environment.
+- [ ] Dark mode is a soft charcoal counterpart.
+- [ ] Typography follows the Manrope-style direction.
+- [ ] Color remains muted and restrained.
+- [ ] There is one subtle primary brand accent.
+- [ ] Surfaces form a soft neutral hierarchy.
+- [ ] Cards remain quiet and purposeful.
+- [ ] Tables are dense but integrated.
+- [ ] Images are editorial/contextual.
+- [ ] AI has a slightly deeper visual treatment without becoming a separate theme.
+- [ ] Login has a distinct composition while remaining inside the system.
+- [ ] Dashboards behave as visual data instruments.
+- [ ] Public heroes use strong statements and visual storytelling.
+- [ ] Scroll storytelling follows the Float → Settle philosophy where appropriate.
+- [ ] Motion is subtle and physically coherent.
+- [ ] Reduced-motion behavior exists.
+- [ ] BUILD, SUPERVISE, and GOVERN do not receive separate color themes.
+- [ ] Light and dark preserve the same identity.
+- [ ] Loading, empty, error, success, warning, and disabled states are intentionally designed.
+- [ ] Accessibility is built into the visual system.
+- [ ] Mobile is structurally responsive.
+- [ ] Visual complexity increases only when the information domain requires it.
+- [ ] The interface never depends on decoration to communicate meaning.
+- [ ] AI UI reflects real backend state.
+- [ ] Long-running operations remain visually understandable after navigation.
+- [ ] The design is performant enough for production.
+
+---
+
+# 65. Phase 03 Freeze Statement
+
+> **PHASE 03 — APPROVED / FROZEN**
+
+The GrowFlow frontend visual direction is now defined as:
+
+> **Soft Intelligence — a unified, warm, restrained, editorial and operational design system with subtle physical motion, strong information hierarchy, contextual imagery, quiet surfaces, integrated dense data interfaces, and a slightly deeper AI visual layer.**
+
+The three roles—**BUILD, SUPERVISE, GOVERN**—share one identity.
+
+Light and dark are two surface expressions of the same identity.
+
+The public site may be expressive and cinematic.
+
+The authenticated workplace should be calm, dense, clear, and productive.
+
+AI should feel powerful through behavior, structure, and feedback—not through visual noise.
+
+This document is the authoritative visual-design baseline for subsequent frontend implementation and Phase 04 documentation.
+
+---
+
+## 66. Relationship to Previous Phases
+
+### Phase 01
+Defined the complete frontend page/screen inventory.
+
+### Phase 02
+Defined information architecture, routes, navigation, role boundaries, resource context, and interaction classification.
+
+### Phase 03
+Defines the visual language that those pages and routes must use.
+
+Therefore:
+
+```text
+PHASE 01
+What exists?
+        ↓
+PHASE 02
+Where does it live?
+        ↓
+PHASE 03
+What does it look and feel like?
+        ↓
+PHASE 04
+How is the approved frontend documented for implementation?
+```
+
+Phase 03 must not silently remove or redefine surfaces established in Phase 01 or navigation established in Phase 02.
+
+Any future contradiction requires an explicit decision.
+
+---
+
+# 67. Next Phase
+
+**Next:** Phase 04 — Frontend Documentation / Implementation Documentation
+
+Phase 04 should use this frozen visual system together with the frozen Phase 01 page inventory and Phase 02 information architecture as its authoritative foundation.

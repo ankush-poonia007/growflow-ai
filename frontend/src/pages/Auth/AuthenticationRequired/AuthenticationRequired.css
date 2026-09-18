@@ -1,0 +1,93 @@
+.gf-auth-required {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: var(--gf-space-12) var(--gf-space-4);
+  text-align: center;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.gf-auth-required__card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.gf-auth-required__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: var(--gf-radius-full);
+  font-size: var(--gf-text-label-sm-size);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: var(--gf-color-bg-subtle, #f0f0ea);
+  color: var(--gf-color-text-secondary);
+  border: 1px solid var(--gf-color-border-subtle);
+  margin-bottom: var(--gf-space-4);
+}
+
+.gf-auth-required__graphic {
+  color: var(--gf-color-accent);
+  margin-bottom: var(--gf-space-4);
+  opacity: 0.9;
+}
+
+.gf-auth-required__ring {
+  stroke: var(--gf-color-border-subtle);
+}
+
+.gf-auth-required__title {
+  font-size: var(--gf-text-h2-size);
+  font-weight: 700;
+  color: var(--gf-color-text-primary);
+  margin-bottom: var(--gf-space-3);
+  letter-spacing: -0.015em;
+}
+
+.gf-auth-required__description {
+  font-size: var(--gf-text-body-md-size);
+  color: var(--gf-color-text-secondary);
+  line-height: var(--gf-leading-relaxed);
+  margin-bottom: var(--gf-space-5);
+}
+
+.gf-auth-required__context {
+  display: flex;
+  align-items: center;
+  gap: var(--gf-space-2);
+  background: var(--gf-color-secondary);
+  padding: 6px 14px;
+  border-radius: var(--gf-radius-md);
+  border: 1px solid var(--gf-color-border-subtle);
+  margin-bottom: var(--gf-space-6);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gf-auth-required__context-label {
+  font-size: var(--gf-text-label-sm-size);
+  color: var(--gf-color-text-tertiary);
+  font-weight: 500;
+}
+
+.gf-auth-required__context-path {
+  font-family: var(--gf-font-mono);
+  font-size: var(--gf-text-label-sm-size);
+  color: var(--gf-color-accent);
+  font-weight: 600;
+}
+
+.gf-auth-required__actions {
+  display: flex;
+  gap: var(--gf-space-3);
+  flex-wrap: wrap;
+  justify-content: center;
+}

@@ -1,0 +1,2932 @@
+# GrowFlow — Phase 02
+## Information Architecture & Navigation Map
+
+**Status:** PROPOSAL — NOT FROZEN  
+**Phase:** 02  
+**Depends on:** Phase 01 — Complete Frontend Page / Screen Inventory  
+**Purpose:** Define where every GrowFlow surface lives, how users reach it, how users move between contexts, and how pages, views, tabs, modals, drawers, workflows, authentication, authorization, and navigation are structured.
+
+---
+
+# 1. Executive Decision
+
+GrowFlow will use:
+
+- **One unified top navigation bar across the entire website.**
+- The same top-nav geometry and core interaction model across public and authenticated experiences.
+- A dedicated **Workplace / Role navigation button** in the top bar.
+- The Workplace button exposes the three GrowFlow role workplaces:
+  - **Student — BUILD**
+  - **Mentor — SUPERVISE**
+  - **Admin — GOVERN**
+- A **Profile** control also lives in the top navigation.
+- When logged out, the top navigation shows two separate actions:
+  - **Login**
+  - **Sign Up**
+- Login and Sign Up route users into the appropriate authentication entry points.
+- Admin remains protected and is **not publicly registered**.
+- Authenticated users see only workplaces they are authorized to enter.
+- The authenticated application retains a shared shell and role-specific workspace navigation/content.
+- Resource-oriented nested routes are used for projects, groups, students, definitions, instances, AI traces, investigations, and similar domain objects.
+- Major workspace views are route-addressable.
+- Short contextual actions use modals/drawers.
+- Long-running, resumable, or multi-stage operations use explicit workflows/states.
+
+The resulting model is:
+
+```text
+                              GROWFLOW
+                                  |
+                           GLOBAL TOP NAV
+                                  |
+          +-----------------------+--------------------+
+          |                       |                    |
+    Public Links              Workplace             Account
+          |                    Button                  |
+    Features                      |                 Profile
+    Docs                   +-- Student                 |
+    Contact                +-- Mentor                  |
+                           +-- Admin*                  |
+                                                       |
+                                               Login / Sign Up**
+```
+
+`*` Admin is shown only to authorized users and is never presented as public registration.
+
+`**` Login and Sign Up are shown when logged out. Once authenticated, Profile replaces the logged-out account actions.
+
+---
+
+# 2. Core Information Architecture Principles
+
+## 2.1 One Product
+
+Student, Mentor, and Admin are three role-based workplaces inside one GrowFlow product.
+
+```text
+                         GROWFLOW
+                            |
+              +-------------+-------------+
+              |             |             |
+            BUILD       SUPERVISE       GOVERN
+           Student        Mentor         Admin
+```
+
+They share:
+
+- identity
+- global top navigation
+- search
+- notifications
+- profile
+- settings
+- design language
+- resource concepts
+- authorization model
+- event model
+- platform services
+
+Their workspace content and permissions differ.
+
+---
+
+# 3. Global Top Navigation — New Canonical Model
+
+## 3.1 Top Navigation Exists Everywhere
+
+The top navigation is a **global GrowFlow navigation layer**.
+
+It exists on:
+
+- Public website
+- Authentication pages where appropriate
+- Student workplace
+- Mentor workplace
+- Admin workplace
+- Shared authenticated pages
+
+The top bar is therefore not an application-only element.
+
+It is part of the GrowFlow product identity.
+
+---
+
+# 4. Logged-Out Top Navigation
+
+When the user is not authenticated, the top navigation should expose:
+
+```text
++----------------------------------------------------------------+
+| GrowFlow | Features | Documentation | Contact | Workplace | Login | Sign Up |
++----------------------------------------------------------------+
+```
+
+The exact visual placement and spacing are deferred to the visual/UI phase.
+
+The IA is fixed:
+
+### Public navigation
+
+- Home
+- Features
+- Documentation
+- Contact
+
+### Authentication actions
+
+- Login
+- Sign Up
+
+### Workplace
+
+- Opens the workplace selector/entry interaction.
+- Logged-out users may see the three workplace identities.
+- Entering a protected workplace requires authentication and authorization.
+
+---
+
+# 5. Login and Sign Up Are Separate Actions
+
+The user specifically requested that Login and Sign Up remain separate.
+
+Therefore:
+
+```text
+LOGIN
+```
+
+and
+
+```text
+SIGN UP
+```
+
+are independent top-nav actions.
+
+They should not be collapsed into one generic "Get Started" control.
+
+---
+
+# 6. Login Routing
+
+When a logged-out user clicks **Login**, the system must provide the correct role authentication path.
+
+Recommended model:
+
+```text
+Login
+  |
+  +-- Student Login
+  |
+  +-- Mentor Login
+  |
+  +-- Admin
+       protected / non-public entry
+```
+
+Canonical routes:
+
+```text
+/auth/student/sign-in
+/auth/mentor/sign-in
+```
+
+Admin does not receive a public registration flow.
+
+If the user's intended destination already establishes the required role, the login flow can route directly to that role's authentication page.
+
+Example:
+
+```text
+/student/projects/123
+       |
+   not logged in
+       |
+       v
+/auth/student/sign-in
+       |
+    success
+       |
+       v
+/student/projects/123
+```
+
+---
+
+# 7. Sign Up Routing
+
+Sign Up remains separate from Login.
+
+Recommended:
+
+```text
+Sign Up
+  |
+  +-- Student
+  |
+  +-- Mentor
+```
+
+Routes:
+
+```text
+/auth/student/register
+/auth/mentor/register
+```
+
+Admin:
+
+```text
+NO PUBLIC ADMIN SIGN-UP
+```
+
+Admin access remains controlled/protected.
+
+---
+
+# 8. Workplace Button — Canonical Behavior
+
+The **Workplace** button is the central role-navigation mechanism.
+
+Clicking it opens a role/workplace selector.
+
+Conceptually:
+
+```text
+                    [ Workplace ]
+                          |
+            +-------------+-------------+
+            |             |             |
+         Student        Mentor        Admin
+          BUILD        SUPERVISE       GOVERN
+```
+
+The selector should communicate that these are **workplaces**, not three unrelated applications.
+
+---
+
+# 9. Workplace Button — Logged-Out Behavior
+
+For a logged-out visitor:
+
+```text
+Workplace
+   |
+   +-- Student / BUILD
+   |       |
+   |       +--> Student Login
+   |
+   +-- Mentor / SUPERVISE
+   |       |
+   |       +--> Mentor Login
+   |
+   +-- Admin / GOVERN
+           |
+           +--> Protected Admin Entry
+```
+
+The visitor must not be given a public Admin registration option.
+
+---
+
+# 10. Workplace Button — Logged-In Behavior
+
+For an authenticated user:
+
+```text
+Workplace
+   |
+   +-- Student / BUILD
+   +-- Mentor / SUPERVISE
+   +-- Admin / GOVERN
+```
+
+However:
+
+> **Only authorized workplaces are actionable.**
+
+The frontend should not imply access to a workplace that the backend authorization layer will reject.
+
+If the account has only Student authorization:
+
+```text
+Workplace
+  |
+  +-- Student     AVAILABLE
+  +-- Mentor      UNAVAILABLE
+  +-- Admin       UNAVAILABLE
+```
+
+The UI may either hide unauthorized workplaces or show them as unavailable according to the final UX decision. The authorization rule itself is fixed: **the backend remains authoritative**.
+
+---
+
+# 11. Workplace Routing
+
+Selecting a workplace routes the user to its canonical entry:
+
+```text
+Student / BUILD
+    -> /student/dashboard
+
+Mentor / SUPERVISE
+    -> /mentor/overview
+
+Admin / GOVERN
+    -> /admin/overview
+```
+
+If the user is already inside that workplace, clicking the workplace item can return them to the workplace's primary landing page.
+
+---
+
+# 12. Profile in the Top Navigation
+
+Profile is explicitly part of the global top navigation.
+
+Authenticated state:
+
+```text
++-------------------------------------------------------------+
+| GrowFlow | Public Links | Workplace | ... | Profile         |
++-------------------------------------------------------------+
+```
+
+Clicking Profile:
+
+```text
+Profile
+   |
+   +--> /profile
+```
+
+Profile remains global rather than being duplicated as a role-specific sidebar item.
+
+---
+
+# 13. Settings Relationship
+
+Profile and Settings are separate concepts.
+
+```text
+Profile
+   |
+   +--> /profile
+
+Settings
+   |
+   +--> /settings
+```
+
+Settings may contain:
+
+```text
+/settings/profile
+/settings/preferences
+```
+
+but the exact settings taxonomy remains intentionally limited at this stage.
+
+---
+
+# 14. Authenticated Top Navigation
+
+Once authenticated, the top bar becomes conceptually:
+
+```text
++----------------------------------------------------------------+
+| GrowFlow | ... | Workplace | Search | Notifications | Profile |
++----------------------------------------------------------------+
+```
+
+The exact ordering can be finalized during UI architecture/design, but the IA requirement is:
+
+- Global
+- persistent
+- consistent
+- role-independent in geometry
+- role-aware in destination
+- authorization-aware
+
+---
+
+# 15. Top Navigation vs Sidebar
+
+This is an important architectural distinction.
+
+## Top Navigation
+
+Global product-level controls:
+
+- GrowFlow identity/logo
+- public navigation where applicable
+- Workplace selector
+- Search
+- Notifications
+- Profile
+- Login
+- Sign Up
+
+## Sidebar
+
+Role/workspace-specific navigation.
+
+Example:
+
+```text
+TOP NAV
+------------------------------------------------
+GrowFlow | Workplace | Search | Notifications | Profile
+
+SIDEBAR
+------------------------------------------------
+Student:
+Dashboard
+Projects
+```
+
+Mentor:
+
+```text
+Overview
+Groups
+Students
+Projects
+Project Definitions
+Project Instances
+At Risk
+AI Mentor
+```
+
+Admin:
+
+```text
+Overview
+Mentors
+Students
+Groups
+Projects
+AI Observatory
+Cost & Usage
+System Health
+Documents & RAG
+Security & Audit
+Analytics
+```
+
+This is the recommended final relationship.
+
+---
+
+# 16. Public Website IA
+
+## Primary Routes
+
+```text
+/
+ /features
+ /documentation
+ /documentation/:slug
+ /contact
+```
+
+The public website does not expose Admin as a public application destination.
+
+---
+
+# 17. P01 — Landing
+
+```text
+/
+```
+
+Purpose:
+
+- Product introduction
+- Visual storytelling
+- Product capabilities
+- Architecture showcase
+- Conversion to Login / Sign Up
+- Entry to public documentation
+
+Primary destinations:
+
+```text
+Landing
+ |
+ +-- Features
+ +-- Documentation
+ +-- Contact
+ +-- Login
+ +-- Sign Up
+ +-- Workplace
+```
+
+---
+
+# 18. P02 — Features
+
+```text
+/features
+```
+
+Recommended internal sections:
+
+- AI Project Generation
+- Assessment
+- Blueprint
+- Project Management
+- Mentorship
+- GitHub
+- RAG / Knowledge
+- Observability
+- Security
+
+These remain sections/anchors unless later justified as standalone pages.
+
+---
+
+# 19. P03 — Documentation
+
+```text
+/documentation
+/documentation/:slug
+```
+
+Recommended documentation hierarchy:
+
+```text
+Documentation
+ |
+ +-- Introduction
+ +-- How GrowFlow Works
+ +-- Student Guide
+ +-- Mentor Guide
+ +-- Project Lifecycle
+ +-- AI System
+ +-- Architecture
+ +-- Security
+ +-- FAQ / Reference
+```
+
+Documentation has its own internal navigation and breadcrumbs.
+
+---
+
+# 20. P04 — Contact
+
+```text
+/contact
+```
+
+Standalone public destination.
+
+---
+
+# 21. P05 — Public Architecture Showcase
+
+Phase 01 identified this as a proposed surface.
+
+### Phase 02 decision
+
+Do not require a standalone V1 route.
+
+Place the showcase within:
+
+- Landing
+- Documentation
+
+Potential future standalone route:
+
+```text
+/showcase
+```
+
+This keeps V1 focused without removing the concept.
+
+---
+
+# 22. Authentication IA
+
+```text
+/auth
+ |
+ +-- /student
+ |    +-- /sign-in
+ |    +-- /register
+ |    +-- /recover
+ |
+ +-- /mentor
+      +-- /sign-in
+      +-- /register
+      +-- /recover
+```
+
+Canonical routes:
+
+```text
+/auth/student/sign-in
+/auth/student/register
+/auth/student/recover
+
+/auth/mentor/sign-in
+/auth/mentor/register
+/auth/mentor/recover
+```
+
+---
+
+# 23. Student Onboarding
+
+Student onboarding follows successful registration:
+
+```text
+/auth/student/register
+        |
+        v
+Student Onboarding
+        |
+        v
+/student/dashboard
+```
+
+Onboarding is a workflow/state rather than a permanent sidebar destination.
+
+---
+
+# 24. Mentor Onboarding
+
+```text
+/auth/mentor/register
+        |
+        v
+Mentor Onboarding
+        |
+        v
+/mentor/overview
+```
+
+---
+
+# 25. Admin Entry
+
+There is no public Admin registration.
+
+The protected admin path is:
+
+```text
+Protected Admin Entry
+        |
+        v
+Authorization
+        |
+   +----+----+
+   |         |
+ Allowed   Denied
+   |         |
+   v         v
+/admin     403
+```
+
+The precise admin authentication entry implementation can be finalized with the authentication architecture, but public navigation must not expose Admin sign-up.
+
+---
+
+# 26. Authentication + Deep-Link Flow
+
+When an unauthenticated user opens:
+
+```text
+/student/projects/123/tasks
+```
+
+the intended destination is preserved.
+
+```text
+Protected Route
+      |
+      v
+Not authenticated
+      |
+      v
+Role-specific Login
+      |
+      v
+Authentication success
+      |
+      v
+Role resolution
+      |
+      v
+Authorization
+      |
+      v
+Return to intended route
+```
+
+Example:
+
+```text
+/student/projects/123/tasks
+        |
+        v
+/auth/student/sign-in?returnTo=...
+        |
+        v
+/student/projects/123/tasks
+```
+
+The exact query/state transport is an implementation detail; preserving intent is the architectural rule.
+
+---
+
+# 27. Role Resolution
+
+After authentication:
+
+```text
+Authenticated Identity
+        |
+        v
+GrowFlow User
+        |
+        v
+Role / Authorization Context
+        |
+    +---+---+---+
+    |       |   |
+ Student Mentor Admin
+    |       |   |
+    v       v   v
+ /student /mentor /admin
+```
+
+The backend authorization model remains authoritative.
+
+---
+
+# 28. Student Application
+
+Student = **BUILD**
+
+Primary role navigation:
+
+```text
+Student
+ |
+ +-- Dashboard
+ +-- Projects
+```
+
+Global top nav provides:
+
+- Workplace
+- Search
+- Notifications
+- Profile
+- Settings
+- other global controls
+
+---
+
+# 29. Student Routes
+
+```text
+/student
+ |
+ +-- /dashboard
+ |
+ +-- /projects
+ |    |
+ |    +-- /catalog
+ |    |    +-- /:definitionId
+ |    |
+ |    +-- /new
+ |
+ +-- /projects/:projectId
+      |
+      +-- /overview
+      +-- /assessment
+      |    +-- /questions
+      |    +-- /adaptive
+      |    +-- /completed
+      |    +-- /result
+      |
+      +-- /blueprint
+      +-- /blueprint/document
+      |
+      +-- /tasks
+      |    +-- /:taskId
+      |
+      +-- /milestones
+      |    +-- /:milestoneId
+      |
+      +-- /risks
+      |    +-- /:riskId
+      |
+      +-- /roadmap
+      +-- /documents
+      |    +-- /:documentId
+      |
+      +-- /github
+      +-- /activity
+      +-- /ai-mentor
+      +-- /help-requests
+      +-- /mentor-feedback
+      +-- /changes
+           +-- /:changeId
+```
+
+---
+
+# 30. Student Dashboard
+
+```text
+/student/dashboard
+```
+
+Primary landing after Student authentication.
+
+Provides entry into:
+
+- Projects
+- project status
+- tasks
+- milestones
+- risks
+- mentor activity
+- notifications
+- AI Mentor
+
+---
+
+# 31. Student Projects
+
+```text
+/student/projects
+```
+
+Project collection.
+
+Contains entry points for:
+
+- existing projects
+- create own project
+- mentor project catalog
+
+---
+
+# 32. Create Your Own Project
+
+```text
+/student/projects/new
+```
+
+Workflow:
+
+```text
+Create Project
+   |
+   v
+Project Idea
+   |
+   v
+Project Information
+   |
+   v
+Assessment
+   |
+   v
+Assessment Result
+   |
+   v
+Blueprint Generation
+   |
+   v
+Blueprint QA
+   |
+   v
+Project Workspace
+```
+
+---
+
+# 33. Mentor Project Catalog
+
+```text
+/student/projects/catalog
+```
+
+Catalog of Mentor-defined project offerings.
+
+---
+
+# 34. Mentor Project Detail / Selection
+
+```text
+/student/projects/catalog/:definitionId
+```
+
+Represents a Project Definition before it becomes the student's own Project Instance.
+
+Relationship:
+
+```text
+Project Definition
+        |
+        | selection/adoption
+        v
+Student Project Instance
+```
+
+---
+
+# 35. Student Project Information
+
+```text
+/student/projects/:projectId/overview
+```
+
+Primary project context and project profile/information surface.
+
+---
+
+# 36. Student Assessment
+
+Assessment is a first-class workflow.
+
+```text
+/student/projects/:projectId/assessment
+```
+
+Nested workflow states:
+
+```text
+/assessment
+/assessment/questions
+/assessment/adaptive
+/assessment/completed
+/assessment/result
+```
+
+Assessment can therefore support:
+
+- progress
+- interruption
+- resumption
+- refresh
+- adaptive questioning
+- completion
+- result review
+
+---
+
+# 37. Blueprint Workflow
+
+Primary route:
+
+```text
+/student/projects/:projectId/blueprint
+```
+
+The same route/context can represent:
+
+- generation
+- failure
+- recovery
+- review
+- QA
+- approval
+- ready state
+
+Blueprint document viewer:
+
+```text
+/student/projects/:projectId/blueprint/document
+```
+
+---
+
+# 38. Blueprint Failure / Recovery
+
+Blueprint failure is a contextual workflow state, not a permanent sidebar item.
+
+Possible states:
+
+```text
+Generating
+Validating
+QA
+Failed
+Retrying
+Ready
+Approved
+```
+
+Recovery actions remain within the project blueprint context.
+
+---
+
+# 39. Student Project Workspace
+
+```text
+/student/projects/:projectId
+```
+
+Contextual workspace:
+
+```text
+Project Workspace
+ |
+ +-- Overview
+ +-- Blueprint
+ +-- Tasks
+ +-- Milestones
+ +-- Risks
+ +-- Roadmap
+ +-- Documents
+ +-- GitHub
+ +-- Activity
+ +-- AI Mentor
+ +-- Help Requests
+ +-- Mentor Feedback
+ +-- Changes
+```
+
+These are contextual navigation destinations, not global sidebar items.
+
+---
+
+# 40. Student Task Routes
+
+Collection:
+
+```text
+/student/projects/:projectId/tasks
+```
+
+Detail:
+
+```text
+/student/projects/:projectId/tasks/:taskId
+```
+
+Short create/edit actions should normally use modal/drawer interactions.
+
+---
+
+# 41. Student Milestone Routes
+
+```text
+/student/projects/:projectId/milestones
+/student/projects/:projectId/milestones/:milestoneId
+```
+
+---
+
+# 42. Student Risk Routes
+
+```text
+/student/projects/:projectId/risks
+/student/projects/:projectId/risks/:riskId
+```
+
+---
+
+# 43. Student Roadmap
+
+```text
+/student/projects/:projectId/roadmap
+```
+
+Dedicated workspace representation of:
+
+```text
+Task
+  -> Milestone
+      -> Progress
+          -> Phase
+              -> Health
+```
+
+---
+
+# 44. Student Documents
+
+Collection:
+
+```text
+/student/projects/:projectId/documents
+```
+
+Detail:
+
+```text
+/student/projects/:projectId/documents/:documentId
+```
+
+---
+
+# 45. Student GitHub
+
+```text
+/student/projects/:projectId/github
+```
+
+Dedicated project integration context.
+
+---
+
+# 46. Student Activity
+
+```text
+/student/projects/:projectId/activity
+```
+
+Project-scoped activity.
+
+---
+
+# 47. Student AI Mentor
+
+```text
+/student/projects/:projectId/ai-mentor
+```
+
+AI Mentor is project-scoped.
+
+It inherits authorized project context:
+
+- Blueprint
+- Tasks
+- Milestones
+- Risks
+- Documents
+- GitHub
+- Activity
+- Mentor context
+
+It is not a context-free generic chatbot.
+
+---
+
+# 48. Student Help Requests
+
+```text
+/student/projects/:projectId/help-requests
+```
+
+Project-scoped support/request area.
+
+---
+
+# 49. Student Mentor Feedback
+
+```text
+/student/projects/:projectId/mentor-feedback
+```
+
+Contextual mentor feedback surface.
+
+---
+
+# 50. Student Project Changes
+
+Collection:
+
+```text
+/student/projects/:projectId/changes
+```
+
+Change detail/workflow:
+
+```text
+/student/projects/:projectId/changes/:changeId
+```
+
+Flow:
+
+```text
+Change Requested
+      |
+      v
+Impact Analysis
+      |
+      v
+Student Review
+      |
+  +---+---+
+  |       |
+Accept   Reject
+  |
+  v
+Regeneration
+  |
+  v
+Result
+```
+
+---
+
+# 51. Mentor Application
+
+Mentor = **SUPERVISE**
+
+Primary navigation:
+
+```text
+Mentor
+ |
+ +-- Overview
+ +-- Groups
+ +-- Students
+ +-- Projects
+ +-- Project Definitions
+ +-- Project Instances
+ +-- At Risk
+ +-- Help Requests
+ +-- Activity
+ +-- AI Mentor
+```
+
+The exact sidebar ordering is a UI decision later; the IA membership is defined here.
+
+---
+
+# 52. Mentor Overview
+
+```text
+/mentor/overview
+```
+
+Mentor landing page aggregating:
+
+- groups
+- students
+- projects
+- project health
+- at-risk items
+- activity
+- help requests
+- AI-assisted insights
+
+---
+
+# 53. Mentor Groups
+
+Collection:
+
+```text
+/mentor/groups
+```
+
+Creation:
+
+```text
+/mentor/groups/new
+```
+
+Workspace:
+
+```text
+/mentor/groups/:groupId
+```
+
+---
+
+# 54. Mentor Group Workspace
+
+```text
+/mentor/groups/:groupId
+```
+
+Nested:
+
+```text
+/mentor/groups/:groupId/students
+/mentor/groups/:groupId/projects
+/mentor/groups/:groupId/at-risk
+/mentor/groups/:groupId/activity
+/mentor/groups/:groupId/ai-mentor
+```
+
+Group structure:
+
+```text
+Group
+ |
+ +-- Overview
+ +-- Students
+ +-- Projects
+ +-- At Risk
+ +-- Activity
+ +-- AI Mentor
+```
+
+---
+
+# 55. Mentor Students
+
+Collection:
+
+```text
+/mentor/students
+```
+
+Detail:
+
+```text
+/mentor/students/:studentId
+```
+
+Nested:
+
+```text
+/mentor/students/:studentId/projects
+/mentor/students/:studentId/activity
+/mentor/students/:studentId/mentor-notes
+/mentor/students/:studentId/help-requests
+```
+
+---
+
+# 56. Mentor Student Detail
+
+```text
+/mentor/students/:studentId
+```
+
+Contextual navigation:
+
+```text
+Student
+ |
+ +-- Overview
+ +-- Projects
+ +-- Activity
+ +-- Mentor Notes
+ +-- Help Requests
+```
+
+---
+
+# 57. Mentor Projects
+
+```text
+/mentor/projects
+```
+
+Mentor project-centric directory.
+
+Definitions and Instances remain separate domain resources and receive dedicated destinations.
+
+---
+
+# 58. Mentor Project Definitions
+
+Collection:
+
+```text
+/mentor/project-definitions
+```
+
+Create:
+
+```text
+/mentor/project-definitions/new
+```
+
+Detail:
+
+```text
+/mentor/project-definitions/:definitionId
+```
+
+Edit:
+
+```text
+/mentor/project-definitions/:definitionId/edit
+```
+
+Assignments:
+
+```text
+/mentor/project-definitions/:definitionId/assignments
+```
+
+---
+
+# 59. Project Definition / Student Instance Boundary
+
+This remains a hard IA boundary:
+
+```text
+PROJECT DEFINITION
+        |
+        | assignment/adoption
+        v
+STUDENT PROJECT INSTANCE
+```
+
+Editing a definition must not imply mutation of existing student instances.
+
+The navigation architecture reflects this by keeping them separate.
+
+---
+
+# 60. Mentor Project Instances
+
+Collection:
+
+```text
+/mentor/project-instances
+```
+
+Detail:
+
+```text
+/mentor/project-instances/:instanceId
+```
+
+Nested:
+
+```text
+/mentor/project-instances/:instanceId/blueprint
+/mentor/project-instances/:instanceId/tasks
+/mentor/project-instances/:instanceId/milestones
+/mentor/project-instances/:instanceId/risks
+/mentor/project-instances/:instanceId/documents
+/mentor/project-instances/:instanceId/github
+/mentor/project-instances/:instanceId/activity
+```
+
+---
+
+# 61. Mentor Project Instance Workspace
+
+```text
+Project Instance
+ |
+ +-- Overview
+ +-- Blueprint
+ +-- Tasks
+ +-- Milestones
+ +-- Risks
+ +-- Documents
+ +-- GitHub
+ +-- Activity
+```
+
+The underlying resource is the same Student Project Instance, while available actions are governed by Mentor authorization.
+
+---
+
+# 62. Mentor At Risk
+
+Collection:
+
+```text
+/mentor/at-risk
+```
+
+Detail:
+
+```text
+/mentor/at-risk/:entityId
+```
+
+The directory can surface:
+
+- students
+- projects
+- risks
+- health signals
+
+---
+
+# 63. Mentor Help Requests
+
+Mentor-wide:
+
+```text
+/mentor/help-requests
+```
+
+Student-specific:
+
+```text
+/mentor/students/:studentId/help-requests
+```
+
+This provides:
+
+```text
+All Help Requests
+      |
+      v
+Specific Student
+      |
+      v
+Specific Request/context
+```
+
+---
+
+# 64. Mentor Notes
+
+Primary contextual route:
+
+```text
+/mentor/students/:studentId/mentor-notes
+```
+
+This keeps notes associated with the student being supervised.
+
+---
+
+# 65. Mentor Activity
+
+```text
+/mentor/activity
+```
+
+Mentor-wide activity.
+
+---
+
+# 66. Mentor AI
+
+```text
+/mentor/ai-mentor
+```
+
+Mentor-level AI Mentor operates at authorized supervisory scope across:
+
+- groups
+- students
+- projects
+- health
+- activity
+- requests
+
+---
+
+# 67. Admin Application
+
+Admin = **GOVERN**
+
+Primary navigation:
+
+```text
+Admin
+ |
+ +-- Overview
+ +-- Mentors
+ +-- Students
+ +-- Groups
+ +-- Projects
+ +-- AI Observatory
+ +-- Cost & Usage
+ +-- System Health
+ +-- Documents & RAG
+ +-- Security & Audit
+ +-- Analytics
+```
+
+Admin is operational/governance oriented rather than a project workspace.
+
+---
+
+# 68. Admin Overview
+
+```text
+/admin/overview
+```
+
+High-level operational view of:
+
+- users
+- groups
+- projects
+- AI
+- costs
+- system health
+- documents/RAG
+- security
+- analytics
+
+---
+
+# 69. Admin Mentors
+
+```text
+/admin/mentors
+/admin/mentors/:mentorId
+```
+
+---
+
+# 70. Admin Students
+
+```text
+/admin/students
+/admin/students/:studentId
+```
+
+---
+
+# 71. Admin Groups
+
+```text
+/admin/groups
+/admin/groups/:groupId
+```
+
+---
+
+# 72. Admin Projects
+
+```text
+/admin/projects
+```
+
+Project Definitions:
+
+```text
+/admin/project-definitions
+/admin/project-definitions/:definitionId
+```
+
+Project Instances:
+
+```text
+/admin/project-instances
+/admin/project-instances/:instanceId
+```
+
+Admin operates globally, so these are intentionally not forced under group/student hierarchy.
+
+---
+
+# 73. Admin AI Observatory
+
+```text
+/admin/ai-observatory
+ |
+ +-- /usage
+ +-- /executions
+ +-- /traces
+ |    +-- /:traceId
+ |
+ +-- /quality
+```
+
+Canonical routes:
+
+```text
+/admin/ai-observatory
+/admin/ai-observatory/usage
+/admin/ai-observatory/executions
+/admin/ai-observatory/traces
+/admin/ai-observatory/traces/:traceId
+/admin/ai-observatory/quality
+```
+
+---
+
+# 74. Admin AI Trace Detail
+
+```text
+/admin/ai-observatory/traces/:traceId
+```
+
+Inspection context:
+
+```text
+Request
+  |
+  v
+Agent
+  |
+  v
+Tool
+  |
+  v
+Model
+  |
+  v
+Structured Output
+  |
+  v
+Validation
+  |
+  v
+Judge
+  |
+  v
+Persistence
+```
+
+---
+
+# 75. Admin Cost & Usage
+
+```text
+/admin/cost-usage
+/admin/cost-usage/overview
+/admin/cost-usage/breakdown
+/admin/cost-usage/api-keys
+```
+
+Covers:
+
+- cost/usage overview
+- cost breakdown
+- API key pool monitoring
+
+---
+
+# 76. Admin System Health
+
+```text
+/admin/system-health
+/admin/system-health/components/:componentId
+```
+
+Potential monitored areas:
+
+- API
+- database
+- background jobs
+- events
+- AI Provider Gateway
+- RAG
+- document generation
+- SSE
+- external integrations
+
+---
+
+# 77. Admin Documents & RAG
+
+```text
+/admin/documents-rag
+/admin/documents-rag/rag
+/admin/documents-rag/document-generation
+```
+
+Covers:
+
+- document/RAG overview
+- RAG monitoring
+- document generation monitoring
+
+---
+
+# 78. Admin Security & Audit
+
+```text
+/admin/security-audit
+/admin/security-audit/audit-log
+/admin/security-audit/investigations
+/admin/security-audit/investigations/:investigationId
+```
+
+Investigation is a dedicated inspection workspace.
+
+Admin investigation does not imply user impersonation.
+
+---
+
+# 79. Admin Analytics
+
+```text
+/admin/analytics
+/admin/analytics/platform
+```
+
+Additional analytics routes can be added later if the domain requires more explicit separation.
+
+---
+
+# 80. Shared Authenticated Routes
+
+```text
+/search
+/notifications
+/profile
+/settings
+/settings/profile
+/settings/preferences
+```
+
+These are outside the role-specific route namespaces.
+
+---
+
+# 81. Global Search
+
+The top-nav Search interaction has two layers.
+
+### Layer 1 — Search Interface
+
+```text
+Search
+   |
+   v
+Global Search Overlay
+```
+
+This is a top-nav interaction and does not need to be a separate page.
+
+### Layer 2 — Search Results
+
+```text
+/search?q=...
+```
+
+This is a dedicated route for meaningful search results.
+
+---
+
+# 82. Search Authorization
+
+Search is role-aware.
+
+Student sees only authorized Student-visible resources.
+
+Mentor sees only authorized supervisory resources.
+
+Admin sees only resources permitted by Admin authorization.
+
+Search must never bypass resource authorization.
+
+---
+
+# 83. Notifications
+
+Top-nav notification interaction:
+
+```text
+Notifications icon
+       |
+       v
+Quick notification drawer
+```
+
+Full destination:
+
+```text
+/notifications
+```
+
+Notifications should deep-link to canonical resources.
+
+Example:
+
+```text
+"Mentor commented on your task"
+        |
+        v
+/student/projects/:projectId/tasks/:taskId
+```
+
+---
+
+# 84. Share
+
+Share remains a global interaction.
+
+Examples:
+
+- Share project
+- Share blueprint
+- Share document
+- Share project definition
+
+The share UI is a modal/drawer.
+
+The shared destination is always a canonical route.
+
+---
+
+# 85. Breadcrumbs
+
+Breadcrumbs are contextual.
+
+### Public documentation
+
+```text
+Documentation
+ > Architecture
+ > AI System
+```
+
+### Student
+
+```text
+Projects
+ > Project
+ > Tasks
+ > Task
+```
+
+### Mentor
+
+```text
+Students
+ > Student
+ > Projects
+ > Project
+```
+
+### Admin
+
+```text
+AI Observatory
+ > Traces
+ > Trace
+```
+
+Dashboards generally do not require breadcrumbs.
+
+---
+
+# 86. Back Navigation
+
+Two navigation concepts are supported.
+
+## Browser Back
+
+Meaningful route transitions should naturally work with browser history.
+
+## Contextual Back
+
+A detail view can provide:
+
+```text
+Back to Tasks
+Back to Students
+Back to Projects
+```
+
+based on its resource hierarchy.
+
+---
+
+# 87. Deep Linking
+
+Every meaningful resource view must be directly addressable.
+
+Examples:
+
+```text
+/student/projects/abc/tasks/xyz
+/mentor/students/abc/projects
+/admin/ai-observatory/traces/xyz
+```
+
+Deep linking must trigger:
+
+1. authentication check
+2. role resolution
+3. authorization check
+4. resource loading
+5. correct shell/workspace
+6. requested page/view
+
+---
+
+# 88. Query Parameters vs Routes
+
+Routes identify resources.
+
+Example:
+
+```text
+/student/projects/:projectId/tasks/:taskId
+```
+
+Query parameters represent collection/view state.
+
+Example:
+
+```text
+/student/projects/:projectId/tasks?status=blocked
+```
+
+Other examples:
+
+```text
+?sort=updated
+?status=active
+?page=2
+```
+
+---
+
+# 89. Page vs Tab vs Modal vs Drawer vs Workflow
+
+## Full Page
+
+Used for meaningful independent destinations.
+
+Example:
+
+```text
+/student/projects
+```
+
+## Detail Page
+
+Used for one resource.
+
+Example:
+
+```text
+/student/projects/:projectId/tasks/:taskId
+```
+
+## Route-Addressable Nested View
+
+Used for closely related representations inside a resource workspace.
+
+Example:
+
+```text
+/student/projects/:projectId/tasks
+```
+
+## Modal
+
+Used for short focused actions.
+
+Examples:
+
+- Create Task
+- Edit Task
+- Add Risk
+- Confirm Delete
+- Assign Student
+- Share
+
+## Drawer
+
+Used for contextual secondary information.
+
+Examples:
+
+- notification preview
+- quick details
+- filters on mobile
+
+## Workflow
+
+Used for multi-stage, resumable, long-running, or high-consequence operations.
+
+Examples:
+
+- project creation
+- assessment
+- blueprint generation
+- project change
+- investigation
+
+---
+
+# 90. Workflow State Rule
+
+Workflow states should generally remain within the workflow's canonical route.
+
+Example:
+
+```text
+/student/projects/:projectId/blueprint
+```
+
+can represent:
+
+```text
+Generating
+Validating
+Failed
+Retrying
+Ready
+QA
+Approved
+```
+
+Do not create unnecessary global routes such as:
+
+```text
+/blueprint-failed
+/blueprint-loading
+/blueprint-approved
+```
+
+---
+
+# 91. Long-Running AI Navigation
+
+AI operations must remain persistent even if the user leaves the current page.
+
+```text
+AI Operation
+    |
+    v
+Persistent Backend Job
+    |
+    +--> User leaves page
+    |
+    v
+Execution continues
+    |
+    v
+Event / notification
+    |
+    v
+User returns
+    |
+    v
+Result available
+```
+
+This follows the existing GrowFlow background-job/event architecture.
+
+---
+
+# 92. Project Lifecycle Navigation
+
+Navigation does not change when project lifecycle state changes.
+
+```text
+IDEA
+  ->
+ASSESSMENT
+  ->
+BLUEPRINT
+  ->
+PLANNING
+  ->
+IMPLEMENTATION
+  ->
+TESTING
+  ->
+DEPLOYMENT
+  ->
+COMPLETED
+```
+
+The project workspace remains stable.
+
+Lifecycle state changes the content/actions available within that workspace.
+
+---
+
+# 93. Project Context Inheritance
+
+Every nested Student project route inherits:
+
+- Project ID
+- Student Project Instance
+- Project Definition relationship
+- Lifecycle state
+- Permissions
+- Project health
+- relevant project data
+
+Example:
+
+```text
+/student/projects/:projectId/tasks
+```
+
+means:
+
+> Tasks belonging to this project instance.
+
+---
+
+# 94. Mentor Context Inheritance
+
+Example:
+
+```text
+/mentor/groups/:groupId/students
+```
+
+means:
+
+> Students belonging to this authorized Mentor group.
+
+Example:
+
+```text
+/mentor/students/:studentId/projects
+```
+
+means:
+
+> Projects belonging to this authorized student.
+
+---
+
+# 95. Admin Context
+
+Admin generally operates at platform scope.
+
+Therefore:
+
+```text
+/admin/students/:studentId
+```
+
+is preferred over unnecessarily deep paths such as:
+
+```text
+/admin/groups/:groupId/students/:studentId
+```
+
+unless the workflow explicitly requires group context.
+
+---
+
+# 96. Mobile IA
+
+The top navigation remains the global navigation layer.
+
+Desktop:
+
+```text
++--------------------------------------------------+
+| GrowFlow | Workplace | Search | Notifications | Profile |
++--------------------------------------------------+
+| Sidebar      | Main Content                     |
+|              |                                  |
++--------------+----------------------------------+
+```
+
+Mobile:
+
+```text
++--------------------------------+
+| GrowFlow | ... | Profile | ☰  |
++--------------------------------+
+|                                |
+|            Content             |
+|                                |
++--------------------------------+
+```
+
+The sidebar becomes a navigation drawer.
+
+---
+
+# 97. Mobile Workplace Navigation
+
+The Workplace selector remains accessible from the top bar.
+
+It becomes the global way to move between authorized workplaces.
+
+---
+
+# 98. Mobile Project Navigation
+
+Project navigation remains contextual.
+
+```text
+Project
+ |
+ +-- Overview
+ +-- Blueprint
+ +-- Tasks
+ +-- Milestones
+ +-- Risks
+ +-- Roadmap
+ +-- Documents
+ +-- GitHub
+ +-- Activity
+ +-- AI Mentor
+ +-- More
+```
+
+The exact visual interaction is deferred to UI architecture.
+
+---
+
+# 99. Mobile Mentor Navigation
+
+Primary Mentor navigation can be represented contextually as:
+
+```text
+Overview
+Groups
+Students
+Projects
+At Risk
+More
+```
+
+The complete IA remains available through the drawer/contextual navigation.
+
+---
+
+# 100. Mobile Admin Navigation
+
+Admin is information-dense.
+
+Primary mobile access should prioritize:
+
+- Overview
+- AI Observatory
+- System Health
+- Security & Audit
+
+Secondary destinations remain available through the navigation drawer.
+
+This is an IA prioritization, not a restriction of access.
+
+---
+
+# 101. Role Switching Rule
+
+Do not assume every account can freely switch between Student, Mentor, and Admin.
+
+The Workplace selector is authorization-aware.
+
+If multi-role accounts are supported later, the same Workplace architecture can support them without redesigning the global IA.
+
+---
+
+# 102. Global Navigation Model
+
+The final conceptual model is:
+
+```text
+                       GLOBAL TOP NAV
+                              |
+       +----------------------+----------------------+
+       |                      |                      |
+     PUBLIC               WORKPLACE              ACCOUNT
+       |                      |                      |
+ Features               Student / BUILD           Profile
+ Docs                   Mentor / SUPERVISE        Settings
+ Contact                Admin / GOVERN
+       |
+ Login / Sign Up when logged out
+```
+
+Then:
+
+```text
+WORKPLACE
+    |
+    v
+ROLE WORKSPACE
+    |
+    v
+ROLE SIDEBAR
+    |
+    v
+RESOURCE CONTEXT
+    |
+    v
+RESOURCE VIEW
+    |
+    v
+DETAIL / WORKFLOW
+```
+
+---
+
+# 103. Complete Public + Auth Route Tree
+
+```text
+/
+├── features
+├── documentation
+│   └── :slug
+├── contact
+│
+└── auth
+    ├── student
+    │   ├── sign-in
+    │   ├── register
+    │   └── recover
+    │
+    └── mentor
+        ├── sign-in
+        ├── register
+        └── recover
+```
+
+---
+
+# 104. Complete Student Route Tree
+
+```text
+/student
+├── dashboard
+│
+└── projects
+    ├── catalog
+    │   └── :definitionId
+    │
+    ├── new
+    │
+    └── :projectId
+        ├── overview
+        ├── assessment
+        │   ├── questions
+        │   ├── adaptive
+        │   ├── completed
+        │   └── result
+        ├── blueprint
+        ├── blueprint/document
+        ├── tasks
+        │   └── :taskId
+        ├── milestones
+        │   └── :milestoneId
+        ├── risks
+        │   └── :riskId
+        ├── roadmap
+        ├── documents
+        │   └── :documentId
+        ├── github
+        ├── activity
+        ├── ai-mentor
+        ├── help-requests
+        ├── mentor-feedback
+        └── changes
+            └── :changeId
+```
+
+---
+
+# 105. Complete Mentor Route Tree
+
+```text
+/mentor
+├── overview
+├── groups
+│   ├── new
+│   └── :groupId
+│       ├── students
+│       ├── projects
+│       ├── at-risk
+│       ├── activity
+│       └── ai-mentor
+│
+├── students
+│   └── :studentId
+│       ├── projects
+│       ├── activity
+│       ├── mentor-notes
+│       └── help-requests
+│
+├── projects
+│
+├── project-definitions
+│   ├── new
+│   └── :definitionId
+│       ├── edit
+│       └── assignments
+│
+├── project-instances
+│   └── :instanceId
+│       ├── blueprint
+│       ├── tasks
+│       ├── milestones
+│       ├── risks
+│       ├── documents
+│       ├── github
+│       └── activity
+│
+├── at-risk
+│   └── :entityId
+│
+├── help-requests
+├── activity
+└── ai-mentor
+```
+
+---
+
+# 106. Complete Admin Route Tree
+
+```text
+/admin
+├── overview
+├── mentors
+│   └── :mentorId
+├── students
+│   └── :studentId
+├── groups
+│   └── :groupId
+├── projects
+├── project-definitions
+│   └── :definitionId
+├── project-instances
+│   └── :instanceId
+│
+├── ai-observatory
+│   ├── usage
+│   ├── executions
+│   ├── traces
+│   │   └── :traceId
+│   └── quality
+│
+├── cost-usage
+│   ├── overview
+│   ├── breakdown
+│   └── api-keys
+│
+├── system-health
+│   └── components
+│       └── :componentId
+│
+├── documents-rag
+│   ├── rag
+│   └── document-generation
+│
+├── security-audit
+│   ├── audit-log
+│   └── investigations
+│       └── :investigationId
+│
+└── analytics
+    └── platform
+```
+
+---
+
+# 107. Complete Shared Route Tree
+
+```text
+/search
+/notifications
+/profile
+/settings
+/settings/profile
+/settings/preferences
+```
+
+---
+
+# 108. System Routes and States
+
+Dedicated system routes:
+
+```text
+/401
+/403
+/404
+```
+
+Contextual states:
+
+- suspended/inactive account
+- generic application error
+- network/API failure
+- AI unavailable
+- AI execution failure
+- AI execution in progress
+- RAG processing
+- document generation
+
+These remain contextual unless there is a strong reason to make them independently routable.
+
+---
+
+# 109. Phase 01 → Phase 02 Mapping
+
+| Phase 01 Surface | Phase 02 Treatment |
+|---|---|
+| P01 Landing | `/` |
+| P02 Features | `/features` |
+| P03 Documentation | `/documentation/*` |
+| P04 Contact | `/contact` |
+| P05 Showcase | Landing/Documentation; future optional `/showcase` |
+| A01 Student Sign In | `/auth/student/sign-in` |
+| A02 Student Registration | `/auth/student/register` |
+| A03 Student Recovery | `/auth/student/recover` |
+| A04 Mentor Sign In | `/auth/mentor/sign-in` |
+| A05 Mentor Registration | `/auth/mentor/register` |
+| A06 Mentor Recovery | `/auth/mentor/recover` |
+| A07 Student Onboarding | post-registration workflow |
+| A08 Mentor Onboarding | post-registration workflow |
+| A09 Admin Entry | protected admin entry |
+| X01 Search | top-nav overlay + `/search` |
+| X02 Notifications | top-nav drawer + `/notifications` |
+| X03 Profile | top-nav `/profile` |
+| X04 Settings | `/settings/*` |
+| X05 Share | global modal/drawer |
+| S01 Dashboard | `/student/dashboard` |
+| S02 Projects | `/student/projects` |
+| S03 Create Own | `/student/projects/new` |
+| S04 Catalog | `/student/projects/catalog` |
+| S05 Definition Detail | `/student/projects/catalog/:definitionId` |
+| S06 Project Info | `/student/projects/:projectId/overview` |
+| S07 Assessment Intro | assessment workflow |
+| S08 Questions | `/assessment/questions` |
+| S09 Adaptive Assessment | `/assessment/adaptive` |
+| S10 Completion | `/assessment/completed` |
+| S11 Result | `/assessment/result` |
+| S12 Blueprint | `/blueprint` |
+| S13 Blueprint Failure | blueprint contextual state |
+| S14 Blueprint QA | blueprint contextual state |
+| S15 Project Overview | `/overview` |
+| S16 Blueprint Workspace | `/blueprint` |
+| S17 Blueprint Viewer | `/blueprint/document` |
+| S18 Tasks | `/tasks` |
+| S19 Task Detail | `/tasks/:taskId` |
+| S20 Milestones | `/milestones` |
+| S21 Milestone Detail | `/milestones/:milestoneId` |
+| S22 Risks | `/risks` |
+| S23 Risk Detail | `/risks/:riskId` |
+| S24 Roadmap | `/roadmap` |
+| S25 Documents | `/documents` |
+| S26 Document Detail | `/documents/:documentId` |
+| S27 GitHub | `/github` |
+| S28 Activity | `/activity` |
+| S29 AI Mentor | `/ai-mentor` |
+| S30 Help Requests | `/help-requests` |
+| S31 Mentor Feedback | `/mentor-feedback` |
+| S32 Project Change | `/changes` |
+| S33 Change Result | `/changes/:changeId` |
+| M01 Overview | `/mentor/overview` |
+| M02 Groups | `/mentor/groups` |
+| M03 Group Creation | `/mentor/groups/new` |
+| M04 Group Workspace | `/mentor/groups/:groupId` |
+| M05 Group Students | nested group route |
+| M06 Group Projects | nested group route |
+| M07 Group At Risk | nested group route |
+| M08 Group Activity | nested group route |
+| M09 Group AI Mentor | nested group route |
+| M10 Students | `/mentor/students` |
+| M11 Student Detail | `/mentor/students/:studentId` |
+| M12 Student Projects | nested student route |
+| M13 Student Activity | nested student route |
+| M14 Student Mentor Notes | nested student route |
+| M15 Student Help Requests | nested student route |
+| M16 Projects | `/mentor/projects` |
+| M17 Project Definitions | `/mentor/project-definitions` |
+| M18 Definition Detail | nested definition route |
+| M19 Create Definition | `/new` |
+| M20 Edit Definition | `/edit` |
+| M21 Definition Assignment | `/assignments` |
+| M22 Student Project Instances | `/mentor/project-instances` |
+| M23 Instance Detail | nested instance route |
+| M24 Instance Blueprint | nested instance route |
+| M25 Instance Tasks | nested instance route |
+| M26 Instance Milestones | nested instance route |
+| M27 Instance Risks | nested instance route |
+| M28 Instance Documents | nested instance route |
+| M29 Instance GitHub | nested instance route |
+| M30 Instance Activity | nested instance route |
+| M31 At Risk Directory | `/mentor/at-risk` |
+| M32 At Risk Detail | nested route |
+| M33 Mentor Help Requests | `/mentor/help-requests` |
+| M34 Mentor Notes | student-context route |
+| M35 Mentor Activity | `/mentor/activity` |
+| M36 Mentor AI | `/mentor/ai-mentor` |
+| AD01 Overview | `/admin/overview` |
+| AD02 Mentor Directory | `/admin/mentors` |
+| AD03 Mentor Detail | nested route |
+| AD04 Student Directory | `/admin/students` |
+| AD05 Student Detail | nested route |
+| AD06 Groups Directory | `/admin/groups` |
+| AD07 Group Detail | nested route |
+| AD08 Projects Directory | `/admin/projects` |
+| AD09 Definition Monitoring | `/admin/project-definitions` |
+| AD10 Instance Monitoring | `/admin/project-instances` |
+| AD11 AI Observatory | `/admin/ai-observatory` |
+| AD12 AI Usage | `/usage` |
+| AD13 Agent Executions | `/executions` |
+| AD14 AI Trace Detail | `/traces/:traceId` |
+| AD15 AI Quality | `/quality` |
+| AD16 Cost & Usage | `/admin/cost-usage` |
+| AD17 Cost Breakdown | `/breakdown` |
+| AD18 API Key Pool Monitoring | `/api-keys` |
+| AD19 System Health | `/admin/system-health` |
+| AD20 Component Detail | nested route |
+| AD21 Documents & RAG | `/admin/documents-rag` |
+| AD22 RAG Monitoring | `/rag` |
+| AD23 Document Generation | `/document-generation` |
+| AD24 Security & Audit | `/admin/security-audit` |
+| AD25 Audit Log | `/audit-log` |
+| AD26 Investigation Requests | `/investigations` |
+| AD27 Investigation Detail | nested route |
+| AD28 Platform Analytics | `/admin/analytics` |
+| AD29 Analytics Detail | nested route |
+| SYS01 404 | `/404` |
+| SYS02 403 | `/403` |
+| SYS03 401 | `/401` |
+| SYS04–10 | contextual system/application states |
+
+---
+
+# 110. Navigation Rules to Freeze
+
+## Rule 01
+GrowFlow has one unified global top navigation.
+
+## Rule 02
+The global top navigation exists across the public website and authenticated application experience.
+
+## Rule 03
+The top navigation contains a Workplace control.
+
+## Rule 04
+Workplace represents the three GrowFlow role workplaces:
+- Student / BUILD
+- Mentor / SUPERVISE
+- Admin / GOVERN
+
+## Rule 05
+Workplace selection is authorization-aware.
+
+## Rule 06
+Selecting Student routes to `/student/dashboard`.
+
+## Rule 07
+Selecting Mentor routes to `/mentor/overview`.
+
+## Rule 08
+Selecting Admin routes to `/admin/overview` only for authorized users.
+
+## Rule 09
+Admin is never exposed as a public registration option.
+
+## Rule 10
+Logged-out users see separate Login and Sign Up actions.
+
+## Rule 11
+Login and Sign Up are not collapsed into one generic CTA.
+
+## Rule 12
+Student and Mentor have separate authentication routes.
+
+## Rule 13
+Profile lives in the global top navigation.
+
+## Rule 14
+Settings is a global authenticated destination.
+
+## Rule 15
+Role-specific navigation belongs in the workspace/sidebar layer, not duplicated into the global top bar.
+
+## Rule 16
+Global top navigation and role-specific navigation must maintain consistent geometry and interaction behavior.
+
+## Rule 17
+Routes are lowercase.
+
+## Rule 18
+Multi-word routes use kebab-case.
+
+## Rule 19
+Collections use plural resource names.
+
+## Rule 20
+Specific resources use IDs.
+
+## Rule 21
+Nested routes preserve domain context.
+
+## Rule 22
+Project Definition and Student Project Instance remain separate resource hierarchies.
+
+## Rule 23
+Major workspace views are route-addressable.
+
+## Rule 24
+Short focused actions use modals/drawers.
+
+## Rule 25
+Long-running, resumable, or multi-stage operations use workflows.
+
+## Rule 26
+Workflow states do not unnecessarily become global routes.
+
+## Rule 27
+Deep links are supported.
+
+## Rule 28
+Authentication must preserve meaningful intended destinations.
+
+## Rule 29
+Authentication is followed by role resolution and authorization.
+
+## Rule 30
+Authorization remains backend-authoritative.
+
+## Rule 31
+Search is authorization-aware.
+
+## Rule 32
+Notifications link to canonical resources.
+
+## Rule 33
+Share links use canonical routes.
+
+## Rule 34
+Query parameters represent filters/view state; routes represent resource identity.
+
+## Rule 35
+Meaningful route navigation survives refresh.
+
+## Rule 36
+Browser back navigation works naturally for route-addressable views.
+
+## Rule 37
+Project lifecycle state does not create a new navigation tree.
+
+## Rule 38
+Long-running AI jobs continue independently of browser/page lifetime.
+
+## Rule 39
+AI/RAG/document processing states remain contextual unless independent routing is justified.
+
+## Rule 40
+Mobile preserves access to all meaningful navigation destinations.
+
+## Rule 41
+The mobile sidebar becomes a navigation drawer.
+
+## Rule 42
+Project and group navigation remain contextual on mobile.
+
+## Rule 43
+Do not assume multi-role accounts unless explicitly supported by authorization architecture.
+
+## Rule 44
+Do not introduce unnecessary standalone routes for transient UI states.
+
+## Rule 45
+No Phase 01 surface may disappear without an explicit documented IA decision.
+
+---
+
+# 111. Phase 02 Freeze Criteria
+
+Phase 02 should only be frozen after reviewing:
+
+1. Global top navigation model
+2. Workplace selector behavior
+3. Login / Sign Up behavior
+4. Profile placement
+5. Public navigation
+6. Student routes
+7. Mentor routes
+8. Admin routes
+9. Project workspace hierarchy
+10. Group workspace hierarchy
+11. Student detail hierarchy
+12. Project Definition vs Project Instance separation
+13. Page/tab/modal/drawer/workflow classification
+14. Authentication and deep-link behavior
+15. Authorization boundaries
+16. Search navigation
+17. Notification navigation
+18. Breadcrumbs
+19. Back navigation
+20. Mobile IA
+21. Complete route naming
+22. Phase 01 → Phase 02 mapping
+
+---
+
+# 112. Final Phase 02 Mental Model
+
+```text
+                         GROWFLOW
+                            |
+                      GLOBAL TOP NAV
+                            |
+       +--------------------+--------------------+
+       |                    |                    |
+    PUBLIC               WORKPLACE             ACCOUNT
+       |                    |                    |
+ Features             +-----+-----+          Profile
+ Docs                 |     |     |          Settings
+ Contact           Student Mentor Admin
+                     BUILD SUPERVISE GOVERN
+                       |      |       |
+                       v      v       v
+                   WORKSPACE WORKSPACE WORKSPACE
+                       |      |       |
+                       v      v       v
+                    RESOURCE CONTEXT
+                            |
+                            v
+                       RESOURCE VIEW
+                            |
+                  +---------+---------+
+                  |                   |
+               DETAIL             WORKFLOW
+```
+
+This is the proposed canonical Information Architecture and Navigation Map for GrowFlow.
+
+**Status remains PROPOSAL — NOT FROZEN until user review and approval.**

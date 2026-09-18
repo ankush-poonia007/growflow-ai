@@ -1,0 +1,2762 @@
+# GrowFlow — Phase 06
+## Frontend Foundation + Design Implementation Gate
+
+**Status:** FROZEN / AUTHORITATIVE  
+**Phase:** 06  
+**Project:** GrowFlow  
+**Predecessors:** Phase 01 — Frontend Page & Screen Inventory; Phase 02 — Information Architecture & Navigation; Phase 03 — Frontend Visual Design System & Experience Direction; Phase 04 — Frontend Documentation; Phase 05 — Application & Integration Architecture  
+**Purpose:** Establish the complete frontend foundation and design-to-implementation contract before individual GrowFlow pages are designed and implemented.
+
+---
+
+# 00. Master Index
+
+## 00.1 Document Purpose
+
+This document converts the approved Phase 06 proposal into the authoritative frontend foundation specification.
+
+It defines:
+
+- frontend architecture
+- repository and module boundaries
+- design-token architecture
+- typography
+- color and themes
+- layout and responsive behavior
+- component architecture
+- application shell
+- navigation
+- forms and interactions
+- data-dense interfaces
+- AI UX
+- streaming UX
+- document/project workspace foundations
+- API and state integration
+- authentication and authorization presentation
+- security boundaries
+- accessibility
+- performance
+- testing
+- observability
+- Stitch/design-generation workflow
+- page-design workflow
+- implementation governance
+- dependencies
+- hard invariants
+- Definition of Done
+- freeze criteria
+
+## 00.2 Authority Order
+
+When implementation questions arise, use this precedence:
+
+1. Security and authorization requirements
+2. Frozen Phase 05 application/integration architecture
+3. Frozen Phase 02 information architecture and routes
+4. Frozen Phase 03 visual design system
+5. Frozen Phase 04 frontend documentation contract
+6. This Phase 06 frontend foundation specification
+7. Individual approved page specifications
+8. Implementation details
+
+A lower-level page or component must not silently contradict a higher-level architectural decision.
+
+## 00.3 Core Terminology
+
+- **BUILD** = Student workplace
+- **SUPERVISE** = Mentor workplace
+- **GOVERN** = Admin workplace
+- **Project Definition** = Mentor-authored reusable project specification
+- **Project Instance** = Student-owned/adopted executable project
+- **Canonical state** = authoritative backend/domain state
+- **Server State** = frontend representation/cache of backend state
+- **UI State** = transient interaction state
+- **Streaming State** = live execution/event state
+- **AI Execution** = persisted backend AI operation
+- **SSE** = delivery mechanism for persistent backend events
+- **Soft Intelligence** = GrowFlow visual identity
+- **Stitch** = design-generation/exploration aid
+
+## 00.4 Deliverable Structure
+
+The Phase 06 specification is organized into:
+
+1. Phase Scope & Objectives
+2. Frontend Technology Architecture
+3. Frontend Project Structure
+4. Design Tokens
+5. Typography & Content System
+6. Color & Theme Architecture
+7. Layout, Grid & Responsive System
+8. Component Architecture
+9. Application Shell
+10. Navigation Architecture
+11. Forms, Interaction & Feedback
+12. Data-Dense UI & Visualization
+13. AI / Streaming UX Foundation
+14. Document & Project Workspace Foundation
+15. Frontend ↔ Backend Integration
+16. Security, Accessibility, Performance & Testing
+17. Stitch / Design-to-Implementation Workflow
+18. Phase 06 Implementation Rules & Freeze
+19. Traceability, Dependencies & Decision Register
+
+---
+
+# 01. Phase 06 Scope & Objectives
+
+## 01.1 Objective
+
+Phase 06 establishes the frontend system from which every GrowFlow surface can be consistently implemented.
+
+The intended outcome is:
+
+> Any approved Phase 01 page can be implemented without inventing a new visual language, shell, state model, API access pattern, permission pattern, or interaction pattern.
+
+## 01.2 In Scope
+
+- frontend architecture
+- frontend project structure
+- design system implementation
+- shared component system
+- application shell
+- role-aware navigation
+- authentication presentation
+- authorization-aware UI
+- state architecture
+- API integration
+- SSE integration
+- AI UX
+- project workspace patterns
+- responsive behavior
+- accessibility
+- performance
+- testing
+- observability
+- Stitch workflow
+- page implementation governance
+
+## 01.3 Out of Scope
+
+This phase does not:
+
+- redefine the product
+- replace frozen routes
+- replace backend architecture
+- replace canonical domain rules
+- silently add product features
+- implement all pages
+- make Stitch the source of truth
+- permit frontend-only business rules to become canonical
+
+## 01.4 Success Condition
+
+Phase 06 succeeds when the frontend is a coherent system rather than a collection of independent screens.
+
+## 01.5 Primary Principle
+
+**Foundation before page production.**
+
+---
+
+# 02. Frontend Technology Architecture
+
+## 02.1 Architecture Model
+
+The frontend follows:
+
+```text
+Application
+    ↓
+Routing / Guards / Providers
+    ↓
+Page / Route Layer
+    ↓
+Feature Layer
+    ↓
+Domain UI Layer
+    ↓
+Shared Component Layer
+    ↓
+State / Data Layer
+    ↓
+API / Realtime Layer
+    ↓
+FastAPI Backend
+```
+
+## 02.2 Presentation Layer
+
+Owns:
+
+- visual composition
+- rendering
+- interaction wiring
+- accessibility presentation
+- responsive composition
+
+Does not own canonical business state.
+
+## 02.3 Route/Page Layer
+
+Owns:
+
+- route composition
+- page-level data requirements
+- route parameters
+- page loading/error boundaries
+- page-specific composition
+
+## 02.4 Feature Layer
+
+Owns domain workflows such as:
+
+- projects
+- assessments
+- blueprints
+- tasks
+- milestones
+- risks
+- documents
+- GitHub
+- AI
+- groups
+- students
+- mentors
+- administration
+
+## 02.5 Domain UI Layer
+
+Represents reusable domain concepts.
+
+Examples:
+
+- ProjectHeader
+- TaskRow
+- MilestoneSummary
+- RiskIndicator
+- BlueprintStatus
+- AIExecutionStatus
+- DocumentVersion
+- ActivityItem
+
+## 02.6 Shared Component Layer
+
+Contains generic UI primitives and reusable patterns.
+
+Shared components must not contain hidden product-specific business rules.
+
+## 02.7 Data Layer
+
+Provides:
+
+- API access
+- request orchestration
+- response normalization where required
+- server-state caching
+- mutation handling
+- invalidation/reconciliation
+
+## 02.8 Realtime Layer
+
+Owns:
+
+- SSE connection lifecycle
+- event validation
+- subscription management
+- reconnection
+- event deduplication
+- canonical reconciliation
+
+## 02.9 Technology Selection Boundary
+
+Framework/library choices may be selected for implementation, but must preserve the architecture and contracts in this document.
+
+A technology choice is not permission to change the domain architecture.
+
+---
+
+# 03. Frontend Project Structure
+
+## 03.1 Canonical Structure
+
+```text
+frontend/
+├── src/
+│   ├── app/
+│   │   ├── router/
+│   │   ├── providers/
+│   │   ├── layouts/
+│   │   ├── guards/
+│   │   └── boundaries/
+│   ├── pages/
+│   ├── features/
+│   │   ├── auth/
+│   │   ├── projects/
+│   │   ├── assessments/
+│   │   ├── blueprints/
+│   │   ├── tasks/
+│   │   ├── milestones/
+│   │   ├── risks/
+│   │   ├── documents/
+│   │   ├── github/
+│   │   ├── ai/
+│   │   ├── notifications/
+│   │   ├── groups/
+│   │   ├── students/
+│   │   ├── mentors/
+│   │   ├── admin/
+│   │   └── analytics/
+│   ├── components/
+│   │   ├── ui/
+│   │   ├── navigation/
+│   │   ├── data-display/
+│   │   ├── feedback/
+│   │   ├── forms/
+│   │   ├── overlays/
+│   │   └── ai/
+│   ├── domain/
+│   ├── hooks/
+│   ├── state/
+│   ├── api/
+│   ├── realtime/
+│   ├── auth/
+│   ├── permissions/
+│   ├── analytics/
+│   ├── utils/
+│   ├── constants/
+│   ├── styles/
+│   └── types/
+├── public/
+└── tests/
+```
+
+## 03.2 App Directory
+
+Contains application-wide infrastructure.
+
+## 03.3 Pages Directory
+
+Contains route-level composition.
+
+## 03.4 Features Directory
+
+Contains business-capability UI and workflow logic.
+
+## 03.5 Components Directory
+
+Contains reusable presentation primitives and patterns.
+
+## 03.6 Domain Directory
+
+Contains domain-oriented UI models/helpers that are reusable without becoming backend/domain authorities.
+
+## 03.7 API Directory
+
+Contains centralized API clients and endpoint contracts.
+
+## 03.8 Realtime Directory
+
+Contains SSE and event handling.
+
+## 03.9 Permissions Directory
+
+Contains presentation-level permission helpers. Backend authorization remains authoritative.
+
+## 03.10 Tests Directory
+
+Tests must mirror meaningful architecture boundaries.
+
+---
+
+# 04. Design Tokens
+
+## 04.1 Token Layers
+
+```text
+Primitive Tokens
+    ↓
+Semantic Tokens
+    ↓
+Component Tokens
+    ↓
+Page Composition
+```
+
+## 04.2 Primitive Tokens
+
+Include:
+
+- color primitives
+- spacing
+- typography
+- radii
+- borders
+- shadows
+- breakpoints
+- motion durations
+- opacity
+- z-index
+
+## 04.3 Semantic Tokens
+
+Examples:
+
+```text
+background-primary
+background-secondary
+surface
+surface-muted
+text-primary
+text-secondary
+text-tertiary
+border-subtle
+border-default
+accent
+success
+warning
+danger
+info
+ai-surface
+ai-border
+```
+
+## 04.4 Component Tokens
+
+Components may expose semantic variants through component-level tokens.
+
+## 04.5 Token Consumption Rule
+
+Page code should consume semantic/component tokens rather than scattering raw values.
+
+## 04.6 Token Extension Rule
+
+A new token requires a real reusable need.
+
+Do not create near-duplicate tokens for individual pages.
+
+---
+
+# 05. Typography & Content System
+
+## 05.1 Typeface Direction
+
+Use a Manrope-style geometric humanist sans consistent with Phase 03.
+
+## 05.2 Hierarchy
+
+Provide clear levels for:
+
+- display
+- page title
+- section title
+- subsection title
+- body
+- supporting text
+- metadata
+- labels
+- table content
+- code
+- AI output
+
+## 05.3 Typography Rules
+
+Avoid:
+
+- excessive weights
+- giant headings without purpose
+- unreadably small metadata
+- inconsistent line height
+- arbitrary type scales
+
+## 05.4 Content Hierarchy
+
+Visual hierarchy should communicate:
+
+1. identity
+2. context
+3. primary task
+4. important state
+5. supporting information
+6. secondary actions
+
+## 05.5 Text Constraints
+
+Long content must be handled through:
+
+- wrapping
+- truncation where safe
+- expansion
+- tooltips where appropriate
+- detail views
+
+Important information must not disappear solely because of truncation.
+
+---
+
+# 06. Color & Theme Architecture
+
+## 06.1 Identity
+
+GrowFlow uses **Soft Intelligence**.
+
+## 06.2 Default Theme
+
+**Soft white / warm light.**
+
+## 06.3 Dark Theme
+
+**Soft charcoal counterpart.**
+
+## 06.4 Palette Philosophy
+
+Use:
+
+- muted neutrals
+- one subtle primary accent
+- restrained semantic colors
+- slightly deeper AI variant
+
+Avoid:
+
+- neon
+- rainbow role themes
+- excessive gradients
+- decorative saturation
+
+## 06.5 Semantic Color
+
+Semantic colors must mean something.
+
+Examples:
+
+- success = successful/healthy/completed
+- warning = attention required
+- danger = destructive/critical
+- info = informational
+
+## 06.6 Dark Mode
+
+Dark mode is independently designed through semantic tokens.
+
+It must not be implemented as blind inversion.
+
+## 06.7 AI Theme
+
+AI may use deeper surfaces/borders but remains inside the same design system.
+
+## 06.8 Role Themes
+
+There are no separate BUILD/SUPERVISE/GOVERN color themes.
+
+Role personality comes from information, context, and actions.
+
+---
+
+# 07. Layout, Grid & Responsive System
+
+## 07.1 Layout Modes
+
+The system supports:
+
+- public editorial layouts
+- authenticated workspace layouts
+- dashboards
+- data tables
+- split views
+- document viewers
+- AI interfaces
+- timelines
+
+## 07.2 Page Container
+
+A standard content container must provide:
+
+- consistent maximum width
+- horizontal padding
+- responsive behavior
+- predictable gutters
+
+## 07.3 Grid
+
+Use standardized columns/gutters.
+
+## 07.4 Desktop
+
+Prioritize:
+
+- information density
+- persistent context
+- multi-column layouts
+- productivity
+
+## 07.5 Tablet
+
+Prioritize:
+
+- adaptive columns
+- preserved context
+- selective stacking
+
+## 07.6 Mobile
+
+Prioritize:
+
+- focused workflows
+- progressive disclosure
+- touch targets
+- reduced visual density
+
+## 07.7 Mobile Sidebar
+
+Authenticated sidebar becomes a drawer.
+
+## 07.8 Responsive Rule
+
+Responsive transformation must preserve task intent, not merely shrink dimensions.
+
+## 07.9 Breakpoints
+
+Breakpoints are centralized design tokens.
+
+## 07.10 Overflow
+
+Components must explicitly define behavior for:
+
+- long text
+- wide tables
+- code
+- timelines
+- documents
+- charts
+
+---
+
+# 08. Component Architecture
+
+## 08.1 Hierarchy
+
+```text
+Primitive
+    ↓
+Control
+    ↓
+Pattern
+    ↓
+Domain Component
+    ↓
+Feature Component
+    ↓
+Page
+```
+
+## 08.2 Primitive Components
+
+Examples:
+
+- Button
+- Icon Button
+- Text
+- Divider
+- Spinner
+- Skeleton
+
+## 08.3 Controls
+
+Examples:
+
+- Input
+- Textarea
+- Select
+- Combobox
+- Checkbox
+- Radio
+- Switch
+
+## 08.4 Patterns
+
+Examples:
+
+- Filter bar
+- Search field
+- Pagination
+- Data table
+- Form section
+- Activity feed
+
+## 08.5 Domain Components
+
+Examples:
+
+- Project card/header
+- Task row
+- Risk summary
+- Milestone status
+- Blueprint state
+- AI execution indicator
+
+## 08.6 Component API Rule
+
+Reusable components must have predictable inputs, outputs, variants, and accessibility behavior.
+
+## 08.7 Composition Rule
+
+Prefer composition over duplicated components.
+
+## 08.8 New Component Rule
+
+Before creating a new shared component:
+
+1. Search existing primitives.
+2. Test whether composition is sufficient.
+3. Determine whether the need is reusable.
+4. Define accessibility behavior.
+5. Define responsive behavior.
+6. Document the reason if new.
+
+## 08.9 Anti-Pattern
+
+Do not create one-off copies of shared components simply to change minor styling.
+
+---
+
+# 09. Application Shell
+
+## 09.1 Shell Structure
+
+```text
+Global Top Navigation
+        +
+Role Sidebar
+        +
+Main Content
+        +
+Contextual Overlays
+        +
+Global Notifications
+```
+
+## 09.2 Global Top Navigation
+
+Unified across the product.
+
+## 09.3 Top Navigation Elements
+
+When appropriate:
+
+- GrowFlow identity
+- Features
+- Documentation
+- Contact
+- Workplace
+- Search
+- Notifications
+- Profile
+- Login
+- Sign Up
+
+## 09.4 Authenticated Shell
+
+Adds:
+
+- role-aware sidebar
+- workplace context
+- application content area
+
+## 09.5 Sidebar
+
+Sidebar navigation is role-specific.
+
+## 09.6 Independent Scrolling
+
+Navigation remains stable while content can scroll independently where appropriate.
+
+## 09.7 Collapsed Sidebar
+
+Desktop supports a collapsible sidebar where the layout remains usable.
+
+## 09.8 Mobile Shell
+
+Sidebar becomes a drawer.
+
+## 09.9 Shell Consistency
+
+All roles use the same shell architecture.
+
+---
+
+# 10. Navigation Architecture
+
+## 10.1 Route Authority
+
+Phase 02 route hierarchy remains authoritative.
+
+## 10.2 Student Navigation
+
+```text
+Dashboard
+Projects
+```
+
+## 10.3 Mentor Navigation
+
+```text
+Overview
+Groups
+Students
+Projects
+Project Definitions
+Project Instances
+At Risk
+Help Requests
+Activity
+AI Mentor
+```
+
+## 10.4 Admin Navigation
+
+```text
+Overview
+Mentors
+Students
+Groups
+Projects
+AI Observatory
+Cost & Usage
+System Health
+Documents & RAG
+Security & Audit
+Analytics
+```
+
+## 10.5 Workplace Selector
+
+The selector exposes BUILD/SUPERVISE/GOVERN according to authorization.
+
+## 10.6 Logged-Out Workplace Behavior
+
+- BUILD → Student sign-in
+- SUPERVISE → Mentor sign-in
+- GOVERN → protected Admin entry
+
+Admin has no public registration.
+
+## 10.7 Active Navigation
+
+Active state must be derived from route identity, not manually maintained per page.
+
+## 10.8 Deep Links
+
+Navigation must preserve meaningful resource URLs.
+
+## 10.9 Query Parameters
+
+Use query parameters for:
+
+- filters
+- sorting
+- view preferences
+- pagination where appropriate
+
+Do not use query parameters to replace resource identity routes.
+
+## 10.10 Breadcrumbs
+
+Use breadcrumbs when nested resource context benefits comprehension.
+
+## 10.11 Back Navigation
+
+Browser back must remain meaningful.
+
+## 10.12 Notification Navigation
+
+Notifications deep-link to canonical resource routes.
+
+## 10.13 Share Navigation
+
+Share uses canonical resource URLs.
+
+---
+
+# 11. Forms, Interaction & Feedback
+
+## 11.1 Form Lifecycle
+
+```text
+Idle
+ ↓
+Editing
+ ↓
+Validating
+ ↓
+Submitting
+ ↓
+Success
+```
+
+Failure returns to a recoverable state.
+
+## 11.2 Validation
+
+Client validation:
+
+- immediate feedback
+- formatting
+- basic constraints
+
+Backend validation:
+
+- authoritative business rules
+- permissions
+- consistency
+
+## 11.3 Mutation States
+
+Every mutation must communicate:
+
+- idle
+- submitting
+- success
+- failure
+- retry where safe
+
+## 11.4 Destructive Actions
+
+Use confirmation when appropriate.
+
+## 11.5 Modal
+
+Use for focused short actions.
+
+Examples:
+
+- Create Task
+- Edit Task
+- Add Risk
+- Confirm Delete
+- Assign Student
+
+## 11.6 Drawer
+
+Use for contextual secondary information.
+
+## 11.7 Toast
+
+Use for lightweight feedback.
+
+Do not put essential information only in a transient toast.
+
+## 11.8 Alerts
+
+Use for persistent or important context.
+
+## 11.9 Empty State
+
+Must explain:
+
+1. what is empty
+2. why it may be empty
+3. what the user can do next
+
+## 11.10 Error State
+
+Must explain:
+
+- what failed
+- whether data was affected
+- whether retry is possible
+- next action
+
+## 11.11 Loading
+
+Prefer:
+
+- skeletons
+- partial loading
+- inline progress
+
+over unnecessary full-page spinners.
+
+## 11.12 Optimistic UI
+
+Optimistic updates are allowed only when:
+
+- the operation is safe to predict
+- rollback is defined
+- canonical reconciliation follows
+
+Otherwise use confirmed mutations.
+
+---
+
+# 12. Data-Dense UI & Visualization
+
+## 12.1 Table Philosophy
+
+Tables are integrated, dense, and quiet.
+
+## 12.2 Table Features
+
+Where relevant:
+
+- sorting
+- filtering
+- pagination
+- selection
+- row actions
+- column priority
+- expansion
+- loading
+- empty
+- error
+
+## 12.3 Mobile Tables
+
+Use one of:
+
+- horizontal scroll
+- prioritized columns
+- expandable rows
+- detail drawer
+
+based on the data.
+
+## 12.4 Dashboard Philosophy
+
+Dashboards are visual data instruments.
+
+They should answer:
+
+- what needs attention?
+- what changed?
+- what is healthy?
+- what is at risk?
+- what should happen next?
+
+## 12.5 Metrics
+
+Metrics must represent actual meaningful data.
+
+## 12.6 Charts
+
+Charts require:
+
+- meaningful purpose
+- labels
+- accessible alternative
+- readable scales
+- light/dark compatibility
+
+## 12.7 Timeline
+
+Roadmap/timeline supports:
+
+- phases
+- milestones
+- dates
+- progress
+- dependencies
+- risks
+- status
+
+## 12.8 No Decorative Data
+
+Do not generate charts merely to make a page look analytical.
+
+---
+
+# 13. AI / Streaming UX Foundation
+
+## 13.1 AI Philosophy
+
+AI is embedded intelligence, not a separate visual universe.
+
+## 13.2 AI Visual Direction
+
+Use a slightly deeper Soft Intelligence variant.
+
+Avoid:
+
+- neon
+- glow overload
+- animated particles
+- fake typing
+- artificial certainty
+
+## 13.3 AI Execution States
+
+```text
+QUEUED
+ ↓
+RUNNING
+ ↓
+VALIDATING
+ ↓
+QA
+ ↓
+COMPLETED
+```
+
+Failure branches:
+
+```text
+FAILED
+CANCELLED
+RETRYING
+```
+
+## 13.4 AI Progress
+
+Only show progress that corresponds to meaningful backend execution information.
+
+Do not fabricate percentages.
+
+## 13.5 AI Results
+
+Where appropriate, show:
+
+- execution status
+- stage
+- result
+- validation
+- QA
+- timestamps
+- errors
+- retry status
+- related resource
+
+## 13.6 AI Mentor
+
+AI Mentor is contextual to the project.
+
+Context can include:
+
+- project
+- blueprint
+- tasks
+- milestones
+- risks
+- documents
+- activity
+
+## 13.7 AI Output
+
+AI output is untrusted until validated by backend processes.
+
+## 13.8 Streaming Architecture
+
+```text
+Persistent Backend Job
+        ↓
+Persistent Event
+        ↓
+SSE
+        ↓
+Streaming State
+        ↓
+UI
+        ↓
+Canonical Reconciliation
+```
+
+## 13.9 SSE Lifecycle
+
+```text
+Connect
+ ↓
+Authenticate
+ ↓
+Subscribe
+ ↓
+Receive Event
+ ↓
+Validate
+ ↓
+Update Streaming State
+ ↓
+Reconcile Server State
+```
+
+## 13.10 Reconnection
+
+Support:
+
+- disconnect detection
+- reconnection
+- missed-event recovery
+- duplicate protection
+- canonical refetch
+
+## 13.11 SSE Is Not Canonical
+
+SSE is a delivery mechanism only.
+
+## 13.12 Browser Independence
+
+Long-running AI work must continue even if the browser closes or navigates away.
+
+## 13.13 AI Failure
+
+Failure must remain visible and recoverable.
+
+---
+
+# 14. Document & Project Workspace Foundation
+
+## 14.1 Project Workspace
+
+Common structure:
+
+```text
+Project Header
+      ↓
+Project Context
+      ↓
+Project Navigation
+      ↓
+Current Resource
+```
+
+## 14.2 Lifecycle
+
+```text
+IDEA
+ ↓
+ASSESSMENT
+ ↓
+BLUEPRINT
+ ↓
+PLANNING
+ ↓
+IMPLEMENTATION
+ ↓
+TESTING
+ ↓
+DEPLOYMENT
+ ↓
+COMPLETED
+```
+
+## 14.3 Task UI
+
+Represent:
+
+- identity
+- description
+- status
+- priority
+- assignment
+- dates
+- milestone
+- progress
+- dependencies where available
+
+## 14.4 Milestone UI
+
+Represent:
+
+- identity
+- target
+- completion
+- tasks
+- timeline
+- status
+
+## 14.5 Risk UI
+
+Represent:
+
+- risk
+- severity
+- likelihood
+- impact
+- mitigation
+- status
+- owner
+- related project elements
+
+## 14.6 Health
+
+Health is derived from relevant signals and must not become arbitrary duplicated state.
+
+## 14.7 Documents
+
+Support:
+
+- version
+- metadata
+- processing status
+- preview
+- generated/manual distinction
+- relationships
+
+## 14.8 Markdown
+
+Markdown rendering must safely support:
+
+- headings
+- lists
+- tables
+- links
+- code
+- quotes
+
+Untrusted content must be sanitized.
+
+## 14.9 Code
+
+Code presentation supports:
+
+- readable type
+- syntax highlighting where appropriate
+- copy
+- overflow
+- accessible labeling
+
+## 14.10 GitHub
+
+Represent:
+
+- not connected
+- connecting
+- connected
+- sync
+- error
+- unavailable data
+
+## 14.11 Project Definition / Instance
+
+Frontend must keep these concepts visibly distinct.
+
+A Definition is not the same resource as an Instance.
+
+---
+
+# 15. Frontend ↔ Backend Integration
+
+## 15.1 Canonical Flow
+
+```text
+UI
+ ↓
+Feature/Data Layer
+ ↓
+API Client
+ ↓
+FastAPI
+ ↓
+Application Services
+ ↓
+Domain Services
+ ↓
+Canonical State / External Systems
+```
+
+## 15.2 API Boundary
+
+Components must not scatter raw network calls.
+
+## 15.3 API Contract
+
+Each integration defines:
+
+- endpoint
+- method
+- request
+- response
+- auth
+- permission
+- errors
+- loading
+- mutation behavior
+
+## 15.4 Server State
+
+Includes:
+
+- fetched resources
+- canonical backend data
+- cache
+- mutation results
+
+## 15.5 UI State
+
+Includes:
+
+- modal
+- drawer
+- filters
+- tabs
+- expanded rows
+- temporary form state
+- sidebar state
+
+## 15.6 Streaming State
+
+Includes:
+
+- execution progress
+- live events
+- processing
+- connection status
+- reconnection status
+
+## 15.7 State Separation
+
+Do not maintain competing copies of canonical domain truth.
+
+## 15.8 Cache
+
+Caching is derived and must not become a new source of truth.
+
+## 15.9 Reconciliation
+
+After relevant mutations or streamed events, reconcile with authoritative server state.
+
+## 15.10 Error Mapping
+
+API errors must map to appropriate UX states without hiding their meaning.
+
+## 15.11 Authentication Flow
+
+```text
+Supabase Auth
+ ↓
+Session
+ ↓
+Backend Identity
+ ↓
+GrowFlow Authorization
+ ↓
+Frontend Role Context
+```
+
+## 15.12 Route Guard Flow
+
+```text
+Request Route
+ ↓
+Authentication
+ ↓
+Role Resolution
+ ↓
+Authorization
+ ↓
+Resource Resolution
+ ↓
+Render
+```
+
+---
+
+# 16. Security, Accessibility, Performance & Testing
+
+## 16.1 Frontend Security
+
+Never expose:
+
+- provider API keys
+- service-role secrets
+- privileged credentials
+- private integration secrets
+
+## 16.2 Security Boundary
+
+Frontend controls presentation.
+
+Backend controls authorization.
+
+## 16.3 Admin
+
+No impersonation unless separately and explicitly designed.
+
+Inspection is not impersonation.
+
+## 16.4 Sensitive Data
+
+Minimize sensitive data in:
+
+- client state
+- logs
+- URLs
+- analytics
+- error reports
+
+## 16.5 AI Content
+
+Sanitize untrusted AI/Markdown output.
+
+## 16.6 Accessibility
+
+Shared components must establish:
+
+- semantic HTML
+- labels
+- accessible names
+- focus behavior
+- keyboard interaction
+- contrast
+- screen-reader behavior
+
+## 16.7 Keyboard
+
+Critical workflows must be keyboard usable.
+
+## 16.8 Focus
+
+Dialogs/drawers must:
+
+1. move focus appropriately
+2. constrain interaction appropriately
+3. restore focus on close
+
+## 16.9 Reduced Motion
+
+Respect user reduced-motion preferences.
+
+## 16.10 Motion
+
+Default motion follows Phase 03:
+
+> Float → Settle
+
+Motion must communicate physical continuity rather than decoration.
+
+## 16.11 Performance
+
+Priorities:
+
+1. initial load
+2. route transitions
+3. large data
+4. images
+5. charts
+6. documents
+7. AI UI
+8. SSE
+9. mobile
+
+## 16.12 Code Splitting
+
+Public pages should not unnecessarily load heavy authenticated/admin modules.
+
+## 16.13 Image Optimization
+
+Use:
+
+- responsive sizing
+- lazy loading where appropriate
+- optimized assets
+
+## 16.14 Large Data
+
+Use:
+
+- pagination
+- virtualization where needed
+- incremental loading
+- efficient rendering
+
+## 16.15 SSE Performance
+
+Prevent:
+
+- duplicate subscriptions
+- unnecessary reconnect loops
+- excessive rerenders
+- abandoned connections
+
+## 16.16 Testing Pyramid
+
+```text
+Unit
+ ↓
+Component
+ ↓
+Integration
+ ↓
+E2E
+```
+
+## 16.17 Unit
+
+Test deterministic utilities, validation, formatting, state transformations, and permission helpers.
+
+## 16.18 Component
+
+Test:
+
+- rendering
+- interactions
+- states
+- accessibility
+
+## 16.19 Integration
+
+Test:
+
+- API
+- auth
+- permissions
+- server state
+- mutations
+- SSE reconciliation
+
+## 16.20 E2E
+
+Critical workflows include:
+
+- registration
+- login
+- onboarding
+- project selection
+- project creation
+- assessment
+- blueprint generation
+- tasks
+- milestones
+- project changes
+- mentor supervision
+- admin investigation
+
+## 16.21 Visual Regression
+
+Recommended targets:
+
+- shell
+- public pages
+- dashboard
+- project workspace
+- AI
+- tables
+- documents
+- dark theme
+- mobile
+
+---
+
+# 17. Stitch / Design-to-Implementation Workflow
+
+## 17.1 Stitch Role
+
+Stitch accelerates visual exploration.
+
+It is not the authority for:
+
+- routes
+- backend state
+- APIs
+- authorization
+- domain rules
+- security
+
+## 17.2 Prompt Structure
+
+Every page prompt should include:
+
+```text
+Product Context
++
+Page Identity
++
+Role
++
+Route
++
+Purpose
++
+Layout
++
+Design System
++
+Components
++
+Data
++
+States
++
+Responsive Rules
++
+Interactions
++
+Restrictions
+```
+
+## 17.3 Prompt Inheritance
+
+Every page prompt inherits:
+
+- Soft Intelligence
+- warm light default
+- charcoal dark counterpart
+- restrained palette
+- Manrope-style typography
+- unified component system
+- subtle motion
+- accessibility
+- responsive behavior
+
+## 17.4 Prohibited Stitch Outcomes
+
+Reject designs that introduce:
+
+- separate role themes
+- neon AI
+- excessive glassmorphism
+- excessive cards
+- giant pills
+- unnecessary gradients
+- decorative charts
+- fake progress
+- fake AI typing
+- inconsistent iconography
+
+## 17.5 Page Workflow
+
+```text
+Page Contract
+ ↓
+Visual Composition
+ ↓
+Stitch Prompt
+ ↓
+Generation
+ ↓
+Review
+ ↓
+Correction
+ ↓
+Approval
+ ↓
+Implementation
+ ↓
+Integration
+ ↓
+QA
+```
+
+## 17.6 Design Approval
+
+A page is approved only when it satisfies:
+
+- architecture
+- route
+- data
+- states
+- permissions
+- responsive behavior
+- accessibility
+- visual identity
+- interactions
+- API boundaries
+
+## 17.7 Design-to-Code Contract
+
+Every visual design must map to:
+
+```text
+Token
+ ↓
+Component
+ ↓
+Pattern
+ ↓
+Page
+```
+
+## 17.8 New Visual Pattern
+
+If a design requires a new reusable pattern:
+
+1. identify the requirement
+2. verify no existing pattern works
+3. define behavior
+4. define accessibility
+5. define responsive behavior
+6. integrate into system
+7. document it
+
+---
+
+# 18. Phase 06 Implementation Rules & Freeze
+
+## 18.1 Rule: One Design System
+
+GrowFlow has one design system.
+
+## 18.2 Rule: One Shell
+
+GrowFlow uses one shell architecture.
+
+## 18.3 Rule: One Canonical State
+
+Backend/domain state remains authoritative.
+
+## 18.4 Rule: No Direct Database Access
+
+Frontend never accesses the canonical database directly.
+
+## 18.5 Rule: No Direct AI Provider Access
+
+Frontend never calls AI providers directly.
+
+## 18.6 Rule: No Secret Leakage
+
+Secrets remain server-side.
+
+## 18.7 Rule: No Silent Mutation
+
+UI must not silently alter canonical state through assumptions.
+
+## 18.8 Rule: No Silent Definition Mutation
+
+Changing a Project Definition must not silently mutate existing instances.
+
+## 18.9 Rule: No Browser-Dependent Jobs
+
+Long-running work survives browser navigation.
+
+## 18.10 Rule: SSE Is Delivery
+
+SSE never becomes the sole source of truth.
+
+## 18.11 Rule: No Fake AI State
+
+AI UI must reflect real execution state.
+
+## 18.12 Rule: No Fake Progress
+
+Do not invent execution percentages.
+
+## 18.13 Rule: No Unauthorized Actions
+
+A hidden button is not security. Backend authorization is mandatory.
+
+## 18.14 Rule: Accessibility
+
+New components and pages must be accessible.
+
+## 18.15 Rule: Responsive
+
+New pages must define desktop, tablet, and mobile behavior.
+
+## 18.16 Rule: Architecture Changes
+
+Architecture changes require:
+
+```text
+Discover
+ ↓
+Document
+ ↓
+Evaluate
+ ↓
+Approve
+ ↓
+Update Authority
+ ↓
+Implement
+```
+
+## 18.17 Rule: Component Reuse
+
+Prefer reuse and composition.
+
+## 18.18 Rule: Page Contract
+
+Every page must satisfy the Phase 04 page implementation contract.
+
+## 18.19 Rule: Error Completeness
+
+Every major page/workflow must define loading, empty, error, success, and relevant processing states.
+
+## 18.20 Rule: Traceability
+
+Every implementation must be traceable to the applicable frozen specification.
+
+---
+
+# 19. Traceability, Dependencies & Decision Register
+
+## 19.1 Phase Dependency
+
+```text
+Phase 01
+Frontend Inventory
+ ↓
+Phase 02
+Information Architecture
+ ↓
+Phase 03
+Visual System
+ ↓
+Phase 04
+Frontend Documentation
+ ↓
+Phase 05
+Application & Integration Architecture
+ ↓
+Phase 06
+Frontend Foundation
+ ↓
+Individual Page Design
+ ↓
+Individual Page Implementation
+```
+
+## 19.2 Phase 01 Dependency
+
+Phase 01 defines the surfaces that Phase 06 must support.
+
+No inventoried surface may disappear silently.
+
+## 19.3 Phase 02 Dependency
+
+Phase 02 defines:
+
+- routes
+- navigation
+- workplace selector
+- shell behavior
+- page/detail/workflow classification
+
+Phase 06 implements the foundation for those decisions.
+
+## 19.4 Phase 03 Dependency
+
+Phase 03 defines:
+
+- Soft Intelligence
+- warm light
+- charcoal dark
+- restrained palette
+- Manrope-style typography
+- quiet cards
+- dense tables
+- editorial public experience
+- operational authenticated experience
+- deeper AI variant
+- Float → Settle motion
+
+Phase 06 operationalizes those decisions.
+
+## 19.5 Phase 04 Dependency
+
+Phase 04 defines:
+
+- page specification
+- state documentation
+- API boundary
+- SSE boundary
+- permissions
+- responsive/accessibility expectations
+- testing/observability expectations
+
+Phase 06 provides reusable implementation mechanisms for them.
+
+## 19.6 Phase 05 Dependency
+
+Phase 05 defines:
+
+- backend architecture
+- canonical state
+- API boundary
+- AI gateway
+- agents
+- persistent jobs
+- events
+- SSE
+- RAG
+- documents
+- security
+- authorization
+- project model
+
+Phase 06 must consume these contracts without duplicating their authority.
+
+## 19.7 Decision Register
+
+### D06-001 — One Unified Design System
+
+**Decision:** BUILD, SUPERVISE, and GOVERN share one design system.
+
+**Reason:** Prevent product fragmentation.
+
+### D06-002 — Soft Intelligence
+
+**Decision:** Preserve Phase 03 visual identity.
+
+**Reason:** This is the established product identity.
+
+### D06-003 — Warm Light Default
+
+**Decision:** Soft white/warm light is default.
+
+### D06-004 — Charcoal Dark
+
+**Decision:** Dark appearance is a designed charcoal counterpart.
+
+### D06-005 — Central Tokens
+
+**Decision:** Visual primitives are tokenized.
+
+### D06-006 — Centralized API Client
+
+**Decision:** API access is centralized.
+
+### D06-007 — Three State Categories
+
+**Decision:** Server State, UI State, Streaming State remain separate.
+
+### D06-008 — SSE Reconciliation
+
+**Decision:** Streamed events trigger reconciliation with canonical server state where appropriate.
+
+### D06-009 — AI Is Untrusted Until Validated
+
+**Decision:** Frontend treats AI output as untrusted.
+
+### D06-010 — Stitch Is Not Authority
+
+**Decision:** Stitch is a design-generation aid.
+
+### D06-011 — Mobile Is Structural
+
+**Decision:** Mobile uses progressive disclosure rather than simply shrinking desktop.
+
+### D06-012 — Accessibility Is Foundational
+
+**Decision:** Accessibility is required throughout implementation.
+
+### D06-013 — Architecture Changes Are Documented
+
+**Decision:** No silent architecture drift.
+
+### D06-014 — Long-Running Work Is Persistent
+
+**Decision:** Browser lifecycle does not determine job lifecycle.
+
+### D06-015 — Project Definition / Instance Separation
+
+**Decision:** Frontend visibly preserves the distinction.
+
+---
+
+# 20. Page Implementation Contract
+
+Every individual page created after Phase 06 must document:
+
+## 20.1 Identity
+
+- Page ID
+- Page name
+- route
+- role
+- purpose
+
+## 20.2 Navigation
+
+- entry points
+- exit paths
+- breadcrumbs
+- deep links
+- back behavior
+
+## 20.3 Layout
+
+- page container
+- regions
+- responsive composition
+- shell relationship
+
+## 20.4 Components
+
+- shared primitives
+- domain components
+- feature components
+
+## 20.5 Data
+
+- server state
+- API dependencies
+- query parameters
+- resource identity
+
+## 20.6 UI State
+
+- tabs
+- filters
+- dialogs
+- drawers
+- temporary form state
+
+## 20.7 Streaming
+
+- SSE events
+- execution states
+- reconnection behavior
+- reconciliation
+
+## 20.8 User Actions
+
+Every actionable control must specify:
+
+- action
+- permission
+- mutation
+- success
+- failure
+
+## 20.9 Permissions
+
+Specify:
+
+- visible
+- accessible
+- actionable
+
+## 20.10 States
+
+Define:
+
+- loading
+- empty
+- error
+- success
+- processing
+- AI state where applicable
+
+## 20.11 Responsive
+
+Define:
+
+- desktop
+- tablet
+- mobile
+
+## 20.12 Accessibility
+
+Define:
+
+- semantic structure
+- keyboard behavior
+- focus
+- labels
+- announcements where necessary
+
+## 20.13 Observability
+
+Define relevant:
+
+- route metrics
+- API errors
+- mutation failures
+- workflow failures
+
+## 20.14 Security
+
+Define:
+
+- sensitive data considerations
+- permission boundaries
+- content sanitization
+
+---
+
+# 21. Core Frontend Invariants
+
+The following are mandatory.
+
+1. One GrowFlow visual language.
+2. One shell architecture.
+3. One canonical backend state.
+4. No frontend database access.
+5. No frontend AI provider access.
+6. No frontend secrets.
+7. No AI direct canonical mutation.
+8. No SSE-as-source-of-truth.
+9. No browser-dependent long-running jobs.
+10. No silent Project Definition mutation.
+11. No fake AI progress.
+12. No unauthorized actions.
+13. No architecture drift.
+14. No accessibility regression.
+15. No responsive omission.
+16. No unexplained duplicate components.
+17. No decorative analytics.
+18. No fake AI typing.
+19. No arbitrary role color themes.
+20. No dark-mode inversion shortcut.
+21. No page-specific visual system outside approved tokens.
+22. No page-specific API access outside the data layer.
+23. No duplicate domain truth across state stores.
+24. No loss of canonical context after streaming.
+25. No design approval without implementation contract compliance.
+
+---
+
+# 22. Required Foundation Components
+
+The implementation should establish a reusable foundation containing, at minimum:
+
+## 22.1 Controls
+
+- Button
+- Icon Button
+- Input
+- Textarea
+- Select
+- Combobox
+- Checkbox
+- Radio
+- Switch
+
+## 22.2 Feedback
+
+- Badge
+- Status Indicator
+- Alert
+- Toast
+- Skeleton
+- Empty State
+- Error State
+- Progress
+
+## 22.3 Navigation
+
+- Top Navigation
+- Sidebar
+- Mobile Drawer
+- Breadcrumbs
+- Tabs
+- Pagination
+- Search/Command interface
+
+## 22.4 Overlays
+
+- Modal
+- Drawer
+- Popover
+- Tooltip
+- Confirmation Dialog
+
+## 22.5 Data
+
+- Table
+- Data Table
+- Metric
+- Timeline
+- Activity Item
+- Chart
+- Document Preview
+
+## 22.6 AI
+
+- AI Execution Indicator
+- AI Status
+- AI Result Container
+- AI Message/Conversation primitive
+- Processing State
+- Validation/QA State
+
+These components must remain consistent across roles.
+
+---
+
+# 23. Critical Workflow Foundation
+
+## 23.1 Assessment
+
+```text
+Introduction
+ ↓
+Question Interface
+ ↓
+Adaptive Questions
+ ↓
+Completion
+ ↓
+Result
+ ↓
+Blueprint Generation
+```
+
+## 23.2 Blueprint
+
+```text
+Not Started
+ ↓
+Generating
+ ↓
+Generated
+ ↓
+Validating
+ ↓
+QA/Judge
+ ↓
+Approved
+```
+
+## 23.3 Project Change
+
+```text
+Change Requested
+ ↓
+Impact Analysis
+ ↓
+Impact Review
+ ↓
+Regeneration
+ ↓
+Validation
+ ↓
+QA/Judge
+ ↓
+Persisted Change
+```
+
+## 23.4 AI Execution
+
+```text
+Queued
+ ↓
+Running
+ ↓
+Validating
+ ↓
+QA
+ ↓
+Completed
+```
+
+Failures:
+
+```text
+Failed
+Cancelled
+Retrying
+```
+
+---
+
+# 24. Visual Governance
+
+## 24.1 Approved Visual Language
+
+- Soft Intelligence
+- warm light
+- soft charcoal dark
+- restrained palette
+- one subtle accent
+- quiet surfaces
+- dense integrated tables
+- contextual/editorial imagery
+- controlled motion
+- deeper AI variant
+
+## 24.2 Prohibited Visual Language
+
+- generic SaaS template behavior
+- excessive glassmorphism
+- neon AI
+- rainbow role themes
+- card overload
+- excessive shadows
+- giant pills
+- unnecessary gradients
+- decorative charts
+- animated backgrounds
+- fake AI typing
+- excessive parallax
+- stock-heavy storytelling
+- tiny unreadable metadata
+- inconsistent icon families
+- dark-mode inversion
+
+---
+
+# 25. Implementation Sequence
+
+The recommended frontend construction order is:
+
+```text
+1. Repository / tooling foundation
+2. Design tokens
+3. Theme system
+4. Typography
+5. Base primitives
+6. Forms and controls
+7. Feedback components
+8. Navigation primitives
+9. Application shell
+10. Authentication/guards
+11. API client
+12. Server-state foundation
+13. Streaming/SSE foundation
+14. Permission helpers
+15. Data components
+16. AI components
+17. Document components
+18. Project workspace primitives
+19. Accessibility QA
+20. Responsive QA
+21. Performance baseline
+22. Testing foundation
+23. First page
+```
+
+This sequence intentionally builds the reusable system before page-specific work.
+
+---
+
+# 26. Page Production Sequence
+
+After the foundation is validated:
+
+```text
+Page Inventory
+ ↓
+Priority Selection
+ ↓
+Page Contract
+ ↓
+Visual Direction
+ ↓
+Stitch Prompt
+ ↓
+Design Generation
+ ↓
+Review
+ ↓
+Correction
+ ↓
+Approval
+ ↓
+Implementation
+ ↓
+API Integration
+ ↓
+State Integration
+ ↓
+Responsive QA
+ ↓
+Accessibility QA
+ ↓
+Visual QA
+ ↓
+E2E QA
+ ↓
+Page Approved
+```
+
+---
+
+# 27. Foundation QA Gate
+
+Before individual page production, verify:
+
+## Architecture
+
+- [ ] route system works
+- [ ] feature boundaries work
+- [ ] API boundary works
+- [ ] state categories are separated
+
+## Design
+
+- [ ] tokens work
+- [ ] light theme works
+- [ ] dark theme works
+- [ ] typography works
+- [ ] responsive grid works
+
+## Shell
+
+- [ ] top navigation works
+- [ ] Workplace selector works
+- [ ] role sidebar works
+- [ ] mobile drawer works
+- [ ] profile/notifications/search work
+
+## Interaction
+
+- [ ] modal works
+- [ ] drawer works
+- [ ] toast works
+- [ ] forms work
+- [ ] validation works
+- [ ] loading/empty/error states work
+
+## AI
+
+- [ ] AI status works
+- [ ] execution states work
+- [ ] SSE lifecycle works
+- [ ] reconnection works
+- [ ] reconciliation works
+
+## Quality
+
+- [ ] accessibility baseline passes
+- [ ] responsive baseline passes
+- [ ] performance baseline passes
+- [ ] automated tests exist
+
+---
+
+# 28. Phase 06 Definition of Done
+
+Phase 06 is complete only if all of the following are documented and implementation-ready:
+
+## Architecture
+
+- [x] Frontend architecture
+- [x] repository structure
+- [x] layer boundaries
+- [x] feature boundaries
+- [x] domain UI boundary
+
+## Design
+
+- [x] design tokens
+- [x] typography
+- [x] colors
+- [x] light theme
+- [x] dark theme
+- [x] spacing
+- [x] radius
+- [x] elevation
+- [x] iconography
+- [x] motion
+
+## Shell
+
+- [x] global top navigation
+- [x] Workplace selector
+- [x] role navigation
+- [x] sidebar
+- [x] mobile navigation
+- [x] profile
+- [x] notifications
+- [x] search
+
+## Interaction
+
+- [x] forms
+- [x] validation
+- [x] modal
+- [x] drawer
+- [x] toast
+- [x] loading
+- [x] empty
+- [x] error
+- [x] success
+- [x] confirmation
+
+## Data
+
+- [x] tables
+- [x] dashboards
+- [x] metrics
+- [x] charts
+- [x] timeline
+
+## AI
+
+- [x] AI visual language
+- [x] execution states
+- [x] progress rules
+- [x] AI Mentor foundation
+- [x] streaming state
+- [x] SSE lifecycle
+- [x] reconnection
+- [x] reconciliation
+
+## Workspace
+
+- [x] project workspace foundation
+- [x] lifecycle representation
+- [x] task foundation
+- [x] milestone foundation
+- [x] risk foundation
+- [x] health foundation
+- [x] document foundation
+- [x] Markdown foundation
+- [x] GitHub foundation
+
+## Integration
+
+- [x] API boundary
+- [x] authentication integration
+- [x] authorization presentation
+- [x] server state
+- [x] UI state
+- [x] streaming state
+
+## Quality
+
+- [x] security
+- [x] accessibility
+- [x] reduced motion
+- [x] performance
+- [x] testing
+- [x] visual QA
+- [x] observability
+
+## Design Generation
+
+- [x] Stitch role
+- [x] prompt contract
+- [x] page workflow
+- [x] approval workflow
+- [x] design-to-code contract
+
+## Governance
+
+- [x] component rules
+- [x] new-pattern rules
+- [x] architecture-change rules
+- [x] page implementation contract
+- [x] hard invariants
+- [x] freeze criteria
+
+---
+
+# 29. Phase 06 Freeze Statement
+
+Phase 06 is hereby designated:
+
+> **FROZEN / AUTHORITATIVE**
+
+The frontend foundation defined here is the implementation contract for subsequent GrowFlow frontend construction.
+
+Any future deviation must be:
+
+1. identified
+2. documented
+3. evaluated against Phases 01–05 and Phase 06
+4. explicitly approved
+5. reflected in the authoritative documentation before implementation
+
+No developer, generated design, page prompt, frontend component, or AI-assisted implementation may silently redefine these foundations.
+
+---
+
+# 30. Final Architecture Summary
+
+```text
+                    GROWFLOW
+                       │
+             Unified Soft Intelligence
+                       │
+        ┌──────────────┼──────────────┐
+        ↓              ↓              ↓
+      BUILD        SUPERVISE        GOVERN
+        │              │              │
+        └──────────────┼──────────────┘
+                       ↓
+               Application Shell
+                       ↓
+             Pages / Feature Modules
+                       ↓
+              Shared Components
+                       ↓
+             State / Data Layer
+                 ↙           ↘
+             REST            SSE
+               ↓              ↓
+             FastAPI      Persistent Events
+               ↓
+        Application Services
+               ↓
+          Domain Services
+               ↓
+       Canonical PostgreSQL
+               ↓
+    AI / Jobs / RAG / Integrations
+```
+
+The fundamental ownership rule remains:
+
+> **Canonical state belongs to the backend/domain layer. The frontend presents, requests, observes, and reconciles that state.**
+
+---
+
+# 31. Next Gate
+
+With Phase 06 frozen, the project is ready to move from **foundation definition** into **frontend foundation implementation and controlled page design**.
+
+The next work should not begin by independently designing random screens.
+
+The correct sequence is:
+
+```text
+PHASE 06 FROZEN
+      ↓
+Implement Foundation
+      ↓
+Validate Shell + Tokens + Components
+      ↓
+Foundation QA
+      ↓
+Page Design Gate
+      ↓
+Select First Page
+      ↓
+Page Contract
+      ↓
+Stitch Design
+      ↓
+Review
+      ↓
+Implement
+      ↓
+Integrate
+      ↓
+QA
+      ↓
+Approve
+```
+
+---
+
+# 32. Final Non-Negotiable Checklist
+
+Before accepting any future frontend work, verify:
+
+- [ ] Does it follow the frozen route?
+- [ ] Does it use the unified shell?
+- [ ] Does it use the design tokens?
+- [ ] Does it follow Soft Intelligence?
+- [ ] Does it work in light and dark themes?
+- [ ] Does it define mobile behavior?
+- [ ] Does it define loading?
+- [ ] Does it define empty?
+- [ ] Does it define error?
+- [ ] Does it define success?
+- [ ] Does it define processing/AI states where applicable?
+- [ ] Does it use the centralized API boundary?
+- [ ] Does it preserve server/UI/streaming state separation?
+- [ ] Does it respect backend authorization?
+- [ ] Does it avoid exposing secrets?
+- [ ] Does it safely render untrusted content?
+- [ ] Does it support accessibility?
+- [ ] Does it support reduced motion?
+- [ ] Does it avoid fake AI behavior?
+- [ ] Does it avoid duplicate components?
+- [ ] Does it preserve Project Definition vs Instance?
+- [ ] Does it preserve canonical backend ownership?
+- [ ] Does it preserve Phase 01–05 decisions?
+- [ ] Is any architectural deviation explicitly documented?
+
+If any answer is **No**, the implementation is not ready for approval.
+
+---
+
+# Phase 06 Status
+
+**FROZEN 🔒**
+
+**Authoritative frontend foundation established.**
+
+**Next major gate:** Frontend Foundation Implementation → Page Design Gate → Controlled page-by-page production.

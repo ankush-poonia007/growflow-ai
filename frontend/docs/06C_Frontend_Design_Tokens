@@ -1,0 +1,2708 @@
+# GrowFlow — Phase 06C
+# Frontend Design Tokens Specification
+
+**Status:** FROZEN / AUTHORITATIVE after acceptance  
+**Phase:** 06C — Frontend Design Tokens  
+**Project:** GrowFlow  
+**Design System:** Soft Intelligence  
+**Canonical Typeface:** Manrope  
+**Primary Accent:** `#6F7F63`  
+**Default Appearance:** Warm Light  
+**Dark Appearance:** Soft Charcoal Counterpart  
+**Relationship:** Formalizes the frozen Phase 03 design system and Phase 06A/06B decisions.
+
+---
+
+## 0. Document Purpose
+
+This document defines the implementation-grade design-token system for GrowFlow.
+
+The purpose of Phase 06C is **not to redesign GrowFlow**. The visual direction was already established and frozen in the earlier design phases. This phase converts those decisions into a structured token architecture that frontend developers, component designers, Stitch prompts, and future page specifications can consume consistently.
+
+The token system is the layer between:
+
+```text
+Brand Identity
+    ↓
+Visual Design Rules
+    ↓
+Design Tokens
+    ↓
+Core Components
+    ↓
+Application Shell
+    ↓
+Pages / Workflows
+```
+
+Every reusable visual property that should remain consistent across the product should be represented by a token or a documented component rule rather than independently invented on a page.
+
+---
+
+# 1. Phase 06C Goals
+
+Phase 06C establishes:
+
+1. A canonical token naming system.
+2. Primitive color values.
+3. Semantic color roles.
+4. Light and dark theme mappings.
+5. Typography tokens.
+6. Spacing tokens.
+7. Radius tokens.
+8. Elevation tokens.
+9. Sizing tokens.
+10. Iconography sizing rules.
+11. Layout and container tokens.
+12. Responsive tokens.
+13. Motion tokens.
+14. Interaction-state tokens.
+15. Accessibility-related tokens.
+16. AI-specific tokens.
+17. Data visualization tokens.
+18. Document/code tokens.
+19. Navigation and shell tokens.
+20. Component token rules.
+21. CSS/custom-property mapping guidance.
+22. TypeScript token-consumption guidance.
+23. Stitch token mapping.
+24. Token governance and validation.
+25. Anti-patterns and prohibitions.
+
+---
+
+# 2. Design Philosophy
+
+GrowFlow uses the visual philosophy:
+
+> **Soft Intelligence — Nothing screams; hierarchy still exists.**
+
+The token system must preserve this principle.
+
+Tokens should produce an interface that is:
+
+- calm
+- precise
+- readable
+- structured
+- warm
+- restrained
+- sophisticated
+- information-dense where appropriate
+- visually expressive where storytelling is appropriate
+- operationally clear
+- accessible
+- consistent across BUILD, SUPERVISE, and GOVERN
+
+Tokens must not create:
+
+- neon AI interfaces
+- excessive gradients
+- excessive shadows
+- excessive rounded cards
+- rainbow role themes
+- overly decorative dashboards
+- visually noisy status systems
+- arbitrary per-page colors
+- inconsistent typography
+- excessive motion
+
+---
+
+# 3. Token Architecture
+
+GrowFlow uses three conceptual token layers.
+
+```text
+PRIMITIVE TOKENS
+    ↓
+SEMANTIC TOKENS
+    ↓
+COMPONENT TOKENS
+```
+
+## 3.1 Primitive Tokens
+
+Primitive tokens describe raw design values.
+
+Examples:
+
+```text
+color.green.600
+color.gray.900
+space.4
+radius.md
+font.weight.semibold
+duration.fast
+```
+
+Primitive tokens should generally not be consumed directly by application pages.
+
+## 3.2 Semantic Tokens
+
+Semantic tokens describe meaning.
+
+Examples:
+
+```text
+color.background.canvas
+color.surface.default
+color.text.primary
+color.border.subtle
+color.action.primary
+color.status.success
+color.ai.surface
+```
+
+Pages and most components should consume semantic tokens.
+
+## 3.3 Component Tokens
+
+Component tokens describe a reusable component's visual contract.
+
+Examples:
+
+```text
+button.primary.background
+button.primary.backgroundHover
+input.border
+table.header.background
+sidebar.item.activeBackground
+ai.message.surface
+```
+
+Component tokens may reference semantic tokens.
+
+---
+
+# 4. Naming Convention
+
+Canonical naming structure:
+
+```text
+<category>.<role>.<property>.<state>
+```
+
+Examples:
+
+```text
+color.text.primary
+color.surface.default
+color.action.primary.hover
+button.primary.background
+button.primary.backgroundHover
+input.border.focus
+```
+
+For CSS variables:
+
+```text
+--gf-color-text-primary
+--gf-color-surface-default
+--gf-button-primary-background
+```
+
+For TypeScript:
+
+```text
+tokens.color.text.primary
+tokens.color.surface.default
+tokens.button.primary.background
+```
+
+## 4.1 Naming Rules
+
+Use:
+
+- semantic meaning
+- stable role names
+- predictable hierarchy
+- explicit state names
+
+Avoid:
+
+```text
+greenButton
+niceGray
+homepageGreen
+dashboardCardColor
+darkGray2
+randomBorder
+```
+
+Prefer:
+
+```text
+color.action.primary
+color.surface.secondary
+color.border.standard
+```
+
+---
+
+# 5. Color System
+
+## 5.1 Color Principles
+
+GrowFlow's color system is deliberately restrained.
+
+The palette contains:
+
+1. Warm neutral foundation.
+2. One primary brand accent.
+3. Semantic status colors.
+4. A slightly deeper AI layer.
+5. Neutral data visualization colors where needed.
+
+Color should communicate hierarchy and state, not decoration.
+
+---
+
+# 6. Light Theme Primitive Colors
+
+## 6.1 Background and Surface Primitives
+
+| Token | Value | Purpose |
+|---|---:|---|
+| `color.neutral.background` | `#F7F7F4` | Main application canvas |
+| `color.neutral.surface` | `#FFFFFF` | Primary surface |
+| `color.neutral.secondary` | `#F2F2EE` | Secondary surface |
+| `color.neutral.tertiary` | `#EDEDE8` | Tertiary/muted surface |
+
+## 6.2 Text Primitives
+
+| Token | Value | Purpose |
+|---|---:|---|
+| `color.text.primary` | `#1C1C1A` | Primary content |
+| `color.text.secondary` | `#5F625D` | Supporting content |
+| `color.text.tertiary` | `#858780` | Metadata / low emphasis |
+
+## 6.3 Border Primitives
+
+| Token | Value | Purpose |
+|---|---:|---|
+| `color.border.subtle` | `#E5E5DF` | Quiet separators |
+| `color.border.standard` | `#D9D9D2` | Standard controls |
+| `color.border.strong` | `#C9C9C0` | Strong separation |
+
+---
+
+# 7. Brand Accent
+
+| Token | Value |
+|---|---:|
+| `color.accent.default` | `#6F7F63` |
+| `color.accent.hover` | `#607055` |
+| `color.accent.active` | `#526149` |
+| `color.accent.soft` | `#E9EDE5` |
+| `color.accent.border` | `#B8C2AE` |
+
+Primary accent is used for:
+
+- primary actions
+- selected navigation
+- important interactive states
+- links where appropriate
+- progress emphasis
+- brand moments
+
+It must not dominate every screen.
+
+---
+
+# 8. Semantic Status Colors
+
+## 8.1 Success
+
+```text
+success.default = #477A5A
+success.soft    = #E7F0E9
+```
+
+Use for:
+
+- completed
+- healthy
+- verified
+- successful
+- connected
+
+## 8.2 Warning
+
+```text
+warning.default = #9A7135
+warning.soft    = #F5EDDD
+```
+
+Use for:
+
+- attention required
+- approaching deadline
+- degraded condition
+- pending review
+
+## 8.3 Danger
+
+```text
+danger.default = #A6534D
+danger.soft    = #F6E8E6
+```
+
+Use for:
+
+- destructive actions
+- failed operations
+- critical risk
+- invalid states
+
+## 8.4 Info
+
+```text
+info.default = #54718A
+info.soft    = #E8EEF3
+```
+
+Use for:
+
+- informational messages
+- neutral system guidance
+- contextual notices
+
+---
+
+# 9. AI Color Layer
+
+AI has a distinct but native visual layer.
+
+Light theme:
+
+```text
+color.ai.default     = #5F6B7A
+color.ai.surface     = #ECEEF1
+color.ai.border      = #D4D8DD
+color.ai.emphasis    = #424D5A
+```
+
+AI styling must feel:
+
+- intelligent
+- calm
+- deeper than normal UI
+- integrated into the product
+
+AI styling must not feel:
+
+- futuristic for its own sake
+- neon
+- cyberpunk
+- glowing
+- detached from the design system
+
+---
+
+# 10. Dark Theme Primitive Colors
+
+## 10.1 Surfaces
+
+| Token | Value |
+|---|---:|
+| `dark.background` | `#171816` |
+| `dark.secondary` | `#1E201D` |
+| `dark.tertiary` | `#262824` |
+| `dark.surface` | `#20221F` |
+| `dark.elevated` | `#272925` |
+| `dark.muted` | `#2D302B` |
+
+## 10.2 Text
+
+| Token | Value |
+|---|---:|
+| `dark.text.primary` | `#F0F1EC` |
+| `dark.text.secondary` | `#C2C5BD` |
+| `dark.text.tertiary` | `#91958C` |
+
+## 10.3 Borders
+
+| Token | Value |
+|---|---:|
+| `dark.border.subtle` | `#30332E` |
+| `dark.border.standard` | `#3A3D37` |
+| `dark.border.strong` | `#4A4E47` |
+
+## 10.4 Accent
+
+| Token | Value |
+|---|---:|
+| `dark.accent.default` | `#9AAA8D` |
+| `dark.accent.hover` | `#A8B79C` |
+| `dark.accent.active` | `#B7C5AB` |
+| `dark.accent.soft` | `#2B3328` |
+
+## 10.5 Semantic Status
+
+| Role | Default |
+|---|---:|
+| Success | `#7FB18C` |
+| Warning | `#D0A962` |
+| Danger | `#D27A72` |
+| Info | `#88A8C0` |
+
+## 10.6 AI
+
+| Token | Value |
+|---|---:|
+| `dark.ai.surface` | `#292D30` |
+| `dark.ai.border` | `#3C4246` |
+| `dark.ai.emphasis` | `#A9B2BB` |
+
+---
+
+# 11. Semantic Color Mapping
+
+Application code should prefer semantic roles.
+
+## 11.1 Canvas
+
+```text
+background.canvas
+```
+
+Main page background.
+
+## 11.2 Surfaces
+
+```text
+surface.default
+surface.secondary
+surface.tertiary
+surface.elevated
+surface.inverse
+```
+
+## 11.3 Text
+
+```text
+text.primary
+text.secondary
+text.tertiary
+text.inverse
+text.disabled
+text.link
+text.linkHover
+```
+
+## 11.4 Borders
+
+```text
+border.subtle
+border.standard
+border.strong
+border.focus
+border.error
+```
+
+## 11.5 Actions
+
+```text
+action.primary
+action.primaryHover
+action.primaryActive
+action.secondary
+action.secondaryHover
+action.destructive
+action.destructiveHover
+action.disabled
+```
+
+## 11.6 Status
+
+```text
+status.success
+status.warning
+status.danger
+status.info
+```
+
+## 11.7 AI
+
+```text
+ai.default
+ai.surface
+ai.border
+ai.emphasis
+ai.progress
+```
+
+---
+
+# 12. Typography System
+
+Canonical font:
+
+> **Manrope**
+
+Required weights:
+
+```text
+400 Regular
+500 Medium
+600 SemiBold
+700 Bold
+800 ExtraBold
+```
+
+Recommended loading strategy:
+
+- self-host or use an approved production font source
+- preload only necessary weights
+- avoid loading unused weights
+- use `font-display: swap`
+- preserve fallback stack
+
+Canonical fallback:
+
+```text
+Manrope,
+ui-sans-serif,
+system-ui,
+-apple-system,
+BlinkMacSystemFont,
+"Segoe UI",
+sans-serif
+```
+
+---
+
+# 13. Typography Tokens
+
+| Token | Size | Line Height | Weight | Tracking |
+|---|---:|---:|---:|---:|
+| `type.display.xl` | 64px | 1.05 | 700 | -0.03em |
+| `type.display.l` | 56px | 1.08 | 700 | -0.03em |
+| `type.display.m` | 48px | 1.10 | 700 | -0.025em |
+| `type.heading.h1` | 40px | 1.15 | 700 | -0.02em |
+| `type.heading.h2` | 32px | 1.20 | 700 | -0.015em |
+| `type.heading.h3` | 26px | 1.25 | 700 | -0.01em |
+| `type.heading.h4` | 22px | 1.30 | 600 | -0.005em |
+| `type.heading.h5` | 18px | 1.35 | 600 | 0 |
+| `type.heading.h6` | 16px | 1.40 | 600 | 0 |
+| `type.body.large` | 17px | 1.60 | 400 | 0 |
+| `type.body.default` | 15px | 1.55 | 400 | 0 |
+| `type.body.small` | 14px | 1.50 | 400 | 0 |
+| `type.caption` | 13px | 1.45 | 400 | 0 |
+| `type.metadata` | 12px | 1.40 | 500 | 0 |
+
+---
+
+# 14. Typography Usage Rules
+
+## Display
+
+Used primarily on:
+
+- public hero
+- major marketing statements
+- major storytelling sections
+
+Avoid on dense application screens.
+
+## H1
+
+One primary page heading.
+
+## H2
+
+Major page sections.
+
+## H3/H4
+
+Subsections and grouped content.
+
+## Body
+
+Default application content.
+
+## Metadata
+
+Use for:
+
+- timestamps
+- IDs
+- compact table metadata
+- secondary labels
+
+Metadata must remain readable and must not be used as the primary information hierarchy.
+
+---
+
+# 15. Typography Constraints
+
+Do not:
+
+- use more than the approved weight range without explicit design-system revision
+- mix unrelated typefaces
+- use uppercase everywhere
+- use giant text in operational dashboards
+- use tiny text to fit more data
+- create per-page typography scales
+
+---
+
+# 16. Spacing System
+
+Canonical spacing scale:
+
+| Token | px |
+|---|---:|
+| `space.2xs` | 2 |
+| `space.xs` | 4 |
+| `space.s` | 8 |
+| `space.sm` | 12 |
+| `space.m` | 16 |
+| `space.ml` | 20 |
+| `space.l` | 24 |
+| `space.xl` | 32 |
+| `space.2xl` | 40 |
+| `space.3xl` | 48 |
+| `space.4xl` | 64 |
+| `space.5xl` | 80 |
+| `space.6xl` | 96 |
+| `space.7xl` | 128 |
+
+---
+
+# 17. Spacing Usage
+
+Use smaller spacing for:
+
+- compact controls
+- table rows
+- metadata
+- dense project interfaces
+
+Use larger spacing for:
+
+- public sections
+- hero composition
+- major workflow transitions
+- editorial storytelling
+
+Do not arbitrarily create values such as:
+
+```text
+13px
+19px
+27px
+37px
+```
+
+unless a component specification explicitly requires an exception.
+
+---
+
+# 18. Radius System
+
+| Token | Value |
+|---|---:|
+| `radius.xs` | 4px |
+| `radius.s` | 6px |
+| `radius.m` | 8px |
+| `radius.l` | 12px |
+| `radius.xl` | 16px |
+| `radius.2xl` | 20px |
+| `radius.full` | 9999px |
+
+Primary application controls generally use 6–8px.
+
+Larger radii are reserved for:
+
+- larger surfaces
+- editorial compositions
+- prominent feature sections
+- selected visual containers
+
+Avoid turning every object into a pill.
+
+---
+
+# 19. Elevation System
+
+GrowFlow uses restrained elevation.
+
+| Token | Shadow |
+|---|---|
+| `elevation.0` | none |
+| `elevation.1` | `0 1px 2px rgba(0,0,0,0.04)` |
+| `elevation.2` | `0 4px 12px rgba(0,0,0,0.06)` |
+| `elevation.3` | `0 12px 32px rgba(0,0,0,0.08)` |
+
+Elevation communicates layering.
+
+It must not become decoration.
+
+Use:
+
+- Level 0 for integrated surfaces
+- Level 1 for subtle floating controls
+- Level 2 for dropdowns/modals/important floating surfaces
+- Level 3 for major overlays where required
+
+Dark theme shadows must be adapted to preserve hierarchy rather than blindly copying light-theme shadows.
+
+---
+
+# 20. Control Sizing
+
+## Buttons
+
+### Standard
+
+```text
+height: 40px
+horizontal padding: 16px
+radius: 8px
+font: 14px / 600
+```
+
+### Large CTA
+
+```text
+height: 48px
+horizontal padding: 20px
+radius: 8px
+font: 15–16px / 600
+```
+
+### Compact
+
+```text
+height: 32px
+horizontal padding: 12px
+radius: 6px
+font: 13px / 600
+```
+
+## Inputs
+
+### Standard
+
+```text
+height: 40px
+horizontal padding: 12px
+radius: 6px
+font: 14px
+```
+
+### Large
+
+```text
+height: 48px
+```
+
+### Compact
+
+```text
+height: 36px
+```
+
+### Textarea
+
+```text
+minimum height: 96px
+padding: 12px
+line-height: 1.5
+```
+
+---
+
+# 21. Touch Targets
+
+Interactive targets should generally provide at least:
+
+```text
+44px × 44px
+```
+
+This applies especially to:
+
+- mobile navigation
+- icon buttons
+- close controls
+- menu controls
+- pagination controls
+- action icons
+
+Visual icon size may be smaller than the interactive hit area.
+
+---
+
+# 22. Iconography
+
+Use one coherent icon family.
+
+Icon rules:
+
+- stroke-based icons are preferred
+- consistent stroke weight
+- no mixing unrelated icon styles
+- no decorative icon overload
+- icons must support meaning
+- icons must not replace labels when the meaning is ambiguous
+
+Recommended functional sizes:
+
+```text
+12px — metadata/inline
+14px — compact controls
+16px — standard controls
+18px — navigation
+20px — prominent controls
+24px — major feature icons
+32px+ — editorial/marketing usage
+```
+
+---
+
+# 23. Layout Tokens
+
+## Application Shell
+
+Authenticated top navigation:
+
+```text
+height: 64px
+```
+
+Public navigation:
+
+```text
+height: 68–76px
+```
+
+## Sidebar
+
+Default:
+
+```text
+width: 248px
+```
+
+Allowed implementation range:
+
+```text
+240–264px
+```
+
+Collapsed:
+
+```text
+width: 72px
+```
+
+Sidebar item:
+
+```text
+height: 36–40px
+horizontal padding: 8–12px
+icon: 18–20px
+gap: 10–12px
+radius: 6–8px
+```
+
+---
+
+# 24. Content Width Tokens
+
+Recommended semantic layout widths:
+
+```text
+layout.content.readable
+layout.content.standard
+layout.content.wide
+layout.content.full
+```
+
+Suggested implementation values:
+
+```text
+readable: ~720px
+standard: ~1200px
+wide: ~1440px
+full: available container
+```
+
+These are guidance values, not permission to create arbitrary max-widths on every page.
+
+---
+
+# 25. Page Gutters
+
+Desktop:
+
+```text
+32–48px
+```
+
+Tablet:
+
+```text
+24–32px
+```
+
+Mobile:
+
+```text
+16–20px
+```
+
+Page specifications may select within the approved range according to density.
+
+---
+
+# 26. Grid Tokens
+
+GrowFlow supports:
+
+- 12-column desktop grid
+- reduced-column tablet layouts
+- single-column mobile layouts where appropriate
+
+Typical desktop gap:
+
+```text
+24px
+```
+
+Dense application layouts may use:
+
+```text
+16px
+```
+
+Public/editorial layouts may use:
+
+```text
+24–32px
+```
+
+---
+
+# 27. Responsive Breakpoints
+
+Canonical breakpoints:
+
+```text
+mobile: < 768px
+tablet: 768–1199px
+desktop: >= 1200px
+```
+
+These are behavior boundaries, not merely device labels.
+
+---
+
+# 28. Responsive Behavior Rules
+
+## Mobile
+
+Prioritize:
+
+1. content
+2. primary action
+3. essential navigation
+4. status
+5. secondary information
+
+Sidebar becomes a drawer.
+
+Tables may:
+
+- horizontally scroll
+- collapse columns
+- transform into row/card representations
+- provide detail views
+
+Do not simply shrink desktop layouts until they become unusable.
+
+## Tablet
+
+Maintain application structure while reducing:
+
+- gutters
+- columns
+- secondary information
+- simultaneous visible controls
+
+## Desktop
+
+Use available width for:
+
+- information density
+- comparison
+- dashboards
+- multi-column workflows
+- operational context
+
+---
+
+# 29. Motion Tokens
+
+Motion follows:
+
+> **Float → Settle**
+
+Motion should feel like subtle physical movement.
+
+## Durations
+
+Recommended:
+
+```text
+duration.instant = 0ms
+duration.fast = 120ms
+duration.standard = 180ms
+duration.moderate = 240ms
+duration.slow = 320ms
+duration.emphasis = 420ms
+```
+
+Avoid long decorative animations.
+
+---
+
+# 30. Easing Tokens
+
+Recommended:
+
+```text
+easing.standard
+easing.enter
+easing.exit
+easing.emphasis
+```
+
+Conceptually:
+
+- standard: smooth general transition
+- enter: slightly softer entrance
+- exit: efficient exit
+- emphasis: controlled physical settling
+
+Exact cubic-bezier implementation may be standardized at component-system implementation time, but individual pages must not invent unrelated motion curves.
+
+---
+
+# 31. Motion Usage
+
+Appropriate:
+
+- hover transitions
+- dropdown opening
+- drawer movement
+- modal entrance
+- progress transitions
+- page element settling
+- notification appearance
+- AI state transitions
+
+Avoid:
+
+- constant background movement
+- excessive parallax
+- perpetual floating elements
+- fake AI typing
+- animated charts without informational purpose
+- decorative motion that competes with task completion
+
+---
+
+# 32. Reduced Motion
+
+When reduced motion is enabled:
+
+- remove nonessential movement
+- reduce transition distance
+- reduce duration
+- disable decorative animations
+- preserve functional state changes through opacity, instant state changes, or static indicators
+
+Accessibility preference always overrides decorative motion.
+
+---
+
+# 33. Interaction State Tokens
+
+Every interactive component should define:
+
+```text
+default
+hover
+active
+focus
+disabled
+loading
+selected
+error
+success
+```
+
+Not every component needs every state visually, but its behavior must be explicitly defined.
+
+---
+
+# 34. Focus Tokens
+
+Focus must be visible and accessible.
+
+Conceptual tokens:
+
+```text
+focus.ring.color
+focus.ring.width
+focus.ring.offset
+```
+
+The focus treatment must have sufficient contrast and must not rely only on subtle color change.
+
+Keyboard focus is a first-class state.
+
+---
+
+# 35. Disabled State
+
+Disabled controls should communicate:
+
+- unavailable
+- non-interactive
+- visually reduced emphasis
+
+Do not rely on opacity alone.
+
+Disabled controls must not appear identical to enabled controls.
+
+---
+
+# 36. Loading Tokens
+
+Loading should communicate actual state.
+
+Use:
+
+- skeletons for page/data loading
+- inline spinners for short actions
+- progress indicators for measurable work
+- execution state indicators for AI/background jobs
+
+Never simulate progress that is not known.
+
+---
+
+# 37. Status Tokens
+
+Canonical status semantics should remain consistent.
+
+Example mapping:
+
+| Semantic state | Visual role |
+|---|---|
+| Planned | neutral |
+| In Progress | accent/info |
+| Completed | success |
+| At Risk | warning |
+| Blocked | danger |
+| Failed | danger |
+| Pending Review | warning/info |
+| Generating | AI/accent |
+| Validating | AI/info |
+| Approved | success |
+
+The exact component representation may differ, but the semantic meaning must not.
+
+---
+
+# 38. AI State Tokens
+
+AI workflows need explicit states:
+
+```text
+ai.queued
+ai.running
+ai.streaming
+ai.validating
+ai.reviewing
+ai.completed
+ai.failed
+ai.retrying
+ai.cancelled
+```
+
+Visual treatment must clearly distinguish:
+
+- model generation
+- validation
+- QA/Judge
+- persisted result
+
+The interface must never imply that generated text is canonical merely because it is displayed.
+
+---
+
+# 39. Data Visualization Tokens
+
+GrowFlow dashboards are visual data instruments.
+
+Charts should use a restrained data palette.
+
+Rules:
+
+1. Use semantic color when the series has semantic meaning.
+2. Use neutral variations when color is only categorical.
+3. Avoid rainbow palettes.
+4. Ensure sufficient contrast.
+5. Do not use color as the only encoding.
+6. Include labels/tooltips where appropriate.
+7. Avoid decorative chart elements.
+8. Preserve consistent series meaning across dashboards.
+
+Primary data emphasis may use the brand accent.
+
+Semantic risk/success/warning data may use the corresponding semantic colors.
+
+---
+
+# 40. Tables and Dense Data
+
+Tables are integrated into the interface rather than floating inside unnecessary card containers.
+
+Tokens/rules should support:
+
+```text
+table.header
+table.row
+table.rowHover
+table.rowSelected
+table.border
+table.compactRow
+table.standardRow
+```
+
+Typical row density:
+
+```text
+compact: ~36px
+standard: ~44px
+comfortable: ~52px
+```
+
+Dense tables must remain readable.
+
+---
+
+# 41. Document Tokens
+
+Documents and Markdown views should use:
+
+- readable line length
+- strong heading hierarchy
+- comfortable paragraph spacing
+- clear code blocks
+- restrained borders
+- consistent inline code treatment
+- accessible links
+- predictable table rendering
+
+Document surfaces should feel integrated with GrowFlow rather than like a separate application.
+
+---
+
+# 42. Code Tokens
+
+Code blocks should use a dedicated readable surface.
+
+Conceptual tokens:
+
+```text
+code.background
+code.text
+code.border
+code.inlineBackground
+code.inlineText
+```
+
+Code typography may use a monospace family.
+
+Application UI remains Manrope.
+
+---
+
+# 43. AI Interface Tokens
+
+AI Mentor and AI-related screens use the deeper AI layer.
+
+Components may include:
+
+- AI execution indicator
+- AI message surface
+- streaming response
+- tool/execution status
+- validation status
+- source/context indicator
+- generated artifact preview
+- retry state
+
+AI components should still use:
+
+- GrowFlow spacing
+- GrowFlow radii
+- GrowFlow typography
+- GrowFlow interaction states
+
+Only the visual emphasis changes.
+
+---
+
+# 44. Navigation Tokens
+
+Global top navigation:
+
+```text
+nav.top.height
+nav.top.background
+nav.top.border
+nav.top.item
+nav.top.itemHover
+nav.top.itemActive
+```
+
+Workplace selector:
+
+```text
+workplace.trigger
+workplace.menu
+workplace.item
+workplace.itemActive
+workplace.roleIndicator
+```
+
+Sidebar:
+
+```text
+sidebar.width
+sidebar.collapsedWidth
+sidebar.background
+sidebar.border
+sidebar.item
+sidebar.itemHover
+sidebar.itemActive
+sidebar.sectionLabel
+```
+
+No separate Student/Mentor/Admin color themes are permitted.
+
+Role identity comes from:
+
+- content
+- context
+- navigation
+- permissions
+- workspace semantics
+
+---
+
+# 45. Card Tokens
+
+Cards are quiet surfaces.
+
+Conceptual tokens:
+
+```text
+card.background
+card.border
+card.radius
+card.padding
+card.elevation
+card.headerGap
+```
+
+Cards should be used when grouping improves comprehension.
+
+Do not wrap every section in a card.
+
+---
+
+# 46. Modal Tokens
+
+Modals should define:
+
+```text
+modal.overlay
+modal.surface
+modal.radius
+modal.padding
+modal.maxWidth
+modal.header
+modal.footer
+```
+
+Use for focused actions.
+
+Do not use a modal for a workflow that needs deep navigation, persistence, or substantial context.
+
+---
+
+# 47. Drawer Tokens
+
+Drawers support:
+
+- contextual details
+- mobile navigation
+- filters
+- quick actions
+
+They should have clear:
+
+- opening direction
+- close behavior
+- focus management
+- scroll behavior
+- overlay treatment
+
+---
+
+# 48. Toast / Notification Tokens
+
+Notifications must be distinguishable from permanent page state.
+
+Use:
+
+```text
+toast.success
+toast.warning
+toast.danger
+toast.info
+```
+
+Toasts should not be the only communication for critical or persistent failures.
+
+Persistent issues belong in page state or notification center.
+
+---
+
+# 49. Form Tokens
+
+Forms must define:
+
+```text
+form.label
+form.helper
+form.input
+form.inputHover
+form.inputFocus
+form.inputError
+form.inputDisabled
+form.error
+form.success
+```
+
+Validation states must be explicit.
+
+Error text should explain what must be corrected.
+
+---
+
+# 50. Badge Tokens
+
+Badges are compact semantic indicators.
+
+Use them for:
+
+- status
+- category
+- lifecycle
+- role/context
+- small metadata
+
+Avoid using badges for long sentences.
+
+---
+
+# 51. Avatar Tokens
+
+Standard sizes:
+
+```text
+avatar.xs = 24px
+avatar.s = 32px
+avatar.m = 40px
+avatar.l = 48px
+avatar.xl = 64px
+```
+
+Use consistent fallback behavior.
+
+Do not encode role identity through unrelated avatar colors.
+
+---
+
+# 52. Progress Tokens
+
+Progress must distinguish:
+
+- deterministic percentage
+- stage progress
+- indeterminate processing
+
+Never show fake numerical percentages for AI operations when actual progress is unavailable.
+
+For workflow stages, prefer:
+
+```text
+Queued
+Running
+Validating
+Reviewing
+Completed
+```
+
+when numeric progress cannot be truthfully calculated.
+
+---
+
+# 53. Lifecycle Visualization Tokens
+
+GrowFlow's canonical lifecycle:
+
+```text
+IDEA
+→ ASSESSMENT
+→ BLUEPRINT
+→ PLANNING
+→ IMPLEMENTATION
+→ TESTING
+→ DEPLOYMENT
+→ COMPLETED
+```
+
+The token system should support consistent lifecycle visualization across:
+
+- project overview
+- roadmap
+- dashboards
+- mentor views
+- admin observability
+
+---
+
+# 54. Task / Milestone / Progress / Phase / Health
+
+These concepts must not collapse into one generic status.
+
+```text
+Task
+    ↓
+Milestone
+    ↓
+Progress
+    ↓
+Phase
+    ↓
+Health
+```
+
+Token semantics should allow each to have independent visual representation.
+
+Example:
+
+- task status: completion state
+- milestone status: grouped delivery state
+- progress: measurable advancement
+- phase: lifecycle stage
+- health: risk/condition
+
+---
+
+# 55. Accessibility Tokens
+
+Accessibility must be encoded into the system, not handled only during final QA.
+
+Required token considerations:
+
+- text contrast
+- focus visibility
+- touch target size
+- readable font size
+- spacing between controls
+- reduced motion
+- error-state clarity
+- non-color status indicators
+
+Do not rely solely on:
+
+- color
+- animation
+- icon shape
+- position
+
+to communicate critical meaning.
+
+---
+
+# 56. Responsive Token Strategy
+
+Do not duplicate the entire token system for each breakpoint.
+
+Instead:
+
+```text
+Canonical Token
+    ↓
+Responsive Override Only When Needed
+```
+
+Examples:
+
+```text
+page.gutter
+```
+
+may map to:
+
+```text
+desktop = 40px
+tablet = 28px
+mobile = 16px
+```
+
+Typography should generally scale only where required by usability.
+
+---
+
+# 57. Theme Architecture
+
+GrowFlow supports:
+
+```text
+light
+dark
+```
+
+The two themes share:
+
+- typography
+- spacing
+- radius
+- component geometry
+- information hierarchy
+- motion language
+- interaction behavior
+
+They primarily differ in:
+
+- surfaces
+- text colors
+- borders
+- accent contrast
+- shadows/elevation adaptation
+
+Dark mode is **not** a simple inversion of the light palette.
+
+---
+
+# 58. Theme Switching
+
+Theme changes must:
+
+- preserve current page
+- preserve user state
+- avoid destructive reloads
+- transition smoothly where appropriate
+- respect system preference if product settings permit
+- remain accessible
+
+Theme preference belongs to UI/preferences state, not canonical project state.
+
+---
+
+# 59. CSS Implementation Model
+
+Recommended structure:
+
+```text
+tokens/
+├── primitives.css
+├── semantic.css
+├── themes.css
+├── components.css
+└── motion.css
+```
+
+Example:
+
+```css
+:root {
+  --gf-color-bg-canvas: #F7F7F4;
+  --gf-color-surface-default: #FFFFFF;
+  --gf-color-text-primary: #1C1C1A;
+  --gf-color-accent-default: #6F7F63;
+  --gf-space-m: 16px;
+  --gf-radius-m: 8px;
+}
+```
+
+Dark theme should override semantic variables rather than requiring every component to understand dark-mode primitives.
+
+---
+
+# 60. Recommended CSS Consumption
+
+Prefer:
+
+```css
+background: var(--gf-color-surface-default);
+color: var(--gf-color-text-primary);
+padding: var(--gf-space-m);
+border-radius: var(--gf-radius-m);
+```
+
+Avoid:
+
+```css
+background: #ffffff;
+padding: 17px;
+border-radius: 9px;
+```
+
+inside reusable components.
+
+Hardcoded values should be rare and justified.
+
+---
+
+# 61. TypeScript Token Consumption
+
+If the frontend uses a typed token object, keep semantic categories explicit.
+
+Conceptual structure:
+
+```text
+tokens
+├── color
+├── typography
+├── spacing
+├── radius
+├── elevation
+├── sizing
+├── layout
+├── motion
+├── state
+├── ai
+└── component
+```
+
+Types should prevent accidental use of unrelated token categories where practical.
+
+---
+
+# 62. Component Token Resolution
+
+Preferred hierarchy:
+
+```text
+Component
+    ↓
+Component Token
+    ↓
+Semantic Token
+    ↓
+Primitive Token
+```
+
+Example:
+
+```text
+Primary Button background
+    ↓
+action.primary
+    ↓
+accent.default
+    ↓
+#6F7F63
+```
+
+This makes future controlled theme changes possible without editing every component.
+
+---
+
+# 63. Stitch Mapping
+
+Stitch should receive the design-token system through the compact Stitch design package.
+
+Stitch-facing instructions should emphasize:
+
+- Manrope
+- warm light base
+- charcoal dark counterpart
+- muted olive accent
+- restrained semantic colors
+- quiet cards
+- integrated dense tables
+- 8px primary control radius
+- 248px sidebar
+- 64px authenticated top navigation
+- Soft Intelligence
+- subtle physical motion
+- no role-specific themes
+- deeper but restrained AI layer
+
+Page-specific prompts should reference the canonical design system rather than redefining tokens.
+
+---
+
+# 64. Stitch Asset Priority
+
+When supplying assets to Stitch, prioritize:
+
+1. Logo/brand mark.
+2. Manrope font.
+3. Design reference imagery.
+4. Token summary.
+5. Component reference examples.
+6. Page-specific requirements.
+
+The complete architecture documentation remains in the GrowFlow project documentation and should not be duplicated into every Stitch prompt.
+
+---
+
+# 65. Public Website Token Behavior
+
+Public pages may use:
+
+- larger typography
+- larger spacing
+- editorial imagery
+- stronger visual compositions
+- more generous surfaces
+
+But they must still use:
+
+- GrowFlow colors
+- Manrope
+- radius system
+- spacing system
+- motion system
+- brand mark
+- semantic states
+
+Public expressive design is an extension of the system, not a separate design system.
+
+---
+
+# 66. Authenticated Workplace Token Behavior
+
+Authenticated pages prioritize:
+
+- information density
+- clarity
+- productivity
+- predictable controls
+- integrated tables
+- strong status hierarchy
+- restrained decoration
+
+Dashboard and operational pages should use fewer decorative surfaces than public marketing pages.
+
+---
+
+# 67. Role Consistency
+
+The following must remain shared:
+
+```text
+BUILD
+SUPERVISE
+GOVERN
+```
+
+All roles use:
+
+- same typography
+- same color foundation
+- same controls
+- same shell principles
+- same interaction states
+- same accessibility rules
+- same motion system
+
+Role differentiation is contextual rather than chromatic.
+
+---
+
+# 68. Brand Asset Integration
+
+The accepted Phase 06B brand direction is:
+
+> **Connected Flow + Abstract G**
+
+The visual mark should represent:
+
+- growth
+- flow
+- progression
+- structured development
+
+It should not introduce:
+
+- literal AI brains
+- circuit boards
+- neon effects
+- generic leaf icons
+- unrelated gradients
+
+The token system supports the brand primarily through the restrained olive accent and neutral foundation.
+
+---
+
+# 69. Component Geometry Rules
+
+Component geometry should normally use the shared scale.
+
+Preferred values:
+
+```text
+4
+6
+8
+12
+16
+20
+24
+32
+40
+48
+64
+```
+
+A component may require an exception, but exceptions should be documented in the component specification.
+
+---
+
+# 70. Density Modes
+
+Some application components may support:
+
+```text
+compact
+standard
+comfortable
+```
+
+Density should change:
+
+- row height
+- padding
+- spacing
+
+It should not arbitrarily change:
+
+- typography hierarchy
+- brand colors
+- interaction semantics
+
+---
+
+# 71. Empty State Tokens
+
+Empty states should use:
+
+- quiet surface
+- readable heading
+- concise explanation
+- one primary action when appropriate
+- optional contextual illustration
+
+Avoid oversized decorative empty-state art in dense operational areas.
+
+---
+
+# 72. Error State Tokens
+
+Error states must distinguish:
+
+```text
+validation error
+permission error
+network error
+backend error
+AI error
+processing failure
+```
+
+The visual system should communicate severity without creating visual panic.
+
+Critical failures may use danger emphasis, but not excessive red coverage.
+
+---
+
+# 73. Success State Tokens
+
+Success should communicate completion without overwhelming the interface.
+
+Use:
+
+- success color
+- check/status icon
+- concise message
+- optional next action
+
+Do not turn every successful mutation into a large celebratory animation.
+
+---
+
+# 74. Warning / Risk Tokens
+
+GrowFlow has explicit risk concepts.
+
+Risk presentation should use:
+
+- warning/danger semantic colors
+- textual severity
+- clear action
+- contextual explanation
+
+Do not use color alone to communicate project risk.
+
+---
+
+# 75. Search and Command Interface Tokens
+
+Global search should support:
+
+```text
+search.trigger
+search.input
+search.result
+search.resultHover
+search.resultSelected
+search.section
+search.shortcut
+```
+
+Search selection must have visible keyboard focus.
+
+---
+
+# 76. Notification Tokens
+
+Notifications should support:
+
+```text
+unread
+read
+priority
+success
+warning
+danger
+info
+AI
+```
+
+Unread state should not depend only on color; use weight, indicator, or background difference.
+
+---
+
+# 77. Activity Tokens
+
+Activity is a derived chronological representation.
+
+Activity items should support:
+
+- timestamp
+- actor
+- action
+- resource
+- status
+- optional detail
+
+The token system should keep activity visually quieter than primary workflow state.
+
+---
+
+# 78. Permission-Related UI Tokens
+
+Permission UI may need states:
+
+```text
+visible
+restricted
+disabled
+not-actionable
+```
+
+Do not use decorative color to imply authorization.
+
+The backend remains authoritative for authorization.
+
+---
+
+# 79. Security-Sensitive Visual Rules
+
+Sensitive operations should use:
+
+- explicit labels
+- clear confirmation
+- danger styling where appropriate
+- visible scope
+- no ambiguous icon-only actions
+
+Admin and investigation screens must favor clarity over decorative polish.
+
+---
+
+# 80. Performance Considerations
+
+Tokens should be implemented so they do not create unnecessary runtime cost.
+
+Prefer:
+
+- CSS variables
+- static token maps
+- reusable class utilities
+- shared component styles
+
+Avoid:
+
+- per-render style object generation where unnecessary
+- huge duplicated style definitions
+- unnecessary animation calculations
+- large visual assets for simple UI elements
+
+---
+
+# 81. Token Governance
+
+A new token should only be introduced when:
+
+1. Existing tokens cannot represent the requirement.
+2. The requirement appears more than once or is a legitimate system-level semantic.
+3. The name communicates meaning.
+4. Light/dark behavior is understood.
+5. Accessibility impact is considered.
+6. Component impact is documented.
+
+---
+
+# 82. Token Change Process
+
+Proposed change:
+
+```text
+Need Identified
+    ↓
+Check Existing Token
+    ↓
+Determine Semantic Need
+    ↓
+Propose Token
+    ↓
+Review
+    ↓
+Update Token Specification
+    ↓
+Update Implementation
+    ↓
+Validate Components
+    ↓
+Validate Pages
+```
+
+No silent token changes.
+
+---
+
+# 83. Token Versioning
+
+If a token changes meaning, treat it as a design-system change.
+
+Changes should be categorized:
+
+```text
+PATCH
+non-semantic correction
+
+MINOR
+new compatible token
+
+MAJOR
+meaning/value change that can materially affect existing UI
+```
+
+The exact release/version mechanism can be aligned with frontend repository practices.
+
+---
+
+# 84. Validation Checklist
+
+Every implementation should verify:
+
+### Color
+
+- [ ] Semantic colors are used.
+- [ ] Light theme works.
+- [ ] Dark theme works.
+- [ ] Contrast is acceptable.
+- [ ] No arbitrary brand colors were introduced.
+
+### Typography
+
+- [ ] Manrope is used.
+- [ ] Approved weights are used.
+- [ ] Hierarchy is consistent.
+- [ ] Metadata remains readable.
+
+### Spacing
+
+- [ ] Approved spacing scale is used.
+- [ ] Dense screens remain usable.
+- [ ] Mobile gutters are correct.
+
+### Geometry
+
+- [ ] Approved radii are used.
+- [ ] Elevation is restrained.
+- [ ] Controls have correct dimensions.
+
+### Motion
+
+- [ ] Motion is purposeful.
+- [ ] Reduced motion works.
+- [ ] No decorative perpetual animation exists.
+
+### States
+
+- [ ] Hover exists where relevant.
+- [ ] Focus exists.
+- [ ] Disabled is clear.
+- [ ] Loading is truthful.
+- [ ] Error/success states are defined.
+
+### Accessibility
+
+- [ ] Keyboard navigation works.
+- [ ] Focus is visible.
+- [ ] Touch targets are sufficient.
+- [ ] Color is not the only semantic signal.
+
+---
+
+# 85. Prohibited Token Patterns
+
+Never introduce:
+
+```text
+color.ai.neon
+color.role.student
+color.role.mentor
+color.role.admin
+color.random
+shadow.glow
+gradient.ai
+gradient.role.student
+```
+
+unless the design system is explicitly revised and frozen again.
+
+The role-specific examples above are deliberately prohibited because GrowFlow uses one unified visual identity.
+
+---
+
+# 86. Anti-Pattern Examples
+
+Do not create:
+
+```text
+Student = green
+Mentor = blue
+Admin = purple
+AI = neon purple
+```
+
+Correct approach:
+
+```text
+All roles
+    ↓
+Same design system
+    ↓
+Different information/context
+```
+
+---
+
+# 87. Page-Level Token Usage
+
+A page specification may select semantic tokens but should not redefine the global system.
+
+Example:
+
+```text
+Project Overview
+    ↓
+background.canvas
+surface.default
+text.primary
+text.secondary
+action.primary
+status.warning
+```
+
+It should not create:
+
+```text
+projectOverviewGreen
+projectOverviewDarkGray
+projectOverviewCustomRadius
+```
+
+---
+
+# 88. Workflow-Level Token Usage
+
+Long-running workflows should combine:
+
+- state tokens
+- progress tokens
+- status tokens
+- AI tokens
+- notification tokens
+
+Example:
+
+```text
+Blueprint Generation
+    ↓
+ai.running
+    ↓
+ai.validating
+    ↓
+ai.reviewing
+    ↓
+status.success
+```
+
+The frontend should reflect the actual backend workflow state.
+
+---
+
+# 89. Relationship to Backend Architecture
+
+Design tokens are presentation-layer infrastructure.
+
+They must never become a source of canonical business truth.
+
+For example:
+
+```text
+status.success
+```
+
+is a visual representation.
+
+The backend remains responsible for:
+
+- lifecycle state
+- task state
+- milestone state
+- health
+- permissions
+- AI execution state
+- canonical project data
+
+---
+
+# 90. Relationship to State Architecture
+
+Tokens consume state; they do not own it.
+
+```text
+SERVER STATE
+    ↓
+semantic UI representation
+    ↓
+tokens
+    ↓
+component
+```
+
+Streaming state can temporarily influence visual representation:
+
+```text
+SSE event
+    ↓
+streaming state
+    ↓
+AI status token
+    ↓
+AI execution component
+```
+
+The eventual canonical state must reconcile through server state.
+
+---
+
+# 91. Recommended Token Directory
+
+Implementation recommendation:
+
+```text
+frontend/
+└── design-system/
+    ├── tokens/
+    │   ├── primitives/
+    │   │   ├── colors
+    │   │   ├── typography
+    │   │   ├── spacing
+    │   │   ├── radius
+    │   │   ├── elevation
+    │   │   ├── sizing
+    │   │   └── motion
+    │   ├── semantic/
+    │   │   ├── colors
+    │   │   ├── states
+    │   │   ├── layout
+    │   │   └── accessibility
+    │   ├── themes/
+    │   │   ├── light
+    │   │   └── dark
+    │   └── components/
+    │       ├── buttons
+    │       ├── forms
+    │       ├── navigation
+    │       ├── data
+    │       ├── documents
+    │       └── ai
+    └── index
+```
+
+The exact framework/file-extension may vary.
+
+The token architecture should not.
+
+---
+
+# 92. Design Token Quick Reference
+
+## Brand
+
+```text
+Primary accent: #6F7F63
+Typeface: Manrope
+Identity: Soft Intelligence
+Brand mark: Connected Flow + Abstract G
+```
+
+## Light
+
+```text
+Canvas: #F7F7F4
+Surface: #FFFFFF
+Secondary: #F2F2EE
+Text: #1C1C1A
+Text secondary: #5F625D
+Border: #D9D9D2
+Accent: #6F7F63
+AI: #5F6B7A
+```
+
+## Dark
+
+```text
+Canvas: #171816
+Surface: #20221F
+Text: #F0F1EC
+Text secondary: #C2C5BD
+Border: #3A3D37
+Accent: #9AAA8D
+AI: #A9B2BB
+```
+
+## Geometry
+
+```text
+Primary radius: 8px
+Standard button: 40px
+Large CTA: 48px
+Standard input: 40px
+Touch target: 44px+
+Sidebar: 248px
+Collapsed sidebar: 72px
+Authenticated top nav: 64px
+```
+
+## Breakpoints
+
+```text
+Mobile: <768px
+Tablet: 768–1199px
+Desktop: >=1200px
+```
+
+---
+
+# 93. Cross-Phase Traceability
+
+## Phase 03
+
+Phase 03 established:
+
+- Soft Intelligence
+- warm light
+- charcoal dark
+- unified design system
+- Manrope-style typography, subsequently made canonical as Manrope
+- muted restrained palette
+- one primary accent
+- quiet cards
+- integrated dense tables
+- contextual imagery
+- deeper AI layer
+- subtle physical motion
+- Float → Settle
+- no separate role themes
+- accessibility
+- responsive behavior
+
+Phase 06C formalizes these as implementation tokens.
+
+## Phase 06A
+
+Phase 06A established the Stitch design foundation.
+
+06C provides the structured token language Stitch-facing page design can consume.
+
+## Phase 06B
+
+Phase 06B established the accepted Connected Flow + Abstract G brand direction.
+
+06C provides the color/typographic/geometry system in which those assets operate.
+
+## Phase 05
+
+Phase 05 established backend authority and frontend/backend boundaries.
+
+06C respects the rule that visual tokens are presentation infrastructure and never canonical business state.
+
+---
+
+# 94. Non-Negotiable Invariants
+
+1. Manrope remains the canonical product typeface.
+2. Soft Intelligence remains the canonical design identity.
+3. Warm light is the default appearance.
+4. Dark mode is a charcoal counterpart, not an inversion.
+5. `#6F7F63` remains the primary light-theme accent unless the design system is explicitly revised.
+6. All three roles use one visual system.
+7. AI has a deeper layer but is not neon/cyberpunk.
+8. Semantic colors must be used for state.
+9. Arbitrary page-level colors are prohibited.
+10. Arbitrary page-level spacing systems are prohibited.
+11. Component geometry comes from the shared system.
+12. Motion remains subtle and purposeful.
+13. Reduced motion is supported.
+14. Accessibility is part of the token contract.
+15. Tokens do not own canonical application state.
+16. Frontend does not infer backend authorization from token state.
+17. Stitch prompts should consume the canonical system rather than inventing a competing one.
+18. No silent design-system changes.
+
+---
+
+# 95. Definition of Done
+
+Phase 06C is complete when:
+
+- [ ] Primitive color system is documented.
+- [ ] Semantic color system is documented.
+- [ ] Light theme is defined.
+- [ ] Dark theme is defined.
+- [ ] Typography system is defined.
+- [ ] Manrope is canonical.
+- [ ] Spacing system is defined.
+- [ ] Radius system is defined.
+- [ ] Elevation system is defined.
+- [ ] Control sizing is defined.
+- [ ] Touch target guidance is defined.
+- [ ] Icon sizing is defined.
+- [ ] Layout tokens are defined.
+- [ ] Navigation dimensions are defined.
+- [ ] Responsive breakpoints are defined.
+- [ ] Responsive behavior is defined.
+- [ ] Motion tokens are defined.
+- [ ] Reduced motion is defined.
+- [ ] Interaction states are defined.
+- [ ] AI states are defined.
+- [ ] Data visualization rules are defined.
+- [ ] Document/code rules are defined.
+- [ ] Accessibility token requirements are defined.
+- [ ] Theme architecture is defined.
+- [ ] CSS mapping is defined.
+- [ ] TypeScript mapping is defined.
+- [ ] Stitch mapping is defined.
+- [ ] Token governance is defined.
+- [ ] Anti-patterns are defined.
+- [ ] Cross-phase traceability is documented.
+- [ ] Non-negotiable invariants are documented.
+
+---
+
+# 96. Final Freeze Statement
+
+**Phase 06C — Frontend Design Tokens is the canonical token specification for GrowFlow's frontend design system.**
+
+It formalizes the previously frozen Soft Intelligence visual direction into reusable primitives, semantic roles, component contracts, responsive rules, state semantics, motion rules, accessibility requirements, AI presentation rules, and implementation guidance.
+
+The system is intentionally unified across:
+
+```text
+PUBLIC
+BUILD
+SUPERVISE
+GOVERN
+AI
+DOCUMENTS
+DASHBOARDS
+WORKFLOWS
+```
+
+The token layer exists to ensure that future components and pages remain visually coherent without repeatedly redesigning the foundation.
+
+The next phase may consume these tokens but must not silently redefine them.
+
+**Phase 06C status: FROZEN / AUTHORITATIVE.**
+
+---
+
+# 97. Next Phase
+
+The correct next phase is:
+
+## 06D — Core Component System
+
+06D will convert the token system into reusable frontend components, including:
+
+- controls
+- forms
+- feedback
+- overlays
+- navigation
+- data components
+- tables
+- dashboard primitives
+- timelines
+- document components
+- AI components
+- accessibility behavior
+- responsive behavior
+- component states
+
+The component system will become the direct foundation for the later page-by-page design work.
+

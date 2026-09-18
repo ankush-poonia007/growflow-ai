@@ -1,0 +1,65 @@
+/* ==========================================================================
+   OfflineBanner Styles — GrowFlow Soft Intelligence
+   ========================================================================== */
+
+.gf-offline-banner {
+  background-color: var(--gf-color-warning-soft, #f5eddd);
+  border-bottom: 1px solid var(--gf-color-warning, #9a7135);
+  color: var(--gf-color-text-primary, #1c1c1a);
+  padding: var(--gf-space-2, 0.5rem) var(--gf-space-4, 1rem);
+  font-family: var(--gf-font-family);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  position: relative;
+  z-index: 40;
+  animation: gf-banner-slide-down var(--gf-duration-normal, 200ms) var(--gf-ease-out, ease-out);
+}
+
+.gf-offline-banner__container {
+  max-width: var(--gf-container-wide, 1400px);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--gf-space-3, 0.75rem);
+}
+
+.gf-offline-banner__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gf-color-warning, #9a7135);
+  flex-shrink: 0;
+}
+
+.gf-offline-banner__text {
+  display: flex;
+  align-items: center;
+  gap: var(--gf-space-2, 0.5rem);
+  flex-wrap: wrap;
+}
+
+.gf-offline-banner__title {
+  font-weight: 700;
+  color: var(--gf-color-text-primary, #1c1c1a);
+}
+
+.gf-offline-banner__desc {
+  color: var(--gf-color-text-secondary, #5f625d);
+}
+
+@keyframes gf-banner-slide-down {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gf-offline-banner {
+    animation: none;
+  }
+}

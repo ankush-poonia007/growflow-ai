@@ -1,0 +1,107 @@
+/* StudentDocuments.css */
+
+.gf-docs-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.gf-docs-container {
+  max-width: 1440px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 var(--gf-space-8, 2rem) var(--gf-space-12, 3rem) var(--gf-space-8, 2rem);
+}
+
+.gf-docs-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--gf-space-4, 1rem);
+  background: var(--gf-surface, #ffffff);
+  border: 1px solid var(--gf-border-subtle, rgba(0, 0, 0, 0.08));
+  border-radius: var(--gf-radius-lg, 12px);
+  padding: var(--gf-space-4, 1rem);
+  margin-bottom: var(--gf-space-6, 1.5rem);
+}
+
+.gf-docs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: var(--gf-space-5, 1.25rem);
+}
+
+.gf-doc-card {
+  background: var(--gf-surface, #ffffff);
+  border: 1px solid var(--gf-border-subtle, rgba(0, 0, 0, 0.08));
+  border-radius: var(--gf-radius-xl, 16px);
+  padding: var(--gf-space-5, 1.25rem);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-3, 0.75rem);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  text-decoration: none;
+  color: inherit;
+}
+
+.gf-doc-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  border-color: var(--gf-accent, #0284c7);
+}
+
+.gf-doc-card__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.gf-doc-card__key {
+  font-family: monospace;
+  font-size: 0.75rem;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.gf-doc-card__title {
+  font-size: var(--gf-font-size-md, 1rem);
+  font-weight: 700;
+  color: var(--gf-text-primary, #0f172a);
+  margin: 0;
+  line-height: 1.35;
+}
+
+.gf-doc-card__snippet {
+  font-size: var(--gf-font-size-xs, 0.75rem);
+  color: var(--gf-text-secondary, #64748b);
+  line-height: 1.45;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.gf-doc-card__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--gf-space-3, 0.75rem);
+  border-top: 1px solid #f1f5f9;
+  font-size: var(--gf-font-size-xs, 0.75rem);
+  color: #94a3b8;
+}
+
+@media (max-width: 640px) {
+  .gf-docs-container {
+    padding: 0 var(--gf-space-4, 1rem) var(--gf-space-8, 2rem) var(--gf-space-4, 1rem);
+  }
+
+  .gf-docs-grid {
+    grid-template-columns: 1fr;
+  }
+}

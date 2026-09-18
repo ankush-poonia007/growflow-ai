@@ -1,0 +1,51 @@
+.gf-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gf-space-2);
+  padding: 2px 8px;
+  border-radius: var(--gf-radius-full);
+  font-family: var(--gf-font-family);
+  font-size: var(--gf-text-metadata-size);
+  font-weight: var(--gf-text-metadata-weight);
+  line-height: var(--gf-text-metadata-lh);
+  white-space: nowrap;
+}
+
+.gf-badge--success {
+  background-color: var(--gf-color-success-soft);
+  color: var(--gf-color-success);
+}
+
+.gf-badge--warning {
+  background-color: var(--gf-color-warning-soft);
+  color: var(--gf-color-warning);
+}
+
+.gf-badge--danger {
+  background-color: var(--gf-color-danger-soft);
+  color: var(--gf-color-danger);
+}
+
+.gf-badge--info {
+  background-color: var(--gf-color-info-soft);
+  color: var(--gf-color-info);
+}
+
+.gf-badge--neutral {
+  background-color: var(--gf-color-secondary);
+  color: var(--gf-color-text-secondary);
+}
+
+.gf-badge--accent {
+  background-color: var(--gf-color-accent-soft);
+  color: var(--gf-color-accent);
+}
+
+/* Dot indicator */
+.gf-badge__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: currentColor;
+  flex-shrink: 0;
+}

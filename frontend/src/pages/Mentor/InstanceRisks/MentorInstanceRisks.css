@@ -1,0 +1,219 @@
+.gf-mentor-risks-page {
+  padding: 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.gf-mentor-risks-error-card {
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: var(--radius-lg, 12px);
+  padding: 2rem;
+  text-align: center;
+  max-width: 500px;
+  margin: 4rem auto;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.gf-mentor-risks-error-card h3 {
+  font-size: 1.125rem;
+  color: var(--color-danger, #ef4444);
+  margin-bottom: 0.75rem;
+}
+
+.gf-mentor-risks-error-card p {
+  color: var(--color-text-muted, #64748b);
+  margin-bottom: 1.5rem;
+}
+
+.gf-mentor-risks__toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: var(--radius-lg, 12px);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  flex-wrap: wrap;
+}
+
+.gf-mentor-risks__search-wrap {
+  flex: 1;
+  min-width: 260px;
+}
+
+.gf-mentor-risks__filters {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.gf-mentor-risks__filter-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text-muted, #64748b);
+}
+
+.gf-mentor-risks__select {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--color-text, #0f172a);
+  background-color: #ffffff;
+  border: 1px solid var(--color-border, #cbd5e1);
+  border-radius: 6px;
+  cursor: pointer;
+  outline: none;
+}
+
+.gf-mentor-risks__select:focus {
+  border-color: var(--color-primary, #0284c7);
+}
+
+.gf-mentor-risks__content {
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: var(--radius-lg, 12px);
+  padding: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.gf-mentor-risks__header-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  font-size: 0.875rem;
+  color: var(--color-text-muted, #64748b);
+}
+
+.gf-mentor-risks__read-only-indicator {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #0369a1;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+}
+
+.gf-mentor-risks__empty-state {
+  padding: 3.5rem 1rem;
+  text-align: center;
+  color: var(--color-text-muted, #94a3b8);
+  font-style: italic;
+}
+
+.gf-mentor-risks__list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.gf-mentor-risk-card {
+  background: #ffffff;
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: var(--radius-lg, 10px);
+  padding: 1.25rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.gf-mentor-risk-card__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.gf-mentor-risk-card__title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.gf-mentor-risk-card__code {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #e11d48;
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+}
+
+.gf-mentor-risk-card__title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text, #0f172a);
+  margin: 0;
+}
+
+.gf-mentor-risk-card__badges {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.gf-mentor-risk-card__desc {
+  font-size: 0.875rem;
+  color: var(--color-text-muted, #64748b);
+  line-height: 1.5;
+  margin: 0 0 0.75rem 0;
+}
+
+.gf-mentor-risk-card__matrix {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted, #64748b);
+  flex-wrap: wrap;
+}
+
+.gf-mentor-risk-card__matrix-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.gf-mentor-risk-card__label {
+  color: #94a3b8;
+}
+
+.gf-mentor-risk-card__mitigation-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 0.8125rem;
+}
+
+.gf-mentor-risk-card__mitigation-label {
+  display: block;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 0.25rem;
+}
+
+.gf-mentor-risk-card__mitigation-text {
+  color: #475569;
+  line-height: 1.4;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .gf-mentor-risks__toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

@@ -1,0 +1,212 @@
+/**
+ * AD05 — Student Detail Styles
+ */
+
+.gf-student-detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-6, 24px);
+  width: 100%;
+}
+
+.gf-student-detail__breadcrumb {
+  display: flex;
+  align-items: center;
+}
+
+.gf-student-detail__back-link {
+  font-size: var(--gf-text-body-sm-size, 13px);
+  font-weight: 500;
+  color: var(--gf-color-accent, #6366f1);
+  text-decoration: none;
+}
+
+.gf-student-detail__back-link:hover {
+  text-decoration: underline;
+}
+
+.gf-student-detail__alert {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--gf-space-3, 12px) var(--gf-space-4, 16px);
+  background-color: var(--gf-color-danger-subtle, #fef2f2);
+  border: 1px solid var(--gf-color-danger-border, #fecaca);
+  border-radius: var(--gf-radius-md, 8px);
+  color: var(--gf-color-danger, #ef4444);
+  font-size: var(--gf-text-body-sm-size, 13px);
+}
+
+.gf-student-detail__skeleton-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-4, 16px);
+}
+
+.gf-student-detail__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gf-space-6, 24px);
+}
+
+@media (max-width: 900px) {
+  .gf-student-detail__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.gf-student-detail__card {
+  height: 100%;
+}
+
+.gf-student-detail__info-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-3, 12px);
+}
+
+.gf-student-detail__info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--gf-space-2, 8px) 0;
+  border-bottom: 1px solid var(--gf-color-border-subtle, #e2e8f0);
+  font-size: var(--gf-text-body-sm-size, 13px);
+}
+
+.gf-student-detail__label {
+  color: var(--gf-color-text-secondary, #64748b);
+  font-weight: 500;
+}
+
+.gf-student-detail__code {
+  font-family: monospace;
+  background-color: var(--gf-color-bg-base, #f1f5f9);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--gf-color-text-primary, #0f172a);
+}
+
+.gf-student-detail__bio-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: var(--gf-space-2, 8px);
+}
+
+.gf-student-detail__bio-text {
+  font-size: var(--gf-text-body-sm-size, 13px);
+  color: var(--gf-color-text-primary, #0f172a);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.gf-student-detail__skills-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: var(--gf-space-2, 8px);
+}
+
+.gf-student-detail__skills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 8px;
+}
+
+.gf-student-detail__skill-pill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #ecfdf5;
+  border: 1px solid #d1fae5;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.gf-student-detail__skill-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: #065f46;
+}
+
+.gf-student-detail__skill-score {
+  font-size: 11px;
+  font-weight: 700;
+  color: #059669;
+}
+
+.gf-student-detail__table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.gf-student-detail__table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.gf-student-detail__table th {
+  padding: var(--gf-space-2, 8px) var(--gf-space-3, 12px);
+  font-size: var(--gf-text-metadata-size, 11px);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gf-color-text-tertiary, #64748b);
+  border-bottom: 1px solid var(--gf-color-border-subtle, #e2e8f0);
+}
+
+.gf-student-detail__table td {
+  padding: var(--gf-space-3, 12px);
+  font-size: var(--gf-text-body-sm-size, 13px);
+  border-bottom: 1px solid var(--gf-color-border-subtle, #e2e8f0);
+  vertical-align: middle;
+}
+
+.gf-student-detail__cohort-name {
+  font-weight: 600;
+  color: var(--gf-color-text-primary, #0f172a);
+}
+
+.gf-student-detail__projects-section {
+  margin-top: var(--gf-space-4, 16px);
+}
+
+.gf-student-detail__project-title {
+  font-weight: 600;
+  color: var(--gf-color-text-primary, #0f172a);
+}
+
+.gf-student-detail__phase-pill {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #4f46e5;
+  background-color: #eef2ff;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.gf-student-detail__progress-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 120px;
+}
+
+.gf-student-detail__progress-bar {
+  height: 6px;
+  background-color: #10b981;
+  border-radius: 999px;
+  max-width: 80px;
+  flex: 1;
+}
+
+.gf-student-detail__progress-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gf-color-text-secondary, #64748b);
+}

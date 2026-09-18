@@ -1,0 +1,206 @@
+/**
+ * AD03 — Mentor Detail Styles
+ */
+
+.gf-mentor-detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-6, 24px);
+  width: 100%;
+}
+
+.gf-mentor-detail__breadcrumb {
+  display: flex;
+  align-items: center;
+}
+
+.gf-mentor-detail__back-link {
+  font-size: var(--gf-text-body-sm-size, 13px);
+  font-weight: 500;
+  color: var(--gf-color-accent, #6366f1);
+  text-decoration: none;
+}
+
+.gf-mentor-detail__back-link:hover {
+  text-decoration: underline;
+}
+
+.gf-mentor-detail__alert {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--gf-space-3, 12px) var(--gf-space-4, 16px);
+  background-color: var(--gf-color-danger-subtle, #fef2f2);
+  border: 1px solid var(--gf-color-danger-border, #fecaca);
+  border-radius: var(--gf-radius-md, 8px);
+  color: var(--gf-color-danger, #ef4444);
+  font-size: var(--gf-text-body-sm-size, 13px);
+}
+
+.gf-mentor-detail__skeleton-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-4, 16px);
+}
+
+.gf-mentor-detail__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gf-space-6, 24px);
+}
+
+@media (max-width: 900px) {
+  .gf-mentor-detail__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.gf-mentor-detail__card {
+  height: 100%;
+}
+
+.gf-mentor-detail__info-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-3, 12px);
+}
+
+.gf-mentor-detail__info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--gf-space-2, 8px) 0;
+  border-bottom: 1px solid var(--gf-color-border-subtle, #e2e8f0);
+  font-size: var(--gf-text-body-sm-size, 13px);
+}
+
+.gf-mentor-detail__label {
+  color: var(--gf-color-text-secondary, #64748b);
+  font-weight: 500;
+}
+
+.gf-mentor-detail__code {
+  font-family: monospace;
+  background-color: var(--gf-color-bg-base, #f1f5f9);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--gf-color-text-primary, #0f172a);
+}
+
+.gf-mentor-detail__bio-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: var(--gf-space-2, 8px);
+}
+
+.gf-mentor-detail__bio-text {
+  font-size: var(--gf-text-body-sm-size, 13px);
+  color: var(--gf-color-text-primary, #0f172a);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.gf-mentor-detail__skills-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: var(--gf-space-2, 8px);
+}
+
+.gf-mentor-detail__skills-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.gf-mentor-detail__skill-tag {
+  font-size: 12px;
+  background-color: #eef2ff;
+  color: #4f46e5;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.gf-mentor-detail__table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.gf-mentor-detail__table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.gf-mentor-detail__table th {
+  padding: var(--gf-space-2, 8px) var(--gf-space-3, 12px);
+  font-size: var(--gf-text-metadata-size, 11px);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gf-color-text-tertiary, #64748b);
+  border-bottom: 1px solid var(--gf-color-border-subtle, #e2e8f0);
+}
+
+.gf-mentor-detail__th-actions {
+  text-align: right;
+}
+
+.gf-mentor-detail__table td {
+  padding: var(--gf-space-3, 12px);
+  font-size: var(--gf-text-body-sm-size, 13px);
+  border-bottom: 1px solid var(--gf-color-border-subtle, #e2e8f0);
+  vertical-align: middle;
+}
+
+.gf-mentor-detail__cohort-name {
+  font-weight: 600;
+  color: var(--gf-color-text-primary, #0f172a);
+}
+
+.gf-mentor-detail__students-section {
+  margin-top: var(--gf-space-4, 16px);
+}
+
+.gf-mentor-detail__user-meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.gf-mentor-detail__user-name {
+  font-weight: 600;
+  color: var(--gf-color-text-primary, #0f172a);
+}
+
+.gf-mentor-detail__user-email {
+  font-size: var(--gf-text-caption-size, 12px);
+  color: var(--gf-color-text-secondary, #64748b);
+}
+
+.gf-mentor-detail__stat-pill {
+  font-size: 12px;
+  font-weight: 600;
+  color: #059669;
+  background-color: #ecfdf5;
+  padding: 3px 8px;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.gf-mentor-detail__cell-actions {
+  text-align: right;
+}
+
+.gf-mentor-detail__action-link {
+  font-size: var(--gf-text-body-sm-size, 13px);
+  font-weight: 600;
+  color: var(--gf-color-accent, #6366f1);
+  text-decoration: none;
+}
+
+.gf-mentor-detail__action-link:hover {
+  text-decoration: underline;
+}

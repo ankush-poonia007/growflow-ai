@@ -1,0 +1,48 @@
+.gf-forbidden {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: var(--gf-space-12) var(--gf-space-4);
+  text-align: center;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.gf-forbidden__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: var(--gf-radius-full);
+  font-size: var(--gf-text-label-sm-size);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: var(--gf-color-bg-subtle);
+  color: var(--gf-color-text-muted);
+  border: 1px solid var(--gf-color-border-subtle);
+  margin-bottom: var(--gf-space-4);
+}
+
+.gf-forbidden__title {
+  font-size: var(--gf-text-h2-size);
+  font-weight: 700;
+  color: var(--gf-color-text-primary);
+  margin-bottom: var(--gf-space-3);
+  letter-spacing: -0.015em;
+}
+
+.gf-forbidden__message {
+  font-size: var(--gf-text-body-md-size);
+  color: var(--gf-color-text-secondary);
+  line-height: var(--gf-leading-relaxed);
+  margin-bottom: var(--gf-space-6);
+}
+
+.gf-forbidden__actions {
+  display: flex;
+  gap: var(--gf-space-3);
+  flex-wrap: wrap;
+  justify-content: center;
+}

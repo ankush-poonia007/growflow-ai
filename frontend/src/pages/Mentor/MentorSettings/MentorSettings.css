@@ -1,0 +1,186 @@
+.gf-mentor-settings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-6);
+  max-width: 840px;
+  margin: 0 auto;
+  padding-bottom: var(--gf-space-10);
+}
+
+.gf-mentor-settings__alert {
+  padding: var(--gf-space-3) var(--gf-space-4);
+  border-radius: var(--gf-radius-md);
+  font-size: var(--gf-text-body-sm-size);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gf-space-3);
+}
+
+.gf-mentor-settings__alert--error {
+  background-color: var(--gf-color-danger-soft, #fef2f2);
+  color: var(--gf-color-danger, #dc2626);
+  border: 1px solid var(--gf-color-danger-border, #fecaca);
+}
+
+.gf-mentor-settings__alert--success {
+  background-color: var(--gf-color-success-soft, #f0fdf4);
+  color: var(--gf-color-success, #16a34a);
+  border: 1px solid var(--gf-color-success-border, #bbf7d0);
+}
+
+.gf-mentor-settings__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-6);
+}
+
+.gf-mentor-settings__card-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-5);
+}
+
+.gf-mentor-settings__toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gf-space-4);
+}
+
+.gf-mentor-settings__toggle-meta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-1);
+}
+
+.gf-mentor-settings__toggle-label {
+  font-size: var(--gf-text-body-sm-size);
+  font-weight: 600;
+  color: var(--gf-color-text-primary);
+}
+
+.gf-mentor-settings__toggle-desc {
+  font-size: var(--gf-text-caption-size);
+  color: var(--gf-color-text-secondary);
+  line-height: var(--gf-text-caption-lh);
+}
+
+/* Custom Switch */
+.gf-mentor-settings__switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.gf-mentor-settings__switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.gf-mentor-settings__slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--gf-color-border-standard);
+  transition: background-color var(--gf-duration-fast) var(--gf-ease-default);
+  border-radius: var(--gf-radius-full);
+}
+
+.gf-mentor-settings__slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: #ffffff;
+  transition: transform var(--gf-duration-fast) var(--gf-ease-default);
+  border-radius: 50%;
+}
+
+.gf-mentor-settings__switch input:checked + .gf-mentor-settings__slider {
+  background-color: var(--gf-color-accent);
+}
+
+.gf-mentor-settings__switch input:checked + .gf-mentor-settings__slider:before {
+  transform: translateX(20px);
+}
+
+.gf-mentor-settings__switch input:focus-visible + .gf-mentor-settings__slider {
+  outline: 2px solid var(--gf-color-accent);
+  outline-offset: 2px;
+}
+
+.gf-mentor-settings__form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-2);
+}
+
+.gf-mentor-settings__label {
+  font-size: var(--gf-text-caption-size);
+  font-weight: 600;
+  color: var(--gf-color-text-primary);
+}
+
+.gf-mentor-settings__select {
+  width: 100%;
+  max-width: 400px;
+  padding: var(--gf-space-2) var(--gf-space-3);
+  border: 1px solid var(--gf-color-border-standard);
+  border-radius: var(--gf-radius-md);
+  background: var(--gf-color-surface);
+  color: var(--gf-color-text-primary);
+  font-size: var(--gf-text-body-sm-size);
+  font-family: inherit;
+  transition: border-color var(--gf-duration-fast) var(--gf-ease-default);
+}
+
+.gf-mentor-settings__select:focus {
+  outline: none;
+  border-color: var(--gf-color-accent);
+  box-shadow: 0 0 0 2px var(--gf-color-accent-soft);
+}
+
+.gf-mentor-settings__help-text {
+  font-size: var(--gf-text-metadata-size);
+  color: var(--gf-color-text-tertiary);
+}
+
+.gf-mentor-settings__info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--gf-space-4);
+}
+
+@media (max-width: 640px) {
+  .gf-mentor-settings__info-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.gf-mentor-settings__info-label {
+  display: block;
+  font-size: var(--gf-text-metadata-size);
+  color: var(--gf-color-text-tertiary);
+  margin-bottom: 2px;
+}
+
+.gf-mentor-settings__info-val {
+  font-size: var(--gf-text-body-sm-size);
+  font-weight: 600;
+  color: var(--gf-color-text-primary);
+  word-break: break-all;
+}
+
+.gf-mentor-settings__actions {
+  display: flex;
+  justify-content: flex-end;
+}

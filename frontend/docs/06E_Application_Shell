@@ -1,0 +1,2660 @@
+# GrowFlow — Phase 06E
+# Application Shell Specification
+
+**Status:** FROZEN / AUTHORITATIVE after acceptance  
+**Phase:** 06E — Application Shell  
+**Project:** GrowFlow  
+**Design System:** Soft Intelligence  
+**Brand Direction:** Connected Flow + Abstract G  
+**Canonical Typeface:** Manrope  
+**Primary Accent:** `#6F7F63`  
+**Depends On:** Phase 02, Phase 03, Phase 05, Phase 06A, Phase 06B, Phase 06C, Phase 06D
+
+---
+
+## 0. Purpose
+
+Phase 06E defines the canonical application shell for GrowFlow.
+
+The shell is the persistent structural frame surrounding the product's pages and workflows.
+
+It establishes:
+
+- global top navigation
+- GrowFlow identity placement
+- public navigation
+- Workplace selector
+- Login / Sign Up behavior
+- profile access
+- notifications
+- global search
+- authenticated sidebar
+- sidebar collapse behavior
+- mobile navigation drawer
+- breadcrumbs
+- content viewport
+- independent scrolling
+- responsive shell behavior
+- route integration
+- role-aware navigation
+- permission-aware navigation
+- loading behavior
+- session behavior
+- notification behavior
+- search behavior
+- shell accessibility
+- shell state management
+- shell observability
+- shell testing
+- shell implementation boundaries
+
+The shell is shared across the entire GrowFlow website.
+
+---
+
+# 1. Shell Philosophy
+
+GrowFlow uses:
+
+> **One application shell + one design language + role-specific information architecture.**
+
+The shell must feel like one product regardless of whether the user is:
+
+```text
+PUBLIC
+BUILD
+SUPERVISE
+GOVERN
+```
+
+Role identity is communicated through:
+
+- navigation destinations
+- workspace context
+- content
+- permissions
+- data
+
+It is not communicated through separate visual themes.
+
+---
+
+# 2. Shell Architecture
+
+Canonical structure:
+
+```text
+Browser
+  ↓
+GrowFlow Global Shell
+  ├── Top Navigation
+  │    ├── Brand
+  │    ├── Public Links
+  │    ├── Workplace
+  │    ├── Search
+  │    ├── Notifications
+  │    ├── Profile
+  │    ├── Login
+  │    └── Sign Up
+  │
+  └── Authenticated Workspace
+       ├── Sidebar
+       └── Main Content
+            ├── Breadcrumbs
+            ├── Page Header
+            └── Page Content
+```
+
+---
+
+# 3. Shell Layers
+
+The shell consists of five conceptual layers:
+
+```text
+Layer 1 — Global Browser/Application Frame
+Layer 2 — Top Navigation
+Layer 3 — Workplace Navigation
+Layer 4 — Role Sidebar
+Layer 5 — Page Content
+```
+
+Each layer has a distinct responsibility.
+
+---
+
+# 4. Global Shell Rules
+
+The shell must:
+
+1. remain visually consistent across routes
+2. preserve user orientation
+3. expose appropriate navigation
+4. respect authorization
+5. support deep links
+6. preserve browser navigation
+7. support responsive layouts
+8. support keyboard navigation
+9. support dark mode
+10. support reduced motion
+11. tolerate loading states
+12. tolerate session expiration
+13. tolerate API failures
+14. never become a security boundary
+15. never own canonical business state
+
+---
+
+# 5. Public Shell
+
+Public pages use the global top navigation but do not use the authenticated application sidebar.
+
+Public structure:
+
+```text
+Top Navigation
+      ↓
+Public Page
+      ↓
+Footer
+```
+
+Applicable pages:
+
+```text
+/
+ /features
+ /documentation
+ /documentation/:slug
+ /contact
+```
+
+---
+
+# 6. Public Top Navigation
+
+Public navigation may contain:
+
+```text
+GrowFlow
+Features
+Documentation
+Contact
+Workplace
+Login
+Sign Up
+```
+
+Exact visibility can change according to viewport width.
+
+The navigation should remain uncluttered.
+
+---
+
+# 7. Authenticated Shell
+
+Authenticated structure:
+
+```text
+Top Navigation
+    ↓
+┌──────────────┬────────────────────────────┐
+│              │                            │
+│   Sidebar    │       Main Content         │
+│              │                            │
+│              │                            │
+└──────────────┴────────────────────────────┘
+```
+
+The sidebar persists on desktop.
+
+---
+
+# 8. Top Navigation Dimensions
+
+Authenticated:
+
+```text
+height: 64px
+```
+
+Public:
+
+```text
+height: 68–76px
+```
+
+The dimensions come from Phase 06C.
+
+---
+
+# 9. Top Navigation Layout
+
+Recommended authenticated structure:
+
+```text
+┌──────────────────────────────────────────────────────────┐
+│ GrowFlow │ [context/navigation]   Search  🔔  Workplace 👤 │
+└──────────────────────────────────────────────────────────┘
+```
+
+Exact grouping may adapt to available width.
+
+Primary rule:
+
+> The top navigation must remain recognizable and predictable across roles.
+
+---
+
+# 10. Brand Placement
+
+GrowFlow brand mark should be positioned at the left edge of the top navigation.
+
+Desktop:
+
+```text
+[GrowFlow mark/wordmark]
+```
+
+Collapsed/sidebar states may use the standalone brand mark where space requires.
+
+The accepted brand direction is:
+
+```text
+Connected Flow + Abstract G
+```
+
+---
+
+# 11. Brand Interaction
+
+Clicking the GrowFlow brand should have a predictable destination.
+
+For authenticated users:
+
+```text
+brand → current workplace overview/dashboard
+```
+
+For public users:
+
+```text
+brand → /
+```
+
+The exact role destination is:
+
+```text
+BUILD      → /student/dashboard
+SUPERVISE  → /mentor/overview
+GOVERN     → /admin/overview
+```
+
+---
+
+# 12. Workplace Selector
+
+The Workplace selector is a canonical global shell control.
+
+It exposes:
+
+```text
+BUILD
+SUPERVISE
+GOVERN
+```
+
+The selector must communicate the user's available workspace contexts.
+
+---
+
+# 13. Workplace Selector — Logged Out
+
+For logged-out users, Workplace selection acts as an entry-point selector.
+
+```text
+BUILD
+  → Student Sign In
+
+SUPERVISE
+  → Mentor Sign In
+
+GOVERN
+  → Protected Admin Entry
+```
+
+Admin must not have a public registration path.
+
+---
+
+# 14. Workplace Selector — Logged In
+
+For authenticated users:
+
+- only authorized workplaces are actionable
+- unavailable workplaces should not appear as usable options
+- role switching must trigger authorization resolution
+- the selector must not grant privileges
+
+Possible behavior:
+
+```text
+Click Workplace
+    ↓
+Resolve available workspaces
+    ↓
+User selects workspace
+    ↓
+Authorization check
+    ↓
+Navigate to workspace overview
+```
+
+---
+
+# 15. Workplace Destination Mapping
+
+Canonical destinations:
+
+```text
+BUILD
+→ /student/dashboard
+
+SUPERVISE
+→ /mentor/overview
+
+GOVERN
+→ /admin/overview
+```
+
+If the user is already inside a compatible workspace and selects the same workplace, do not perform unnecessary navigation.
+
+---
+
+# 16. Role Resolution
+
+Role/workplace resolution follows:
+
+```text
+Session
+ ↓
+Identity
+ ↓
+Application Role Resolution
+ ↓
+Authorization
+ ↓
+Workspace Availability
+ ↓
+Navigation
+```
+
+The frontend must not infer authority solely from client-side role state.
+
+---
+
+# 17. Multiple Authorized Workplaces
+
+If a user legitimately has multiple authorized roles:
+
+- Workplace selector exposes authorized roles
+- current role is visually indicated
+- switching preserves no invalid resource context
+- role-incompatible deep links are rejected safely
+- switching should normally land on the selected workplace overview
+
+Do not assume all accounts have multiple roles.
+
+---
+
+# 18. Login
+
+Logged-out top navigation exposes:
+
+```text
+Login
+```
+
+Login is a distinct action from Sign Up.
+
+Selecting Login must lead to role-specific authentication selection or the appropriate authentication destination.
+
+Canonical student login:
+
+```text
+/auth/student/sign-in
+```
+
+Canonical mentor login:
+
+```text
+/auth/mentor/sign-in
+```
+
+Admin:
+
+```text
+protected admin entry
+```
+
+---
+
+# 19. Sign Up
+
+Logged-out top navigation exposes:
+
+```text
+Sign Up
+```
+
+Student:
+
+```text
+/auth/student/register
+```
+
+Mentor:
+
+```text
+/auth/mentor/register
+```
+
+Admin has no public signup.
+
+---
+
+# 20. Deep-Link Preservation
+
+When authentication is required for a protected route:
+
+```text
+Protected Route
+    ↓
+Authentication
+    ↓
+Role Resolution
+    ↓
+Authorization
+    ↓
+Restore Intended Route
+```
+
+A `returnTo`-style mechanism may preserve the intended route.
+
+The restored destination must still pass authorization.
+
+---
+
+# 21. Profile
+
+Authenticated top navigation includes profile access.
+
+Profile destination:
+
+```text
+/profile
+```
+
+Profile menu may provide:
+
+```text
+Profile
+Settings
+Current workplace
+Sign out
+```
+
+Additional actions may be introduced later if required.
+
+---
+
+# 22. Profile Menu Rules
+
+Profile menu should:
+
+- be compact
+- clearly identify the signed-in user
+- expose account-level actions
+- avoid excessive navigation
+- remain keyboard accessible
+
+Sign-out must be explicit and reliable.
+
+---
+
+# 23. Settings
+
+Canonical settings:
+
+```text
+/settings
+/settings/profile
+/settings/preferences
+```
+
+Settings belong to the account/user experience rather than project state.
+
+---
+
+# 24. Notifications
+
+Authenticated top navigation includes notifications.
+
+Primary destination:
+
+```text
+/notifications
+```
+
+Notifications may originate from:
+
+- project events
+- mentor actions
+- help requests
+- AI executions
+- document processing
+- project changes
+- system events
+
+---
+
+# 25. Notification Indicator
+
+Unread notifications may be indicated by:
+
+- count
+- dot
+- visual weight
+- accessible label
+
+Do not rely on color alone.
+
+Avoid unnecessarily large notification counters.
+
+---
+
+# 26. Notification Preview
+
+A compact preview may be presented from the top navigation.
+
+Preview should support:
+
+- recent notifications
+- unread state
+- timestamp
+- concise context
+- deep link
+- view all
+
+The preview is a contextual surface; the notification center is the canonical collection view.
+
+---
+
+# 27. Notification Deep Links
+
+Notifications should navigate to canonical resources.
+
+Examples:
+
+```text
+Task notification
+→ /student/projects/:projectId/tasks/:taskId
+
+Blueprint notification
+→ /student/projects/:projectId/blueprint
+
+Project change
+→ /student/projects/:projectId/changes/:changeId
+```
+
+Notification routes must remain authorization-aware.
+
+---
+
+# 28. Global Search
+
+Global search route:
+
+```text
+/search
+```
+
+Search is role-aware and authorization-aware.
+
+Search may cover:
+
+- projects
+- tasks
+- milestones
+- risks
+- documents
+- people
+- groups
+- activity
+- other authorized resources
+
+---
+
+# 29. Search Trigger
+
+Top navigation should expose a recognizable search affordance.
+
+Desktop may support:
+
+```text
+Search
+⌘K / Ctrl+K
+```
+
+where keyboard shortcut behavior is implemented.
+
+Mobile may use an icon/button that opens the search interface.
+
+---
+
+# 30. Search Security
+
+Search results must be filtered by backend authorization.
+
+The frontend must never assume:
+
+```text
+hidden result = unauthorized
+```
+
+The backend remains authoritative.
+
+---
+
+# 31. Search States
+
+Search supports:
+
+```text
+idle
+focused
+typing
+loading
+results
+noResults
+error
+```
+
+Long-running or remote search must communicate loading.
+
+---
+
+# 32. Sidebar Architecture
+
+The authenticated sidebar is role-specific navigation inside the unified visual system.
+
+Structure:
+
+```text
+Sidebar
+├── Workspace identity/context
+├── Primary navigation
+├── Secondary navigation where required
+└── Bottom utility area where appropriate
+```
+
+---
+
+# 33. Student Sidebar
+
+Canonical BUILD navigation:
+
+```text
+Dashboard
+Projects
+```
+
+Additional project navigation appears inside the selected project workspace rather than unnecessarily expanding global navigation.
+
+---
+
+# 34. Mentor Sidebar
+
+Canonical SUPERVISE navigation:
+
+```text
+Overview
+Groups
+Students
+Projects
+Project Definitions
+Project Instances
+At Risk
+Help Requests
+Activity
+AI Mentor
+```
+
+---
+
+# 35. Admin Sidebar
+
+Canonical GOVERN navigation:
+
+```text
+Overview
+Mentors
+Students
+Groups
+Projects
+AI Observatory
+Cost & Usage
+System Health
+Documents & RAG
+Security & Audit
+Analytics
+```
+
+---
+
+# 36. Sidebar Dimensions
+
+Default:
+
+```text
+248px
+```
+
+Collapsed:
+
+```text
+72px
+```
+
+Desktop implementation should stay within the Phase 06C guidance.
+
+---
+
+# 37. Sidebar Collapse
+
+Desktop users may collapse the sidebar.
+
+Collapsed mode:
+
+- preserves navigation
+- shows icons
+- uses tooltips where needed
+- maintains selected state
+- does not disappear entirely
+
+The user should retain orientation.
+
+---
+
+# 38. Sidebar Collapse Persistence
+
+Sidebar preference may be persisted as UI preference.
+
+It must not affect:
+
+- permissions
+- backend state
+- project state
+- canonical routing
+
+---
+
+# 39. Sidebar Selected State
+
+The active navigation item must be obvious.
+
+Use:
+
+- subtle accent treatment
+- typography
+- background
+- icon treatment
+
+Do not use a loud full-color block.
+
+---
+
+# 40. Sidebar Sections
+
+Where navigation becomes large, use semantic section grouping.
+
+Section labels should be:
+
+- concise
+- readable
+- visually subordinate
+
+Avoid too many sections.
+
+---
+
+# 41. Sidebar Mobile Behavior
+
+On mobile:
+
+```text
+Top Navigation
+      ↓
+Menu Trigger
+      ↓
+Navigation Drawer
+```
+
+The persistent desktop sidebar becomes a drawer.
+
+---
+
+# 42. Mobile Navigation Drawer
+
+Drawer must support:
+
+- open
+- close
+- overlay
+- focus management
+- escape
+- current route
+- workspace context
+- navigation
+
+Closing the drawer should return focus to the triggering control.
+
+---
+
+# 43. Content Area
+
+Authenticated shell content must scroll independently from the global top navigation.
+
+Recommended structure:
+
+```text
+Viewport
+├── Fixed/Sticky TopNav
+└── Workspace Region
+     ├── Sidebar
+     └── Scrollable Content
+```
+
+---
+
+# 44. Independent Scrolling
+
+Primary content should own vertical scrolling where appropriate.
+
+The shell must avoid:
+
+- nested unnecessary scroll containers
+- page-wide horizontal overflow
+- scroll traps
+- sidebar/content scroll conflicts
+
+---
+
+# 45. Horizontal Overflow
+
+The shell must prevent accidental horizontal overflow.
+
+Exceptions are intentional component-level cases such as:
+
+- wide tables
+- code blocks
+- timeline views
+
+Those components should own their horizontal scrolling.
+
+---
+
+# 46. Main Content Container
+
+Main content consumes Phase 06C layout tokens.
+
+Typical page gutters:
+
+```text
+Desktop: 32–48px
+Tablet: 24–32px
+Mobile: 16–20px
+```
+
+Page-specific layouts may use approved variations.
+
+---
+
+# 47. Breadcrumbs
+
+Breadcrumbs appear where resource depth benefits orientation.
+
+They should:
+
+- reflect canonical route hierarchy
+- be keyboard accessible
+- support back navigation
+- remain concise
+
+They are not required on every page.
+
+---
+
+# 48. Page Header
+
+The shell provides the structural region for a page header.
+
+A page header may contain:
+
+```text
+Breadcrumbs
+Title
+Description
+Status
+Actions
+```
+
+The page itself owns the content.
+
+The shell should not hardcode page-specific business information.
+
+---
+
+# 49. Shell / Page Boundary
+
+The shell owns:
+
+- navigation
+- global actions
+- viewport structure
+- user context
+- role context
+
+The page owns:
+
+- page data
+- domain workflows
+- page-specific actions
+- page-specific states
+
+---
+
+# 50. Shell / Feature Boundary
+
+Feature components may consume shell-provided context:
+
+```text
+current user
+current role
+navigation state
+theme
+viewport state
+notification state
+search state
+```
+
+They should not mutate shell internals without an explicit contract.
+
+---
+
+# 51. Shell State Model
+
+The shell uses three major state categories from the frontend architecture.
+
+## Server State
+
+Examples:
+
+- current user
+- authorized workplaces
+- unread notification count
+- navigation permissions where exposed by backend
+
+## UI State
+
+Examples:
+
+- sidebar collapsed
+- search open
+- profile menu open
+- workplace menu open
+- notification preview open
+- mobile drawer open
+- theme preference
+
+## Streaming State
+
+Examples:
+
+- notification delivery
+- live execution updates
+- processing state indicators
+
+---
+
+# 52. Shell State Ownership
+
+Recommended:
+
+```text
+Application Shell State
+├── Navigation UI State
+├── User/session context
+├── Notification state
+├── Search state
+└── Workspace context
+```
+
+Avoid storing project domain data in the shell.
+
+---
+
+# 53. Shell State Persistence
+
+Appropriate persisted UI preferences:
+
+- sidebar collapse
+- appearance preference
+- selected interface preference where applicable
+
+Do not persist:
+
+- authorization decisions
+- project lifecycle
+- task status
+- AI canonical execution state
+
+---
+
+# 54. Session State
+
+Shell must respond to:
+
+```text
+authenticated
+sessionRefreshing
+sessionExpired
+signedOut
+```
+
+Session state comes from the authentication/application integration.
+
+---
+
+# 55. Session Expiration
+
+If session expires:
+
+```text
+Current page
+    ↓
+Session expiration detected
+    ↓
+Preserve safe return intent
+    ↓
+Authentication
+    ↓
+Re-authorize
+    ↓
+Return if allowed
+```
+
+Sensitive information must not leak into unsafe return parameters.
+
+---
+
+# 56. Unauthorized Shell Access
+
+A user may reach a route they cannot access.
+
+Expected behavior:
+
+```text
+Route requested
+ ↓
+Authentication
+ ↓
+Authorization
+ ↓
+403 / appropriate access state
+```
+
+Do not simply hide the entire application because one resource is forbidden.
+
+---
+
+# 57. Shell Loading
+
+Initial shell loading may need:
+
+- top navigation skeleton
+- sidebar skeleton
+- user context placeholder
+
+Avoid flashing an incorrect role navigation before role resolution completes.
+
+---
+
+# 58. Role Resolution Loading
+
+During role resolution:
+
+```text
+Authenticated
+    ↓
+Resolving workspace
+    ↓
+Loading correct shell
+```
+
+The frontend should avoid:
+
+```text
+Student sidebar
+    ↓
+flash
+    ↓
+Mentor sidebar
+```
+
+unless unavoidable.
+
+---
+
+# 59. Navigation Transition
+
+Navigation should feel immediate.
+
+For normal route transitions:
+
+- update route promptly
+- show local page loading
+- preserve shell
+- avoid full application reloads
+
+---
+
+# 60. Long-Running Workflow Navigation
+
+Leaving a page must not terminate long-running backend work.
+
+Example:
+
+```text
+Blueprint Generation
+    ↓
+User navigates elsewhere
+    ↓
+Backend job continues
+    ↓
+Event persists
+    ↓
+Notification delivered
+    ↓
+User returns
+```
+
+The shell is not responsible for running the job.
+
+---
+
+# 61. SSE Integration
+
+The shell may subscribe to global event streams for:
+
+- notifications
+- relevant processing events
+- system messages
+
+SSE is a delivery mechanism.
+
+It is not canonical state.
+
+---
+
+# 62. SSE Reconnection
+
+On disconnect:
+
+```text
+Disconnect
+ ↓
+Reconnect
+ ↓
+Resume delivery where supported
+ ↓
+Reconcile canonical state
+```
+
+The shell should not assume every missed event was received.
+
+---
+
+# 63. Notification Reconciliation
+
+After reconnection:
+
+```text
+SSE
+ ↓
+event
+ ↓
+update notification state
+ ↓
+reconcile unread count
+```
+
+If event history cannot guarantee correctness, fetch canonical notification state.
+
+---
+
+# 64. Theme Integration
+
+Shell supports:
+
+```text
+Light
+Dark
+```
+
+The shell must consume Phase 06C theme tokens.
+
+Theme does not alter:
+
+- role identity
+- route structure
+- permissions
+- navigation hierarchy
+
+---
+
+# 65. Reduced Motion
+
+Shell motion should be subtle.
+
+Animated areas:
+
+- sidebar collapse
+- mobile drawer
+- menus
+- notifications
+- search palette
+- theme transitions where appropriate
+
+Reduced-motion preference overrides decorative transitions.
+
+---
+
+# 66. Top Navigation Responsive Behavior
+
+## Desktop
+
+Show full navigation where space allows.
+
+## Tablet
+
+Prioritize:
+
+```text
+Brand
+Workplace
+Search
+Notifications
+Profile
+```
+
+Secondary public links may collapse.
+
+## Mobile
+
+Prioritize:
+
+```text
+Brand
+Search/menu
+Notifications
+Profile
+```
+
+Secondary navigation moves into appropriate menus/drawers.
+
+---
+
+# 67. Public Navigation Responsive Behavior
+
+Desktop:
+
+```text
+Brand | Features | Documentation | Contact | Workplace | Login | Sign Up
+```
+
+Mobile may consolidate public links into a menu.
+
+Login and Sign Up remain discoverable.
+
+---
+
+# 68. Authenticated Mobile Shell
+
+Recommended:
+
+```text
+┌──────────────────────────────┐
+│ Brand   Search  Bell  Menu   │
+├──────────────────────────────┤
+│                              │
+│          Content             │
+│                              │
+└──────────────────────────────┘
+```
+
+Menu opens role-specific navigation.
+
+---
+
+# 69. Shell Z-Index Strategy
+
+Use a small semantic layering system.
+
+Conceptual order:
+
+```text
+base content
+sticky shell
+dropdown/popover
+drawer
+modal
+critical overlay
+```
+
+Do not assign arbitrary huge z-index values to every component.
+
+---
+
+# 70. Shell Surface Treatment
+
+Shell should remain visually quiet.
+
+Use:
+
+- subtle background difference
+- subtle border
+- minimal elevation
+- restrained active states
+
+Avoid:
+
+- glassmorphism everywhere
+- heavy shadows
+- neon outlines
+- decorative gradients
+
+---
+
+# 71. Sticky Behavior
+
+Top navigation may remain sticky.
+
+If sticky:
+
+- content must account for its height
+- focus navigation must not hide content beneath it
+- anchor scrolling must account for header offset
+
+---
+
+# 72. Sidebar Sticky Behavior
+
+Desktop sidebar may remain fixed/sticky while content scrolls.
+
+It should not create an independent vertical scroll unless the navigation itself exceeds viewport height.
+
+---
+
+# 73. Accessibility — Shell
+
+Shell must provide:
+
+- skip-to-content
+- semantic landmarks
+- accessible navigation labels
+- keyboard navigation
+- visible focus
+- correct current-page indication
+- accessible menu behavior
+- drawer focus management
+- screen-reader state announcements where needed
+
+---
+
+# 74. Landmark Structure
+
+Recommended:
+
+```html
+<header>
+<nav>
+<main>
+<aside>
+```
+
+Use landmarks semantically.
+
+Do not create multiple ambiguous navigation landmarks without labels.
+
+---
+
+# 75. Skip Navigation
+
+Authenticated and public layouts should support a skip-to-content mechanism.
+
+Example:
+
+```text
+Skip to main content
+```
+
+It should become visible on keyboard focus.
+
+---
+
+# 76. Current Navigation
+
+Active route should use appropriate semantic state.
+
+Where applicable:
+
+```text
+aria-current="page"
+```
+
+must represent the current destination.
+
+---
+
+# 77. Workplace Selector Accessibility
+
+Must communicate:
+
+- current workspace
+- available workspaces
+- expanded/collapsed state
+- selected workspace
+- disabled/unavailable state where relevant
+
+Keyboard:
+
+```text
+Enter / Space
+Arrow keys
+Escape
+```
+
+as appropriate for the implemented menu pattern.
+
+---
+
+# 78. Search Accessibility
+
+Search should provide:
+
+- accessible label
+- focus
+- keyboard shortcuts where supported
+- result count/status where useful
+- selected result indication
+- no-results message
+
+---
+
+# 79. Notification Accessibility
+
+Unread count should be announced meaningfully.
+
+Do not make screen readers interpret only a decorative dot.
+
+Notification previews must support keyboard navigation.
+
+---
+
+# 80. Sidebar Accessibility
+
+Collapsed sidebar must still expose accessible names for icon-only navigation.
+
+Tooltips are supplementary, not the sole accessible label.
+
+---
+
+# 81. Mobile Drawer Accessibility
+
+When opened:
+
+```text
+focus enters drawer
+```
+
+When closed:
+
+```text
+focus returns to trigger
+```
+
+Escape should close the drawer.
+
+Background interaction should be appropriately controlled.
+
+---
+
+# 82. Shell Error Handling
+
+Shell-level errors include:
+
+- session error
+- navigation data error
+- notification connection failure
+- search service failure
+- workspace resolution failure
+
+These should not unnecessarily destroy page content.
+
+---
+
+# 83. Search Failure
+
+Search failure should show:
+
+```text
+Search unavailable
+Try again
+```
+
+without taking down the application.
+
+---
+
+# 84. Notification Failure
+
+If live notifications fail:
+
+- preserve existing notification state
+- show non-disruptive connection state where useful
+- retry/reconnect
+- do not block core navigation
+
+---
+
+# 85. Workspace Resolution Failure
+
+If authorized workspace resolution fails:
+
+- avoid showing incorrect navigation
+- preserve authenticated identity state
+- show recovery state
+- retry
+- fail safely if necessary
+
+---
+
+# 86. Shell Offline / Network State
+
+If network connectivity changes:
+
+- preserve current UI where possible
+- indicate operations that cannot complete
+- avoid falsely confirming mutations
+- allow retry
+- reconcile when connection returns
+
+---
+
+# 87. Navigation Security
+
+Navigation is not authorization.
+
+A hidden item does not mean:
+
+```text
+user is forbidden because UI hid it
+```
+
+Authorization is enforced by backend/application security.
+
+---
+
+# 88. Route Guarding
+
+Frontend route guards may:
+
+- improve UX
+- prevent unnecessary rendering
+- redirect unauthenticated users
+
+They must not replace backend authorization.
+
+---
+
+# 89. Deep-Link Security
+
+Every deep link must be revalidated.
+
+Example:
+
+```text
+/student/projects/project-123
+```
+
+must not become accessible merely because the user knows the URL.
+
+---
+
+# 90. Share Integration
+
+Share interactions use canonical URLs.
+
+The shell may provide share actions through profile/resource actions where appropriate.
+
+Shared links must remain authorization-aware.
+
+---
+
+# 91. Browser Navigation
+
+The shell must preserve:
+
+- back
+- forward
+- refresh
+- deep links
+- direct URL entry
+
+Route state should remain meaningful after refresh.
+
+---
+
+# 92. Query Parameters
+
+Use query parameters for:
+
+- search query
+- filters
+- sorting
+- pagination
+- display mode
+
+Do not encode resource identity solely in query parameters when a canonical route is appropriate.
+
+---
+
+# 93. Sidebar and URL State
+
+Sidebar selection should derive from route state where possible rather than maintaining an independent conflicting navigation state.
+
+---
+
+# 94. Search and URL State
+
+Global search route may preserve:
+
+```text
+/search?q=...
+```
+
+Filters or result modes should remain shareable where useful.
+
+---
+
+# 95. Notification and URL State
+
+Opening a notification preview is UI state.
+
+Navigating to the target resource is route state.
+
+Do not make notification preview itself a canonical business resource route unless required.
+
+---
+
+# 96. Shell Component Inventory
+
+Canonical shell components:
+
+```text
+AppShell
+PublicShell
+AuthenticatedShell
+TopNav
+Brand
+WorkplaceSelector
+AuthActions
+ProfileMenu
+NotificationButton
+NotificationPreview
+SearchTrigger
+GlobalSearch
+Sidebar
+SidebarSection
+SidebarItem
+SidebarCollapseButton
+MobileNavTrigger
+MobileNavDrawer
+Breadcrumbs
+MainContent
+SkipToContent
+ShellErrorBoundary
+NetworkStatus
+```
+
+---
+
+# 97. AppShell
+
+Root shell coordinator.
+
+Responsibilities:
+
+- detect authentication context
+- establish theme
+- render public/authenticated structure
+- provide shell context
+- coordinate global shell state
+
+It should not own project domain data.
+
+---
+
+# 98. PublicShell
+
+Responsibilities:
+
+- public top navigation
+- public content frame
+- footer integration
+- public responsive behavior
+
+---
+
+# 99. AuthenticatedShell
+
+Responsibilities:
+
+- top navigation
+- workplace context
+- role sidebar
+- main content viewport
+- shell-level notifications/search/profile
+- responsive workspace frame
+
+---
+
+# 100. TopNav Component
+
+Responsibilities:
+
+- brand
+- navigation grouping
+- workplace
+- search
+- notifications
+- profile/auth actions
+
+It should remain composition-oriented rather than embedding domain workflows.
+
+---
+
+# 101. Sidebar Component
+
+Responsibilities:
+
+- role navigation
+- active route
+- collapsed state
+- responsive drawer integration
+
+It should consume navigation configuration rather than hardcoding business logic throughout the component.
+
+---
+
+# 102. Navigation Configuration
+
+Recommended conceptual model:
+
+```text
+NavigationConfig
+├── role
+├── sections
+│   ├── label
+│   └── items
+│       ├── label
+│       ├── icon
+│       ├── route
+│       ├── activeMatch
+│       └── capability
+```
+
+Backend authorization remains authoritative.
+
+---
+
+# 103. Capability-Aware Navigation
+
+If backend/application exposes capabilities, navigation may use them to improve UX.
+
+Example:
+
+```text
+canViewProjectDefinitions
+canViewAdminAnalytics
+```
+
+Capabilities are UX inputs, not security guarantees.
+
+---
+
+# 104. Shell Context
+
+A shell context/provider may expose:
+
+```text
+currentUser
+currentWorkspace
+authorizedWorkspaces
+sidebarState
+theme
+notificationSummary
+searchState
+```
+
+Keep the context focused.
+
+Do not turn it into a universal application store.
+
+---
+
+# 105. Shell Events
+
+Possible shell events:
+
+```text
+WORKSPACE_CHANGED
+NOTIFICATION_RECEIVED
+NOTIFICATION_READ
+SEARCH_OPENED
+SEARCH_CLOSED
+SIDEBAR_COLLAPSED
+SIDEBAR_EXPANDED
+THEME_CHANGED
+SESSION_EXPIRED
+```
+
+Events should represent UI/application behavior, not replace canonical domain events.
+
+---
+
+# 106. Shell Analytics
+
+Shell observability may measure:
+
+- navigation usage
+- search usage
+- workspace switching
+- sidebar interactions
+- notification interactions
+- shell rendering performance
+- navigation errors
+
+Do not collect unnecessary personal data.
+
+---
+
+# 107. Performance
+
+Shell should be lightweight because it exists on almost every page.
+
+Requirements:
+
+- minimize initial bundle impact
+- lazy-load heavy search interfaces
+- lazy-load large notification previews where appropriate
+- avoid expensive global rerenders
+- avoid unnecessary providers
+- keep icons optimized
+- keep shell transitions lightweight
+
+---
+
+# 108. Shell Rendering Strategy
+
+The shell should remain mounted across normal authenticated route transitions where architecture permits.
+
+Benefits:
+
+- navigation remains stable
+- sidebar state persists
+- fewer visual jumps
+- better perceived performance
+
+---
+
+# 109. Route Transition Strategy
+
+For normal navigation:
+
+```text
+Route change
+ ↓
+Keep shell
+ ↓
+Load page/feature
+ ↓
+Render local loading state
+ ↓
+Render page
+```
+
+Avoid full shell reconstruction on every route.
+
+---
+
+# 110. Code Splitting
+
+Potential split boundaries:
+
+```text
+public
+auth
+student
+mentor
+admin
+heavy charts
+AI interface
+document editor/viewer
+```
+
+The shell should not eagerly load every role-specific feature.
+
+---
+
+# 111. Role Bundle Isolation
+
+A BUILD user should not unnecessarily download all GOVERN administrative functionality merely because the shell supports it.
+
+Where practical:
+
+```text
+shared shell
++
+role-specific code
+```
+
+---
+
+# 112. Search Loading
+
+Search UI may be lazy-loaded because it can contain:
+
+- command palette logic
+- indexing/search rendering
+- result previews
+
+The trigger itself should remain lightweight.
+
+---
+
+# 113. Notification Loading
+
+Notification preview should remain efficient.
+
+Do not load an entire notification center implementation merely to display an unread count.
+
+---
+
+# 114. Shell Testing Strategy
+
+Test at four levels:
+
+```text
+Unit
+Component
+Integration
+E2E
+```
+
+---
+
+# 115. Shell Unit Tests
+
+Test:
+
+- navigation matching
+- workspace mapping
+- role configuration
+- active-state logic
+- route helpers
+- responsive utility logic
+
+---
+
+# 116. Shell Component Tests
+
+Test:
+
+- TopNav
+- WorkplaceSelector
+- Sidebar
+- Search
+- Notifications
+- Profile
+- Drawer
+- Breadcrumbs
+
+Include:
+
+- keyboard
+- focus
+- state
+- dark mode
+- loading
+- error
+
+---
+
+# 117. Shell Integration Tests
+
+Test:
+
+- authentication → shell
+- role resolution → correct navigation
+- workspace switching
+- notifications
+- search
+- route transitions
+- session expiration
+
+---
+
+# 118. Shell E2E Tests
+
+Critical scenarios:
+
+1. Logged-out public navigation.
+2. Student login.
+3. Mentor login.
+4. Protected admin entry.
+5. Student workspace.
+6. Mentor workspace.
+7. Admin workspace.
+8. Workspace switching for authorized multi-role account.
+9. Deep link restoration.
+10. Mobile drawer.
+11. Sidebar collapse.
+12. Search.
+13. Notification navigation.
+14. Session expiration.
+15. 403 behavior.
+16. Refresh on deep route.
+
+---
+
+# 119. Visual Regression
+
+Shell visual regression must cover:
+
+```text
+Public Light
+Public Dark
+Authenticated Light
+Authenticated Dark
+BUILD
+SUPERVISE
+GOVERN
+Sidebar Expanded
+Sidebar Collapsed
+Mobile Drawer
+```
+
+---
+
+# 120. Accessibility Testing
+
+Automated and manual testing should verify:
+
+- landmarks
+- keyboard navigation
+- focus order
+- focus visibility
+- screen-reader labels
+- menu semantics
+- drawer behavior
+- skip navigation
+- contrast
+- reduced motion
+
+---
+
+# 121. Responsive Testing
+
+Minimum:
+
+```text
+Mobile
+Tablet
+Desktop
+Wide Desktop
+```
+
+Test actual content overflow, not only viewport screenshots.
+
+---
+
+# 122. Shell QA Matrix
+
+| Area | Required |
+|---|---|
+| Brand | ✓ |
+| TopNav | ✓ |
+| Workplace | ✓ |
+| Login/Sign Up | ✓ |
+| Profile | ✓ |
+| Notifications | ✓ |
+| Search | ✓ |
+| Sidebar | ✓ |
+| Collapse | ✓ |
+| Mobile drawer | ✓ |
+| Breadcrumbs | ✓ |
+| Theme | ✓ |
+| Accessibility | ✓ |
+| Session | ✓ |
+| Deep links | ✓ |
+| Authorization | ✓ |
+| Performance | ✓ |
+
+---
+
+# 123. Shell Anti-Patterns
+
+Prohibited:
+
+- different shell for each role
+- role-specific color themes
+- hiding unauthorized data as security
+- sidebar disappearance on desktop collapse
+- full page reloads for ordinary navigation
+- shell-owned project state
+- shell-owned AI workflows
+- fake notification counts
+- notification state as canonical source
+- search results without authorization filtering
+- giant global state store
+- excessive sticky elements
+- excessive shadows
+- neon AI shell
+- unnecessary animations
+
+---
+
+# 124. Shell Design Review
+
+Review every shell implementation against:
+
+### Identity
+
+- Does it feel unmistakably GrowFlow?
+- Does it use the accepted brand assets?
+
+### Hierarchy
+
+- Is navigation clear?
+- Is active state obvious but restrained?
+
+### Productivity
+
+- Can users reach common destinations quickly?
+- Is content area sufficiently large?
+
+### Consistency
+
+- Does BUILD look like the same product as SUPERVISE and GOVERN?
+
+### Accessibility
+
+- Can the entire shell be operated by keyboard?
+
+### Responsive
+
+- Does the shell remain usable at all supported widths?
+
+---
+
+# 125. Shell Security Review
+
+Verify:
+
+- frontend role is not trusted for authorization
+- route guards are not security boundaries
+- search is authorization-filtered
+- notification targets are authorization-checked
+- workspace switching is authorization-checked
+- profile information is properly scoped
+- admin entry remains protected
+
+---
+
+# 126. Shell State Review
+
+Verify separation:
+
+```text
+SERVER STATE
+    current user / permissions / notifications
+
+UI STATE
+    menus / drawer / sidebar / search
+
+STREAMING STATE
+    live notifications / execution updates
+```
+
+No category should silently absorb another.
+
+---
+
+# 127. Shell / Backend Contract
+
+Frontend shell may consume APIs for:
+
+```text
+current user
+authorized workplaces
+notification summary
+notifications
+search
+preferences
+```
+
+Backend remains authoritative.
+
+---
+
+# 128. Shell / SSE Contract
+
+SSE may deliver:
+
+```text
+notification.created
+notification.updated
+processing.updated
+ai.execution.updated
+```
+
+The frontend must validate and reconcile events.
+
+---
+
+# 129. Shell / Authentication Contract
+
+Authentication integration provides:
+
+```text
+session
+identity
+session state
+sign-out
+refresh
+```
+
+Application authorization provides:
+
+```text
+role
+workspace availability
+permissions
+```
+
+Do not collapse these concepts.
+
+---
+
+# 130. Shell / Routing Contract
+
+Routing owns:
+
+- current route
+- route parameters
+- query parameters
+- navigation history
+
+Shell consumes route context for:
+
+- active navigation
+- breadcrumbs
+- workspace context
+
+---
+
+# 131. Shell / Design System Contract
+
+All shell components must consume:
+
+```text
+Phase 06C tokens
+Phase 06D components
+Phase 06B brand assets
+```
+
+No shell-specific competing design language.
+
+---
+
+# 132. Shell / Stitch Contract
+
+Stitch page generation must assume the shell already exists.
+
+Page prompts should specify only meaningful page-level differences.
+
+Avoid regenerating:
+
+- top nav
+- sidebar
+- profile
+- notification system
+- global search
+
+unless the page explicitly requires a shell variation.
+
+---
+
+# 133. Stitch Shell Instructions
+
+Canonical instruction:
+
+> Use the existing GrowFlow Application Shell. Preserve the unified Soft Intelligence top navigation, Workplace selector, role-aware sidebar, responsive behavior, typography, spacing, and interaction language. Do not invent a new navigation system for individual pages.
+
+---
+
+# 134. Public vs Authenticated Shell Summary
+
+```text
+PUBLIC
+TopNav
+ ↓
+Public Content
+ ↓
+Footer
+
+AUTHENTICATED
+TopNav
+ ↓
+Role Sidebar + Main Content
+ ↓
+Page
+```
+
+Both share the same visual language.
+
+---
+
+# 135. Shell Layout Summary
+
+Desktop:
+
+```text
+┌─────────────────────────────────────────────┐
+│                  TOP NAV                    │
+├───────────────┬─────────────────────────────┤
+│               │                             │
+│    SIDEBAR    │         MAIN CONTENT        │
+│               │                             │
+│               │                             │
+└───────────────┴─────────────────────────────┘
+```
+
+Collapsed:
+
+```text
+┌─────────────────────────────────────────────┐
+│                  TOP NAV                    │
+├───────┬─────────────────────────────────────┤
+│ ICONS │            MAIN CONTENT              │
+│       │                                     │
+└───────┴─────────────────────────────────────┘
+```
+
+Mobile:
+
+```text
+┌──────────────────────────────┐
+│ TOP NAV / MENU               │
+├──────────────────────────────┤
+│                              │
+│          CONTENT             │
+│                              │
+└──────────────────────────────┘
+
+Menu → Navigation Drawer
+```
+
+---
+
+# 136. Shell Invariants
+
+1. One unified application shell.
+2. One GrowFlow visual identity.
+3. One top navigation system.
+4. Workplace selector is global.
+5. BUILD/SUPERVISE/GOVERN remain distinct workspace contexts.
+6. Logged-out Login and Sign Up remain separate.
+7. Admin has no public signup.
+8. Profile remains globally accessible when authenticated.
+9. Search is global and authorization-aware.
+10. Notifications are global and event-aware.
+11. Sidebar is role-specific but visually unified.
+12. Desktop collapse preserves navigation.
+13. Mobile sidebar becomes a drawer.
+14. Main content scrolls independently where appropriate.
+15. Shell survives normal route transitions.
+16. Long-running jobs survive navigation.
+17. SSE is not canonical state.
+18. Frontend navigation is not authorization.
+19. Deep links remain meaningful.
+20. 401, 403, and 404 remain distinct.
+21. Dark mode preserves the same identity.
+22. Reduced motion is supported.
+23. Accessibility is mandatory.
+24. Shell does not own domain state.
+25. Shell must remain lightweight.
+26. No silent shell redesigns.
+
+---
+
+# 137. Definition of Done
+
+Phase 06E is complete when:
+
+- [ ] Public shell defined.
+- [ ] Authenticated shell defined.
+- [ ] Top navigation defined.
+- [ ] Brand placement defined.
+- [ ] Workplace selector defined.
+- [ ] Logged-out behavior defined.
+- [ ] Logged-in behavior defined.
+- [ ] Login/Sign Up behavior defined.
+- [ ] Profile defined.
+- [ ] Notifications defined.
+- [ ] Global search defined.
+- [ ] Student sidebar defined.
+- [ ] Mentor sidebar defined.
+- [ ] Admin sidebar defined.
+- [ ] Sidebar collapse defined.
+- [ ] Mobile drawer defined.
+- [ ] Breadcrumbs defined.
+- [ ] Content scrolling defined.
+- [ ] Responsive shell defined.
+- [ ] Theme behavior defined.
+- [ ] Reduced motion defined.
+- [ ] Accessibility defined.
+- [ ] Session behavior defined.
+- [ ] Authorization boundaries defined.
+- [ ] SSE behavior defined.
+- [ ] Search security defined.
+- [ ] Notification routing defined.
+- [ ] Deep-link behavior defined.
+- [ ] Shell state architecture defined.
+- [ ] Component inventory defined.
+- [ ] Performance strategy defined.
+- [ ] Testing strategy defined.
+- [ ] Stitch integration defined.
+- [ ] Cross-phase traceability defined.
+- [ ] Non-negotiable invariants defined.
+
+---
+
+# 138. Cross-Phase Traceability
+
+## Phase 02 — Information Architecture
+
+Provides:
+
+- global top navigation
+- Workplace selector
+- role-specific sidebars
+- route hierarchy
+- deep-link behavior
+- page/tab/workflow distinctions
+
+## Phase 03 — Visual Design
+
+Provides:
+
+- Soft Intelligence
+- warm light
+- charcoal dark
+- unified visual language
+- restrained surfaces
+- motion philosophy
+
+## Phase 05 — Application Architecture
+
+Provides:
+
+- backend authority
+- authentication/authorization boundaries
+- SSE
+- canonical state
+- events/jobs
+- frontend/backend integration
+
+## Phase 06A — Stitch Foundation
+
+Provides:
+
+- Stitch-facing design foundation
+
+## Phase 06B — Brand Assets
+
+Provides:
+
+- Connected Flow + Abstract G
+- GrowFlow logo/mark direction
+- brand assets
+
+## Phase 06C — Design Tokens
+
+Provides:
+
+- colors
+- typography
+- spacing
+- sizing
+- layout
+- motion
+- accessibility tokens
+
+## Phase 06D — Core Components
+
+Provides:
+
+- reusable controls
+- navigation primitives
+- overlays
+- feedback
+- data components
+- AI components
+- workflow components
+
+## Phase 06E
+
+Combines these foundations into the persistent application shell.
+
+---
+
+# 139. Final Freeze Statement
+
+**Phase 06E defines the canonical GrowFlow Application Shell.**
+
+The shell is the stable frame shared across public and authenticated experiences.
+
+It establishes:
+
+```text
+Brand
+  ↓
+Top Navigation
+  ↓
+Workplace Context
+  ↓
+Role Navigation
+  ↓
+Main Content
+```
+
+The shell deliberately separates:
+
+```text
+Global navigation
+Role navigation
+Page navigation
+Domain workflows
+```
+
+It also preserves the architectural principles that:
+
+- backend authorization is authoritative
+- canonical state remains outside the shell
+- SSE is delivery, not truth
+- long-running jobs survive navigation
+- responsive behavior is structural
+- accessibility is mandatory
+- BUILD, SUPERVISE, and GOVERN share one visual identity
+
+Future pages must consume this shell rather than independently recreating it.
+
+**Phase 06E status: FROZEN / AUTHORITATIVE.**
+
+---
+
+# 140. Next Phase
+
+The next phase is:
+
+## 06F — Frontend Behavior Foundation
+
+06F will define the runtime behavior layer beneath the pages and above the backend contract:
+
+```text
+Server State
+UI State
+Streaming State
+      ↓
+API Client
+      ↓
+REST Integration
+      ↓
+SSE Integration
+      ↓
+Loading / Empty / Error / Success
+      ↓
+Mutations
+      ↓
+Permissions
+      ↓
+Cache / Reconciliation
+      ↓
+Long-Running AI Workflows
+```
+
+It will establish how the frontend **behaves**, not merely how it looks.
+

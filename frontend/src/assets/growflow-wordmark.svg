@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 36" fill="none">
+  <!-- Mark -->
+  <g transform="translate(0, 2)">
+    <path
+      d="M16 3.2C8.93 3.2 3.2 8.93 3.2 16s5.73 12.8 12.8 12.8c3.53 0 6.73-1.43 9.05-3.75"
+      stroke="currentColor"
+      stroke-width="2.4"
+      stroke-linecap="round"
+      fill="none"
+    />
+    <path
+      d="M28.8 16c0-7.07-5.73-12.8-12.8-12.8"
+      stroke="currentColor"
+      stroke-width="2.4"
+      stroke-linecap="round"
+      fill="none"
+      opacity="0.4"
+    />
+    <path
+      d="M28.8 16H17.6"
+      stroke="currentColor"
+      stroke-width="2.4"
+      stroke-linecap="round"
+    />
+    <path
+      d="M17.6 16V9.6"
+      stroke="currentColor"
+      stroke-width="2.4"
+      stroke-linecap="round"
+    />
+  </g>
+  <!-- Text -->
+  <text
+    x="40"
+    y="24"
+    font-family="Manrope, system-ui, -apple-system, sans-serif"
+    font-size="20"
+    font-weight="700"
+    letter-spacing="-0.02em"
+    fill="currentColor"
+  >GrowFlow</text>
+</svg>

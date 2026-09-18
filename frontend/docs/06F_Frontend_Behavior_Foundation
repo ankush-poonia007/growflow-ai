@@ -1,0 +1,5910 @@
+# GrowFlow — Phase 06F: Frontend Behavior Foundation
+
+**Status:** FROZEN / AUTHORITATIVE  
+**Version:** 1.0  
+**Phase:** 06F  
+**Depends On:** Phase 06C — Frontend Design Tokens; Phase 06D — Core Component System; Phase 06E — Application Shell  
+**Aligns With:** Phase 05 — Application & Integration Architecture  
+**Scope:** Frontend runtime behavior, state, API integration, SSE, asynchronous workflows, failure/recovery, permissions, observability, testing, and implementation contracts.
+
+---
+
+## 00. Purpose
+
+Phase 06F defines how the GrowFlow frontend behaves after the visual system, reusable component system, and application shell have been established.
+
+This document is implementation-grade. It is not a collection of UX suggestions.
+
+It establishes:
+
+- what state exists in the frontend;
+- where each state belongs;
+- how REST requests are created and consumed;
+- how authentication and authorization affect behavior;
+- how SSE delivers live information;
+- how frontend state reconciles with canonical backend state;
+- how long-running AI and document operations behave;
+- how loading, empty, error, success, retry, cancellation, and recovery work;
+- how concurrent operations and stale responses are handled;
+- how URL state, search, notifications, forms, dialogs, and workflows behave;
+- how permissions are represented without making the frontend a security boundary;
+- how degraded network conditions are handled;
+- how observability and testing are implemented;
+- how frontend contracts remain aligned with the backend architecture.
+
+The governing principle is:
+
+> **The frontend presents and orchestrates interaction with canonical backend state; it does not become the source of truth.**
+
+---
+
+# 01. Relationship to Previous Phases
+
+Phase 06F consumes the decisions already frozen in the preceding frontend phases.
+
+### Phase 06C provides
+
+- typography tokens;
+- color tokens;
+- spacing;
+- radius;
+- elevation;
+- sizing;
+- responsive behavior;
+- motion;
+- accessibility;
+- AI visual tokens;
+- component token rules.
+
+### Phase 06D provides
+
+- reusable primitives;
+- controls;
+- forms;
+- feedback;
+- overlays;
+- navigation;
+- data display;
+- dashboard components;
+- document components;
+- AI components;
+- workflow components;
+- domain components;
+- component state contracts.
+
+### Phase 06E provides
+
+- public shell;
+- authenticated shell;
+- top navigation;
+- Workplace selector;
+- sidebars;
+- mobile navigation;
+- global search;
+- notifications;
+- profile/settings;
+- breadcrumbs;
+- route/deep-link behavior;
+- shell state boundaries.
+
+### Phase 05 provides
+
+- backend layering;
+- canonical state;
+- REST API;
+- SSE;
+- background jobs;
+- events;
+- AI execution;
+- RAG;
+- document generation;
+- authorization;
+- persistence;
+- idempotency;
+- observability;
+- failure/recovery.
+
+Phase 06F must not contradict these decisions.
+
+---
+
+# 02. Core Behavioral Principle
+
+GrowFlow frontend behavior follows:
+
+```text
+User Intent
+    ↓
+UI Interaction
+    ↓
+Frontend Command / Query
+    ↓
+API Client
+    ↓
+FastAPI
+    ↓
+Application Service
+    ↓
+Domain / Canonical State
+    ↓
+Response / Event
+    ↓
+Frontend State Reconciliation
+    ↓
+UI Representation
+```
+
+The frontend may:
+
+- collect input;
+- validate presentation-level constraints;
+- request data;
+- submit commands;
+- display progress;
+- optimistically update safe UI-only state;
+- subscribe to events;
+- reconcile responses;
+- retry safe operations;
+- restore workflows;
+- navigate;
+- display permission-aware controls.
+
+The frontend must not:
+
+- directly mutate the database;
+- directly call AI providers;
+- directly call RAG infrastructure;
+- treat SSE as canonical state;
+- bypass backend validation;
+- invent authorization decisions;
+- persist canonical business state only in browser memory;
+- assume a successful visual action means canonical persistence succeeded.
+
+---
+
+# 03. Frontend Runtime Architecture
+
+The runtime is divided into explicit behavioral layers.
+
+```text
+Presentation
+    ↓
+Feature State / Controllers
+    ↓
+Query & Mutation Services
+    ↓
+API Client
+    ↓
+Transport
+    ↓
+FastAPI
+```
+
+Cross-cutting runtime services:
+
+```text
+Auth Session
+Authorization Context
+Server Cache
+SSE/Event Stream
+Notifications
+Error Handling
+Telemetry
+Feature Configuration
+```
+
+The frontend architecture must preserve separation between:
+
+1. presentation;
+2. local interaction state;
+3. server state;
+4. streaming state;
+5. transport;
+6. domain responses.
+
+---
+
+# 04. State Model
+
+GrowFlow uses three primary frontend state categories.
+
+```text
+SERVER STATE
+├── User
+├── Profile
+├── Groups
+├── Projects
+├── Project Definitions
+├── Project Instances
+├── Assessments
+├── Blueprints
+├── Tasks
+├── Milestones
+├── Risks
+├── Documents
+├── GitHub state
+├── Help Requests
+├── Mentor Notes
+├── Notifications
+├── Activities
+└── AI Execution Records
+
+UI STATE
+├── Sidebar state
+├── Modal state
+├── Drawer state
+├── Tabs
+├── Filters
+├── Sorting
+├── Expanded rows
+├── Selection
+├── Temporary form state
+└── Display preferences
+
+STREAMING STATE
+├── SSE connection
+├── Connection health
+├── AI execution progress
+├── Document processing
+├── Background job progress
+├── Live notifications
+└── Reconciliation signals
+```
+
+A state category must not silently absorb responsibilities belonging to another category.
+
+---
+
+# 05. Server State
+
+Server State represents data whose authority exists on the backend.
+
+Examples:
+
+- project;
+- project definition;
+- project instance;
+- blueprint;
+- task;
+- milestone;
+- risk;
+- document;
+- notification;
+- activity;
+- user profile;
+- AI execution;
+- help request.
+
+Server state must be treated as:
+
+- remotely owned;
+- potentially stale;
+- asynchronously changing;
+- permission-scoped;
+- versionable where applicable.
+
+The frontend may cache server state, but cache ownership does not make the browser authoritative.
+
+---
+
+# 06. UI State
+
+UI State exists only to control presentation or temporary interaction.
+
+Examples:
+
+```text
+sidebarCollapsed
+activeTab
+filterPanelOpen
+selectedRows
+expandedTaskIds
+modalState
+drawerState
+temporarySearchText
+unsavedFormValues
+```
+
+UI state must not be used as a substitute for persisted domain state.
+
+For example:
+
+- `selectedMilestoneId` is UI state;
+- milestone status is server state.
+
+---
+
+# 07. Streaming State
+
+Streaming State represents transient live transport and execution information.
+
+Examples:
+
+- connected/disconnected;
+- reconnecting;
+- execution step started;
+- execution progress;
+- document processing progress;
+- event sequence;
+- latest event ID;
+- event delivery status.
+
+Streaming state is not canonical.
+
+When streaming reports:
+
+```text
+task.status = completed
+```
+
+the frontend may immediately represent that event, but canonical task state should be confirmed through the API response or reconciliation query where required.
+
+---
+
+# 08. State Ownership Matrix
+
+| State | Owner | Persistence | Canonical? |
+|---|---|---|---|
+| User identity | Backend/Auth | Backend | Yes |
+| Project | Backend | PostgreSQL | Yes |
+| Task status | Backend | PostgreSQL | Yes |
+| Sidebar collapsed | Frontend | Local preference if desired | No |
+| Modal open | Frontend | Memory | No |
+| Search query | Frontend/URL | URL | No |
+| AI progress | Backend execution + stream | Backend | Execution state |
+| SSE connection | Frontend | Memory | No |
+| Notification read state | Backend | PostgreSQL | Yes |
+| Temporary form input | Frontend | Memory until submit | No |
+| Blueprint version | Backend | PostgreSQL | Yes |
+| Cached project | Frontend cache | Memory/storage | No |
+
+---
+
+# 09. State Naming
+
+State names must communicate ownership and semantics.
+
+Preferred:
+
+```text
+projectQuery
+projectMutation
+taskListQuery
+taskUpdateMutation
+sseConnectionState
+blueprintGenerationState
+notificationQuery
+```
+
+Avoid ambiguous names such as:
+
+```text
+data
+state
+loading
+result
+response
+current
+```
+
+unless their scope makes the meaning unambiguous.
+
+---
+
+# 10. Server Query Architecture
+
+Queries retrieve server-owned state.
+
+A query should define:
+
+- resource;
+- scope;
+- filters;
+- sorting;
+- pagination;
+- cache policy;
+- stale policy;
+- authorization context;
+- reconciliation requirements.
+
+Example conceptual query:
+
+```text
+ProjectListQuery
+    project scope
+    filters
+    pagination
+    sorting
+    cache key
+```
+
+Queries must be independently invalidatable.
+
+---
+
+# 11. Mutation Architecture
+
+Mutations represent commands against backend state.
+
+Examples:
+
+```text
+CreateProject
+UpdateProject
+SubmitAssessment
+GenerateBlueprint
+CreateTask
+UpdateTask
+CreateRisk
+ResolveRisk
+CreateHelpRequest
+SubmitProjectChange
+ApproveProjectChange
+GenerateDocument
+```
+
+A mutation must not directly manipulate unrelated cached state without an explicit reconciliation rule.
+
+---
+
+# 12. Query Keys
+
+Query/cache identity must include every dimension that changes authorization or returned data.
+
+Conceptual form:
+
+```text
+[
+  resource,
+  scope,
+  resourceId,
+  filters,
+  pagination,
+  sort
+]
+```
+
+Do not use a single generic key such as:
+
+```text
+["projects"]
+```
+
+when different scopes or filters return materially different datasets.
+
+---
+
+# 13. Authorization Context in State
+
+Authorization context may include:
+
+- authenticated user;
+- role;
+- capabilities;
+- group scope;
+- project scope;
+- resource permissions;
+- account status.
+
+However:
+
+> Frontend authorization state controls presentation and interaction availability; backend authorization remains authoritative.
+
+The frontend must be prepared for the backend to return 401 or 403 even when a control was previously visible.
+
+---
+
+# 14. API Client Architecture
+
+All backend communication must pass through a centralized API client.
+
+```text
+Feature
+  ↓
+Application API Service
+  ↓
+API Client
+  ↓
+HTTP Transport
+  ↓
+FastAPI
+```
+
+No feature should construct arbitrary fetch calls throughout page components.
+
+The API client owns:
+
+- base URL;
+- authentication headers;
+- request IDs;
+- timeout policy;
+- serialization;
+- response parsing;
+- error normalization;
+- cancellation;
+- common headers;
+- retry policy where appropriate.
+
+---
+
+# 15. API Service Layer
+
+Feature-level API services translate domain intent into API operations.
+
+Examples:
+
+```text
+projectsApi
+tasksApi
+milestonesApi
+risksApi
+documentsApi
+assessmentsApi
+blueprintsApi
+notificationsApi
+helpRequestsApi
+aiExecutionsApi
+```
+
+Components should consume these services rather than manually constructing endpoints.
+
+---
+
+# 16. Request Lifecycle
+
+Every request follows a known lifecycle.
+
+```text
+IDLE
+ ↓
+REQUESTING
+ ↓
+SUCCESS
+```
+
+or:
+
+```text
+IDLE
+ ↓
+REQUESTING
+ ↓
+ERROR
+```
+
+For long-running commands:
+
+```text
+REQUESTED
+ ↓
+ACCEPTED
+ ↓
+QUEUED
+ ↓
+RUNNING
+ ↓
+COMPLETED
+```
+
+Possible terminal branches:
+
+```text
+FAILED
+CANCELLED
+```
+
+The frontend must distinguish request completion from operation completion.
+
+---
+
+# 17. Request Correlation
+
+Requests that can initiate asynchronous work must carry correlation information where supported.
+
+Conceptually:
+
+```text
+request_id
+correlation_id
+idempotency_key
+```
+
+These values enable:
+
+- tracing;
+- debugging;
+- duplicate detection;
+- execution reconciliation.
+
+The frontend should retain correlation information for the lifetime of a relevant workflow.
+
+---
+
+# 18. Request Cancellation
+
+Abortable requests must use cancellation primitives.
+
+Cancellation is appropriate for:
+
+- abandoned search queries;
+- route changes;
+- replaced filter requests;
+- autocomplete;
+- user-cancelled supported operations.
+
+Cancellation must not imply that a backend job has been cancelled unless the frontend explicitly invokes the backend cancellation command.
+
+---
+
+# 19. Response Normalization
+
+API responses must be transformed into predictable frontend structures.
+
+The normalization layer should handle:
+
+- nullability;
+- dates;
+- identifiers;
+- pagination;
+- enums;
+- nested resources;
+- error envelopes.
+
+The frontend must not silently reinterpret business semantics.
+
+---
+
+# 20. API Error Normalization
+
+All transport and API failures should become a common frontend error structure.
+
+Conceptually:
+
+```text
+AppError
+├── category
+├── code
+├── message
+├── status
+├── details
+├── requestId
+├── correlationId
+├── retryable
+└── fieldErrors
+```
+
+Categories may include:
+
+```text
+AUTHENTICATION
+AUTHORIZATION
+VALIDATION
+NOT_FOUND
+CONFLICT
+RATE_LIMIT
+NETWORK
+TIMEOUT
+SERVER
+AI
+DOCUMENT
+RAG
+UNKNOWN
+```
+
+---
+
+# 21. Error Message Policy
+
+Backend technical details must not be blindly exposed.
+
+The UI message should be:
+
+- truthful;
+- understandable;
+- actionable where possible;
+- appropriately scoped.
+
+Technical diagnostics belong in logs/observability.
+
+Never fabricate a successful outcome to make the interface appear stable.
+
+---
+
+# 22. Authentication State
+
+Authentication state must represent at minimum:
+
+```text
+UNKNOWN
+AUTHENTICATING
+AUTHENTICATED
+UNAUTHENTICATED
+EXPIRED
+ERROR
+```
+
+The application must avoid rendering protected content as though it were authorized while authentication is unresolved.
+
+---
+
+# 23. Session Restoration
+
+On application startup:
+
+```text
+App Start
+ ↓
+Restore Auth Session
+ ↓
+Resolve Identity
+ ↓
+Resolve Application Role/Capabilities
+ ↓
+Resolve Account Status
+ ↓
+Render Authorized Workplace
+```
+
+The frontend must not infer role solely from a URL.
+
+---
+
+# 24. Token Handling
+
+Access tokens and session credentials must follow the authentication architecture established by the backend.
+
+Frontend rules:
+
+- never expose provider secrets;
+- never store AI provider keys;
+- never log tokens;
+- never include secrets in analytics;
+- never place secrets in URLs;
+- clear sensitive temporary state after logout.
+
+---
+
+# 25. Logout Behavior
+
+Logout must:
+
+1. terminate the application session;
+2. close authenticated SSE connections;
+3. clear private cached server state;
+4. clear sensitive UI state;
+5. prevent protected requests from continuing;
+6. return the user to an appropriate unauthenticated route.
+
+Public, non-sensitive cache may survive only if explicitly designed to do so.
+
+---
+
+# 26. Authorization Behavior
+
+Authorization is evaluated by the backend.
+
+Frontend behavior:
+
+```text
+Known permission
+    ↓
+Render appropriate control
+```
+
+But:
+
+```text
+Backend 403
+    ↓
+Stop action
+    ↓
+Display authorization feedback
+    ↓
+Reconcile affected resource
+```
+
+The frontend must never attempt to circumvent a 403.
+
+---
+
+# 27. Capability-Aware UI
+
+Where the backend exposes capabilities, controls may be mapped to them.
+
+Examples:
+
+```text
+project.read
+project.update
+task.create
+task.update
+project.change.create
+project.change.approve
+document.generate
+investigation.inspect
+```
+
+Capability-driven UI reduces misleading affordances.
+
+---
+
+# 28. REST Integration
+
+REST is the primary request/response interface.
+
+Use REST for:
+
+- initial page data;
+- resource reads;
+- deterministic mutations;
+- commands;
+- pagination;
+- filtering;
+- search;
+- reconciliation;
+- execution detail;
+- history;
+- resource versions.
+
+Use SSE for live delivery rather than replacing normal resource APIs.
+
+---
+
+# 29. REST + SSE Relationship
+
+Correct pattern:
+
+```text
+REST
+→ obtain canonical state
+
+SSE
+→ receive changes/progress
+
+REST
+→ reconcile when required
+```
+
+Incorrect pattern:
+
+```text
+SSE
+→ become permanent database substitute
+```
+
+---
+
+# 30. SSE Architecture
+
+SSE is the live event delivery mechanism.
+
+Conceptual flow:
+
+```text
+Backend Event
+ ↓
+Persistent Event Infrastructure
+ ↓
+SSE Delivery
+ ↓
+Frontend Event Validator
+ ↓
+Event Router
+ ↓
+State Reconciliation
+ ↓
+UI
+```
+
+The browser connection is not the job runner.
+
+---
+
+# 31. SSE Connection States
+
+The frontend must represent:
+
+```text
+DISCONNECTED
+CONNECTING
+CONNECTED
+RECONNECTING
+FAILED
+CLOSED
+```
+
+Connection status should be observable but visually quiet.
+
+A transient reconnect should not dominate the interface.
+
+---
+
+# 32. SSE Event Envelope
+
+The frontend should expect the canonical event envelope established by Phase 05:
+
+```text
+event_id
+event_type
+timestamp
+resource_type
+resource_id
+scope
+payload
+correlation_id
+version
+```
+
+Unknown event types must not crash the application.
+
+---
+
+# 33. Event Validation
+
+Every received event must be checked for:
+
+- required fields;
+- expected types;
+- valid event type;
+- valid resource reference;
+- authorization scope;
+- version information where applicable.
+
+Malformed events must be safely ignored or surfaced through observability.
+
+---
+
+# 34. Event Ordering
+
+Where event ordering matters, the frontend must use:
+
+- event IDs;
+- versions;
+- timestamps only as supporting information.
+
+Do not assume network arrival order equals domain order.
+
+---
+
+# 35. Event Deduplication
+
+Repeated events must not produce duplicate visible state transitions.
+
+Deduplication may use:
+
+```text
+event_id
+```
+
+and resource version where applicable.
+
+The frontend should maintain a bounded record of recently processed events for active streams.
+
+---
+
+# 36. Event → State Reconciliation
+
+Events may trigger:
+
+```text
+cache update
+```
+
+or:
+
+```text
+targeted refetch
+```
+
+or:
+
+```text
+workflow refresh
+```
+
+Decision depends on event semantics.
+
+For simple authoritative payloads, direct cache reconciliation may be safe.
+
+For complex business transitions, refetching canonical state is preferred.
+
+---
+
+# 37. SSE Reconnection
+
+When the connection drops:
+
+```text
+CONNECTED
+ ↓
+DISCONNECTED
+ ↓
+RECONNECTING
+ ↓
+CONNECTED
+```
+
+The client should use the backend-supported event resume mechanism where available.
+
+After reconnection:
+
+```text
+Reconnect
+ ↓
+Resume missed events if supported
+ ↓
+Reconcile active canonical resources
+ ↓
+Return to normal
+```
+
+---
+
+# 38. SSE Does Not Guarantee Complete UI State
+
+The frontend must not assume every event was received.
+
+Possible causes:
+
+- connection loss;
+- tab suspension;
+- network transition;
+- deployment;
+- browser lifecycle;
+- temporary server failure.
+
+Canonical APIs remain the recovery mechanism.
+
+---
+
+# 39. Polling vs SSE
+
+Use SSE when:
+
+- execution progress matters;
+- background state changes frequently enough to justify live delivery;
+- notifications should arrive live;
+- document processing needs progress;
+- AI execution steps need visibility.
+
+Use normal REST reads when:
+
+- data is static;
+- user explicitly refreshes;
+- a resource is small and infrequently changing.
+
+Use bounded polling only when:
+
+- SSE is unavailable for a particular operation;
+- backend explicitly supports polling;
+- polling has a termination condition.
+
+Never implement uncontrolled infinite high-frequency polling.
+
+---
+
+# 40. Caching
+
+Caching exists to:
+
+- reduce unnecessary requests;
+- preserve responsive navigation;
+- avoid repeated loading;
+- support reconciliation.
+
+Caching must respect:
+
+- authorization scope;
+- resource identity;
+- version;
+- filters;
+- pagination;
+- freshness.
+
+---
+
+# 41. Cache Freshness
+
+Different resources may have different freshness requirements.
+
+Examples:
+
+| Resource | Typical Behavior |
+|---|---|
+| Project metadata | moderate caching |
+| Task list | moderate + event invalidation |
+| Notifications | short freshness + SSE |
+| AI execution | live stream + reconciliation |
+| Static documentation | long caching |
+| Admin health | short freshness |
+| Analytics | query-driven |
+| Assessment result | stable after completion |
+
+Exact values should be configured by implementation rather than hard-coded into page components.
+
+---
+
+# 42. Cache Invalidation
+
+Invalidation should be event- or mutation-driven where possible.
+
+Examples:
+
+```text
+Create Task
+→ invalidate task list
+→ update project progress if returned
+```
+
+```text
+Update Milestone
+→ invalidate milestone detail
+→ invalidate milestone list
+→ invalidate roadmap if affected
+```
+
+```text
+Blueprint regenerated
+→ invalidate blueprint
+→ invalidate blueprint document
+→ invalidate project overview if derived fields changed
+```
+
+---
+
+# 43. Mutation Confirmation
+
+For canonical mutations, the preferred sequence is:
+
+```text
+Submit mutation
+ ↓
+Backend confirms
+ ↓
+Receive canonical response
+ ↓
+Update/invalidate cache
+ ↓
+Render confirmed state
+```
+
+Do not permanently mark an action successful based only on button click.
+
+---
+
+# 44. Optimistic Updates
+
+Optimistic updates are permitted only for low-risk, reversible UI behavior where rollback is deterministic.
+
+Good candidates:
+
+- local preference changes;
+- temporary UI selections;
+- simple toggles where rollback is trivial.
+
+Use caution for:
+
+- task status;
+- milestone state;
+- risk resolution;
+- project changes;
+- permissions;
+- blueprint approval.
+
+For significant domain mutations, confirmed updates are preferred.
+
+---
+
+# 45. Rollback
+
+Any optimistic domain update must define:
+
+```text
+optimistic value
+previous value
+rollback condition
+rollback action
+```
+
+If rollback is not deterministic, do not use optimistic mutation.
+
+---
+
+# 46. Idempotency
+
+The frontend must support backend idempotency for expensive or repeatable commands.
+
+Especially important for:
+
+- blueprint generation;
+- document generation;
+- project-change regeneration;
+- expensive AI operations;
+- create commands triggered from retry.
+
+The frontend must not create a second expensive execution simply because the first response was slow.
+
+---
+
+# 47. Duplicate Submission Prevention
+
+While a mutation is actively pending:
+
+- disable duplicate controls where appropriate;
+- show operation state;
+- preserve idempotency keys;
+- allow cancellation only when supported.
+
+A user must not accidentally trigger multiple equivalent AI executions through repeated clicks.
+
+---
+
+# 48. Race Conditions
+
+Frontend behavior must explicitly handle:
+
+- multiple requests for the same resource;
+- route changes during requests;
+- filters changing while requests are pending;
+- rapid tab changes;
+- multiple mutations;
+- SSE events arriving during mutation;
+- stale cached responses.
+
+---
+
+# 49. Stale Response Protection
+
+Every request that can be superseded should be associated with a request identity.
+
+Example:
+
+```text
+Search request A
+Search request B
+```
+
+If B supersedes A:
+
+```text
+B response → accepted
+A response → ignored
+```
+
+Never allow an older response to overwrite newer UI state.
+
+---
+
+# 50. Concurrent Mutations
+
+For concurrent mutations to the same resource:
+
+- use backend version/conflict semantics;
+- detect 409/conflict responses;
+- reconcile latest server state;
+- present meaningful resolution UI.
+
+The frontend must not silently overwrite newer server changes.
+
+---
+
+# 51. Version-Aware Resources
+
+Where backend resources expose versions, the frontend should preserve version information.
+
+Important examples:
+
+- blueprint versions;
+- project definition versions;
+- project change versions;
+- documents;
+- execution records.
+
+Version identity must not be confused with display revision numbers.
+
+---
+
+# 52. Loading State Taxonomy
+
+Loading is not one universal state.
+
+Use:
+
+```text
+INITIAL_LOADING
+REFRESHING
+MUTATING
+STREAMING
+RECONNECTING
+PROCESSING
+BLOCKED
+```
+
+This allows the interface to preserve useful existing content while background refresh occurs.
+
+---
+
+# 53. Initial Loading
+
+Initial loading should:
+
+- preserve page structure;
+- use skeletons or reserved layout;
+- avoid layout jumps;
+- communicate what is loading.
+
+Do not use a full-screen spinner for every request.
+
+---
+
+# 54. Refreshing
+
+When existing content remains valid:
+
+```text
+Existing data
++
+quiet refresh indicator
+```
+
+is preferred over replacing the whole page with a loading screen.
+
+---
+
+# 55. Empty States
+
+Empty state must explain:
+
+1. what is empty;
+2. why it may be empty;
+3. what the user can do next.
+
+Examples:
+
+```text
+No projects yet
+→ Create a project
+→ Browse mentor projects
+```
+
+Empty does not automatically mean error.
+
+---
+
+# 56. Permission-Based Empty States
+
+If a user cannot see resources due to authorization, do not reveal sensitive information by saying that hidden resources exist.
+
+Use appropriately scoped language.
+
+---
+
+# 57. Error States
+
+Errors must be contextual.
+
+A task list failure should not replace the entire project shell if only the task list failed.
+
+Preferred:
+
+```text
+Project page
+ ├── Overview → available
+ ├── Tasks → error state
+ ├── Milestones → available
+ └── Activity → available
+```
+
+---
+
+# 58. Recoverable Errors
+
+Where recovery is safe:
+
+```text
+Error
+ ↓
+Explain
+ ↓
+Retry
+```
+
+Examples:
+
+- transient network;
+- timeout;
+- temporary service unavailability.
+
+Retry must respect idempotency and backend semantics.
+
+---
+
+# 59. Non-Recoverable Errors
+
+Examples:
+
+- invalid request;
+- forbidden action;
+- deleted resource;
+- expired workflow;
+- incompatible version.
+
+Do not repeatedly retry these.
+
+---
+
+# 60. Success States
+
+Success feedback should be proportional.
+
+Use:
+
+- inline confirmation;
+- toast;
+- updated resource;
+- activity entry;
+- workflow transition.
+
+Avoid excessive celebratory motion for routine CRUD operations.
+
+---
+
+# 61. Toast Policy
+
+Toasts are appropriate for:
+
+- short-lived confirmation;
+- background completion notification;
+- non-blocking informational feedback.
+
+Toasts must not be the only place where critical information exists.
+
+Critical state must also be represented in the relevant resource/workflow.
+
+---
+
+# 62. Long-Running Operations
+
+Long-running work must survive navigation.
+
+Examples:
+
+- assessment processing;
+- blueprint generation;
+- document generation;
+- project-change regeneration;
+- AI execution.
+
+The operation belongs to the backend job/execution system, not the mounted React/page lifecycle.
+
+---
+
+# 63. Long-Running Operation UX
+
+The frontend should show:
+
+```text
+QUEUED
+RUNNING
+COMPLETED
+FAILED
+CANCELLED
+```
+
+and, where available:
+
+```text
+current stage
+progress
+started at
+updated at
+estimated/relative progress
+```
+
+Do not invent numeric progress when the backend cannot support truthful progress.
+
+---
+
+# 64. Background Operation Navigation
+
+If a user leaves a page while an operation continues:
+
+```text
+Operation continues
+ ↓
+SSE / notification
+ ↓
+User returns or follows notification
+ ↓
+Canonical state loaded
+```
+
+The user must not lose the operation simply because the page changed.
+
+---
+
+# 65. AI Execution State
+
+AI execution is a first-class frontend behavior.
+
+Conceptually:
+
+```text
+NOT_STARTED
+QUEUED
+RUNNING
+VALIDATING
+QA
+COMPLETED
+FAILED
+CANCELLED
+```
+
+The exact backend status enum remains authoritative.
+
+---
+
+# 66. AI Progress
+
+AI progress may expose:
+
+- agent currently executing;
+- completed agents;
+- execution stage;
+- validation;
+- QA/Judge;
+- warnings;
+- retry state.
+
+The frontend must distinguish:
+
+```text
+generation
+validation
+QA
+persistence
+```
+
+rather than presenting all activity as generic “AI thinking.”
+
+---
+
+# 67. AI Transparency
+
+The UI should be truthful about AI state.
+
+Allowed:
+
+```text
+Generating blueprint
+Validating generated structure
+Running quality checks
+Saving approved result
+```
+
+Avoid fake typing indicators or fabricated reasoning.
+
+Do not expose hidden chain-of-thought.
+
+---
+
+# 68. AI Failure Behavior
+
+AI failure must identify the highest useful level of failure.
+
+Examples:
+
+```text
+Provider unavailable
+Generation failed
+Validation failed
+QA rejected output
+Persistence failed
+```
+
+Where retry is supported, preserve the execution record and create a new execution rather than pretending the previous attempt never existed.
+
+---
+
+# 69. Blueprint Generation Workflow
+
+Canonical frontend workflow:
+
+```text
+Project Context
+ ↓
+Assessment Complete
+ ↓
+Generate Blueprint
+ ↓
+Generation Accepted
+ ↓
+Live Progress
+ ↓
+Structured Output
+ ↓
+Validation
+ ↓
+QA/Judge
+ ↓
+Canonical Persistence
+ ↓
+Blueprint Ready
+```
+
+The frontend should not present an unvalidated draft as the canonical blueprint.
+
+---
+
+# 70. Blueprint Generation Entry Conditions
+
+The frontend should enable blueprint generation only when required prerequisites are satisfied according to backend capabilities.
+
+The backend remains the final authority.
+
+If a prerequisite is invalidated between render and submit:
+
+```text
+submit
+ ↓
+backend rejects
+ ↓
+show current prerequisite state
+ ↓
+reconcile
+```
+
+---
+
+# 71. Blueprint Generation Recovery
+
+If generation fails:
+
+- preserve the failed execution record;
+- explain current state;
+- provide retry if supported;
+- avoid duplicate execution;
+- return to the canonical workflow route;
+- preserve relevant project context.
+
+---
+
+# 72. Project Change Workflow
+
+Canonical frontend behavior:
+
+```text
+Change Request
+ ↓
+Impact Analysis
+ ↓
+Impact Review
+ ↓
+User Decision
+ ↓
+Regeneration
+ ↓
+Validation
+ ↓
+QA/Judge
+ ↓
+Persisted Change
+```
+
+The frontend must not silently mutate project state while the user is merely reviewing impact.
+
+---
+
+# 73. Project Change Review
+
+The review UI should distinguish:
+
+```text
+Current
+Proposed
+Impact
+```
+
+Potentially:
+
+```text
+Current task
+→ proposed task
+→ impact
+
+Current milestone
+→ proposed milestone
+→ impact
+```
+
+The frontend presents the backend's impact analysis; it does not independently calculate authoritative business impact.
+
+---
+
+# 74. Document Generation Behavior
+
+Document generation is asynchronous when established as a background operation.
+
+Flow:
+
+```text
+Generate Document
+ ↓
+Request Accepted
+ ↓
+Queued
+ ↓
+Processing
+ ↓
+Generated
+ ↓
+Validated
+ ↓
+Available
+```
+
+The frontend should show document version and generation state.
+
+---
+
+# 75. Document Versioning
+
+A generated document must be treated as a versioned representation.
+
+The UI should expose:
+
+- current version;
+- prior versions where permitted;
+- generation status;
+- source/related resource;
+- last updated time;
+- failure state.
+
+---
+
+# 76. Cancellation
+
+Cancellation must distinguish:
+
+```text
+frontend request cancellation
+```
+
+from:
+
+```text
+backend job cancellation
+```
+
+Only a backend cancellation command can stop an accepted background operation.
+
+---
+
+# 77. Cancellation UX
+
+If cancellation is supported:
+
+```text
+Cancel requested
+ ↓
+backend processes cancellation
+ ↓
+CANCELLED
+```
+
+Do not immediately claim the operation was cancelled unless the backend confirms it.
+
+---
+
+# 78. Retry
+
+Retry behavior must be operation-specific.
+
+Safe retry examples:
+
+- transient GET;
+- reconnect;
+- safe refresh.
+
+Controlled retry:
+
+- AI execution;
+- document generation;
+- external integration;
+- mutation after timeout.
+
+Never blindly retry all POST requests.
+
+---
+
+# 79. Resume
+
+Resumable workflows must recover from:
+
+- browser refresh;
+- navigation;
+- reconnect;
+- application restart;
+- temporary network failure.
+
+The frontend should derive resumable state from backend records rather than browser-only memory.
+
+---
+
+# 80. Workflow State Machine
+
+Complex frontend workflows should use explicit state machines or equivalent deterministic state models.
+
+Example:
+
+```text
+IDLE
+ ↓
+SUBMITTING
+ ↓
+ACCEPTED
+ ↓
+RUNNING
+ ├── CANCEL_REQUESTED
+ │      ↓
+ │   CANCELLED
+ │
+ ├── FAILED
+ │      ↓
+ │   RETRY_AVAILABLE
+ │
+ └── COMPLETED
+```
+
+Illegal transitions should be rejected by the frontend state model.
+
+---
+
+# 81. Workflow State Persistence
+
+Transient UI workflow state may exist locally.
+
+Canonical workflow progress must come from the backend.
+
+Examples:
+
+- assessment current question may be persisted according to assessment architecture;
+- AI execution status is backend-owned;
+- document generation status is backend-owned;
+- project change state is backend-owned.
+
+---
+
+# 82. Form State
+
+Form state is local until submitted.
+
+Forms should distinguish:
+
+```text
+PRISTINE
+DIRTY
+VALID
+INVALID
+SUBMITTING
+SUCCESS
+ERROR
+```
+
+The UI must not mark a form saved before backend confirmation.
+
+---
+
+# 83. Field Validation
+
+Frontend validation should provide fast feedback for:
+
+- required fields;
+- format;
+- length;
+- obvious constraints.
+
+Backend validation remains authoritative.
+
+If frontend and backend disagree:
+
+```text
+backend result wins
+```
+
+---
+
+# 84. Server Validation Errors
+
+Field-level backend validation errors should map to fields where possible.
+
+Example:
+
+```text
+API validation error
+ ↓
+fieldErrors
+ ↓
+form field message
+```
+
+Non-field errors remain at form-level.
+
+---
+
+# 85. Unsaved Changes
+
+For important forms:
+
+- detect dirty state;
+- warn before destructive navigation where appropriate;
+- preserve values when technically feasible;
+- avoid blocking navigation unnecessarily.
+
+Autosave must not be introduced merely because it is convenient.
+
+---
+
+# 86. Autosave Policy
+
+Autosave is allowed only where the domain benefits from it and backend semantics support it.
+
+Any autosave feature must define:
+
+- debounce;
+- save trigger;
+- conflict handling;
+- failure behavior;
+- retry;
+- visible saved state;
+- cancellation;
+- versioning.
+
+No silent autosave should mutate sensitive or consequential state without explicit product approval.
+
+---
+
+# 87. URL State
+
+URL state is appropriate for:
+
+- search query;
+- filters;
+- sorting;
+- pagination;
+- selected view;
+- shareable display configuration.
+
+URL state should not contain:
+
+- secrets;
+- tokens;
+- sensitive private data;
+- large transient payloads.
+
+---
+
+# 88. Route State vs Query State
+
+Use route parameters for resource identity:
+
+```text
+/projects/:projectId
+```
+
+Use query parameters for view state:
+
+```text
+/projects?status=active&sort=updated
+```
+
+Do not encode large application state into URLs.
+
+---
+
+# 89. Search Behavior
+
+Global search is:
+
+- role-aware;
+- authorization-aware;
+- backend-powered;
+- route-aware.
+
+Search results should expose canonical destinations.
+
+Search must not reveal inaccessible resources merely because a string matches.
+
+---
+
+# 90. Search State
+
+Search should distinguish:
+
+```text
+EMPTY
+TYPING
+SEARCHING
+RESULTS
+NO_RESULTS
+ERROR
+```
+
+Debounce user input where appropriate.
+
+Cancel superseded requests.
+
+---
+
+# 91. Notification State
+
+Notifications are server state.
+
+The frontend may maintain:
+
+```text
+unreadCount
+notificationList
+notificationStreamState
+```
+
+Unread/read status is backend-owned.
+
+---
+
+# 92. Notification Deep Links
+
+Every actionable notification should route to the canonical resource/workflow route.
+
+Examples:
+
+```text
+AI completed
+→ project blueprint
+
+Task assigned
+→ task detail
+
+Help request response
+→ help request
+
+Investigation update
+→ investigation detail
+```
+
+---
+
+# 93. Notification Reconciliation
+
+When an SSE notification arrives:
+
+1. validate event;
+2. update/invalidate notification cache;
+3. update unread count;
+4. optionally update related resource cache;
+5. surface user-visible notification if appropriate.
+
+---
+
+# 94. Modal State
+
+Modal state is UI state.
+
+Examples:
+
+```text
+createTask
+editTask
+deleteConfirmation
+assignStudent
+share
+```
+
+Modal content should not become a second canonical copy of the resource.
+
+On mutation success:
+
+```text
+close modal
+→ reconcile resource
+```
+
+On failure:
+
+```text
+keep modal open where recovery is useful
+```
+
+---
+
+# 95. Drawer State
+
+Drawers are appropriate for contextual secondary information.
+
+Examples:
+
+- notification preview;
+- quick resource details;
+- mobile filters.
+
+A drawer must not become a substitute for a canonical route when the content deserves a deep link.
+
+---
+
+# 96. Permission-Aware Actions
+
+Controls should be:
+
+```text
+Visible + enabled
+Visible + disabled
+Hidden
+```
+
+according to product semantics and permissions.
+
+Use disabled controls when understanding why an action is unavailable provides useful context.
+
+Hide controls when revealing their existence would itself be sensitive or confusing.
+
+---
+
+# 97. Network State
+
+Global network state should represent:
+
+```text
+ONLINE
+DEGRADED
+OFFLINE
+RECOVERING
+```
+
+The UI should remain usable where possible.
+
+---
+
+# 98. Network Interruption
+
+During network interruption:
+
+- preserve existing server data;
+- stop unsafe mutations;
+- show non-blocking connectivity feedback;
+- retry safe operations where appropriate;
+- allow local navigation through already-loaded data;
+- reconcile when connectivity returns.
+
+Do not pretend offline mutations were persisted.
+
+---
+
+# 99. Offline Scope
+
+GrowFlow is not assumed to be a full offline-first application.
+
+Offline behavior is limited to graceful degradation unless a specific feature explicitly defines offline support.
+
+No canonical write should be queued locally without backend-supported semantics.
+
+---
+
+# 100. Degraded Backend Behavior
+
+If a service is temporarily unavailable:
+
+```text
+Affected feature
+→ contextual unavailable state
+```
+
+Do not necessarily disable the entire application.
+
+Examples:
+
+- AI unavailable → project browsing still works;
+- GitHub unavailable → project workspace remains available;
+- document processing unavailable → existing documents remain readable.
+
+---
+
+# 101. Error Boundaries
+
+Frontend error boundaries must isolate failures.
+
+Preferred:
+
+```text
+Application Shell
+ ├── Header
+ ├── Sidebar
+ └── Page Boundary
+      ├── Feature A
+      ├── Feature B
+      └── Feature C
+```
+
+A broken widget should not automatically crash the entire application.
+
+---
+
+# 102. Error Boundary Recovery
+
+Recovery options may include:
+
+- retry rendering;
+- reload feature data;
+- navigate to safe route;
+- report diagnostic information.
+
+Never expose raw stack traces to normal users.
+
+---
+
+# 103. Global Fatal Error
+
+A global fatal error page is reserved for failures where the application shell itself cannot safely render.
+
+It must provide:
+
+- understandable explanation;
+- retry/reload;
+- safe navigation where possible;
+- correlation/request identifier if appropriate.
+
+---
+
+# 104. Observability
+
+Frontend observability must integrate with backend observability.
+
+Track meaningful events such as:
+
+- page navigation;
+- API failure;
+- SSE disconnect;
+- workflow failure;
+- AI execution state;
+- document generation state;
+- authorization failures;
+- performance milestones.
+
+---
+
+# 105. Correlation IDs
+
+Where available, frontend telemetry should include:
+
+```text
+request_id
+correlation_id
+execution_id
+resource_id
+user/session context
+```
+
+Sensitive values must be excluded.
+
+---
+
+# 106. Logging
+
+Frontend logs should be:
+
+- structured;
+- environment-aware;
+- useful for diagnosis;
+- minimized in production.
+
+Never log:
+
+- access tokens;
+- provider keys;
+- passwords;
+- private document content;
+- sensitive assessment answers unless explicitly required;
+- hidden AI reasoning.
+
+---
+
+# 107. Analytics vs Observability
+
+Product analytics answers:
+
+```text
+What did users do?
+```
+
+Observability answers:
+
+```text
+What happened technically?
+```
+
+Do not mix the two indiscriminately.
+
+---
+
+# 108. Performance Principles
+
+Frontend performance priorities:
+
+1. fast initial shell;
+2. route-level code splitting;
+3. lazy loading for heavy features;
+4. efficient server-state caching;
+5. limited re-rendering;
+6. virtualized large datasets where needed;
+7. efficient SSE handling;
+8. controlled animation;
+9. optimized images;
+10. predictable bundle boundaries.
+
+---
+
+# 109. Rendering Strategy
+
+Public pages may prioritize visual storytelling.
+
+Authenticated pages should prioritize:
+
+- information density;
+- interaction speed;
+- predictable rendering;
+- low layout shift.
+
+Heavy dashboard visualizations should be loaded only when needed.
+
+---
+
+# 110. Data Table Performance
+
+Dense tables should support:
+
+- pagination;
+- server-side filtering where appropriate;
+- virtualization for genuinely large datasets;
+- stable row keys;
+- incremental updates;
+- selective rendering.
+
+Do not render thousands of complex rows unnecessarily.
+
+---
+
+# 111. SSE Performance
+
+SSE event handlers must avoid:
+
+- full application re-render;
+- unnecessary cache invalidation;
+- duplicate subscriptions;
+- unbounded event memory;
+- excessive DOM updates.
+
+Route-level subscriptions should be scoped and cleaned up correctly.
+
+---
+
+# 112. Subscription Lifecycle
+
+For every stream:
+
+```text
+mount/enter relevant scope
+ ↓
+subscribe
+ ↓
+receive events
+ ↓
+leave scope
+ ↓
+unsubscribe
+```
+
+Global streams may live at the authenticated application-shell level.
+
+---
+
+# 113. Duplicate SSE Subscriptions
+
+The application must prevent accidental duplicate subscriptions caused by:
+
+- component remount;
+- route transitions;
+- development strict mode;
+- nested providers;
+- repeated hook initialization.
+
+---
+
+# 114. Accessibility Behavior
+
+Behavioral accessibility requirements include:
+
+- keyboard navigation;
+- focus management;
+- focus restoration;
+- visible focus;
+- accessible names;
+- live region discipline;
+- error association;
+- reduced motion;
+- non-color-only state communication.
+
+---
+
+# 115. Focus Management
+
+When opening a modal:
+
+```text
+trigger
+ ↓
+modal opens
+ ↓
+focus moves into modal
+```
+
+When closed:
+
+```text
+modal closes
+ ↓
+focus returns to trigger
+```
+
+Unless the trigger no longer exists, in which case focus moves to the nearest meaningful destination.
+
+---
+
+# 116. Streaming Accessibility
+
+Live updates must not constantly steal focus.
+
+Use accessible live announcements selectively for:
+
+- critical status;
+- completion;
+- errors.
+
+Do not announce every AI execution token or minor progress update.
+
+---
+
+# 117. Reduced Motion
+
+When reduced motion is enabled:
+
+- remove decorative movement;
+- reduce transition duration;
+- avoid animated progress illusions;
+- preserve state communication.
+
+Functional transitions remain understandable without motion.
+
+---
+
+# 118. Theme Behavior
+
+Light and dark themes share the same behavioral system.
+
+Changing theme must not alter:
+
+- permissions;
+- data;
+- routes;
+- API behavior;
+- workflow state;
+- AI execution state.
+
+Only presentation tokens change.
+
+---
+
+# 119. Responsive Behavior
+
+Behavior must remain coherent across:
+
+```text
+mobile
+tablet
+desktop
+```
+
+Examples:
+
+- sidebar → drawer;
+- tables → responsive representation;
+- filters → drawer/popover;
+- multi-column dashboards → stacked layouts;
+- modal width → viewport-aware.
+
+Responsive behavior must not change domain semantics.
+
+---
+
+# 120. Mobile Network Sensitivity
+
+Mobile environments may have:
+
+- intermittent connections;
+- tab suspension;
+- slower requests;
+- changing networks.
+
+Therefore:
+
+- preserve active workflow identity;
+- reconnect SSE;
+- reconcile after resume;
+- avoid assuming uninterrupted browser execution.
+
+---
+
+# 121. Page Lifecycle
+
+Pages must clean up:
+
+- event listeners;
+- SSE subscriptions;
+- timers;
+- abort controllers;
+- temporary resources.
+
+No page should retain subscriptions after it leaves its relevant scope.
+
+---
+
+# 122. Browser Refresh
+
+A refresh must restore canonical state through:
+
+```text
+session
+→ route
+→ API
+→ backend state
+```
+
+Do not require browser memory to reconstruct essential project state.
+
+---
+
+# 123. Deep Link Recovery
+
+A deep link to:
+
+```text
+/student/projects/:projectId/tasks/:taskId
+```
+
+must:
+
+1. restore session;
+2. authorize;
+3. resolve resource;
+4. render relevant shell;
+5. show resource or correct 401/403/404 state.
+
+---
+
+# 124. 401 Behavior
+
+If backend returns 401:
+
+- invalidate stale authentication context;
+- attempt supported session restoration if appropriate;
+- redirect to login if unauthenticated;
+- preserve return intent where safe.
+
+Do not loop indefinitely.
+
+---
+
+# 125. 403 Behavior
+
+If backend returns 403:
+
+- stop the action;
+- display forbidden state;
+- preserve safe context;
+- do not retry automatically.
+
+---
+
+# 126. 404 Behavior
+
+A missing resource should display a resource-specific not-found state where possible.
+
+Do not interpret 404 as a generic network error.
+
+---
+
+# 127. Conflict Behavior
+
+409/conflict indicates state disagreement.
+
+Preferred:
+
+```text
+mutation rejected
+ ↓
+fetch latest resource
+ ↓
+show conflict/reconciliation UI
+```
+
+Especially important for:
+
+- project definitions;
+- project instances;
+- blueprints;
+- documents;
+- collaborative mentor actions.
+
+---
+
+# 128. Deletion Behavior
+
+After successful deletion:
+
+1. remove/invalidate resource cache;
+2. invalidate parent collection;
+3. update derived navigation if required;
+4. route to the nearest valid parent.
+
+Never retain a deleted resource as though it still exists.
+
+---
+
+# 129. Pagination
+
+Pagination state belongs to server query/UI URL state depending on context.
+
+The frontend must preserve:
+
+- page/cursor;
+- filters;
+- sorting;
+- scope.
+
+Prefer cursor pagination when backend contracts require it.
+
+---
+
+# 130. Infinite Lists
+
+Infinite scrolling should only be used where it improves the workflow.
+
+Examples:
+
+- activity;
+- notifications;
+- search results where appropriate.
+
+Do not use infinite scrolling for every table.
+
+---
+
+# 131. Filtering
+
+Filters should be:
+
+- deterministic;
+- shareable when useful;
+- encoded in URL for canonical list pages when appropriate;
+- server-side for large datasets.
+
+Changing filters should cancel or supersede stale requests.
+
+---
+
+# 132. Sorting
+
+Sorting must be represented explicitly.
+
+The frontend should not assume that visual row order represents domain priority unless the backend defines it.
+
+---
+
+# 133. Selection State
+
+Bulk selection is UI state.
+
+Before destructive bulk operations:
+
+- confirm selection;
+- confirm permission;
+- confirm operation scope;
+- obtain backend confirmation.
+
+---
+
+# 134. Activity Feed Behavior
+
+Activity is a derived representation of meaningful events.
+
+The frontend should treat activity as read-oriented.
+
+It should not independently construct authoritative activity records.
+
+---
+
+# 135. Mentor Notes Behavior
+
+Mentor notes follow backend visibility classification.
+
+The frontend must not display a note simply because it was returned by an overly broad client-side cache.
+
+Visibility is determined by backend authorization and classification.
+
+---
+
+# 136. Help Request Behavior
+
+Help request workflow should represent canonical status.
+
+Conceptually:
+
+```text
+OPEN
+ ↓
+ASSIGNED
+ ↓
+IN_PROGRESS
+ ↓
+RESOLVED
+```
+
+Additional states may exist according to backend contracts.
+
+---
+
+# 137. GitHub Integration Behavior
+
+GitHub state is external integration state.
+
+The frontend should distinguish:
+
+```text
+CONNECTED
+DISCONNECTED
+SYNCING
+SYNCED
+ERROR
+```
+
+External data must not be represented as canonical GrowFlow project state unless explicitly persisted as such.
+
+---
+
+# 138. RAG Processing Behavior
+
+RAG processing is derived infrastructure.
+
+The frontend may show:
+
+```text
+QUEUED
+PROCESSING
+READY
+FAILED
+STALE
+```
+
+where backend contracts expose such states.
+
+RAG failure must not automatically imply project data loss.
+
+---
+
+# 139. Search Result Security
+
+Search responses must already be authorization-filtered by the backend.
+
+The frontend must not:
+
+- hide forbidden data as a security workaround;
+- assume client filters are sufficient;
+- cache results across incompatible scopes.
+
+---
+
+# 140. Cache Isolation
+
+Authenticated caches must be isolated by:
+
+- user/session;
+- role where relevant;
+- resource scope;
+- permission context.
+
+On account switch/logout, private cache must be cleared appropriately.
+
+---
+
+# 141. Account Status
+
+The frontend must represent account states such as:
+
+```text
+ACTIVE
+SUSPENDED
+INACTIVE
+```
+
+according to backend authorization state.
+
+A suspended/inactive account must not continue interacting simply because old UI state remains mounted.
+
+---
+
+# 142. Role Switching
+
+If an account legitimately has access to multiple workplaces, role/workplace switching must:
+
+1. resolve authorization;
+2. update navigation context;
+3. invalidate incompatible caches;
+4. preserve safe route intent;
+5. reconnect relevant scoped streams.
+
+Do not assume every account can switch roles.
+
+---
+
+# 143. Workplace Selector
+
+The Workplace selector follows Phase 06E.
+
+Logged out:
+
+```text
+Student → student login
+Mentor → mentor login
+Admin → protected admin entry
+```
+
+Logged in:
+
+```text
+show only authorized workplaces
+```
+
+Workplace selection is navigation + authorization context, not a visual theme switch.
+
+---
+
+# 144. Global Search and Navigation
+
+Search results should navigate to canonical routes.
+
+After navigation:
+
+```text
+route
+→ authorization
+→ resource load
+→ page
+```
+
+No page should depend on the search result object remaining in memory.
+
+---
+
+# 145. Notification Navigation
+
+Notification clicks must survive refresh.
+
+The notification should point to:
+
+- canonical route;
+- relevant resource identifier;
+- optional workflow context.
+
+---
+
+# 146. Share Behavior
+
+Share links must reference canonical routes.
+
+The receiving user still goes through:
+
+```text
+authentication
+authorization
+resource resolution
+```
+
+Share links never bypass security.
+
+---
+
+# 147. Public Website Behavior
+
+Public pages do not require authenticated server state.
+
+However:
+
+- global navigation remains unified;
+- public visual behavior follows Phase 03;
+- Workplace access follows Phase 06E;
+- public forms still use API validation;
+- public content must not leak private project data.
+
+---
+
+# 148. Documentation Behavior
+
+Documentation pages may use longer caching.
+
+If documentation is dynamically managed:
+
+```text
+fetch
+→ cache
+→ render
+```
+
+Documentation links should remain stable and deep-linkable.
+
+---
+
+# 149. Dashboard Behavior
+
+Dashboards are composed from multiple server-state sources.
+
+A dashboard must tolerate partial failure.
+
+Example:
+
+```text
+Overview
+ ├── project summary → success
+ ├── task metrics → success
+ ├── risk metrics → error
+ └── activity → success
+```
+
+One failed widget must not automatically invalidate the entire dashboard.
+
+---
+
+# 150. Admin Observatory Behavior
+
+Admin observability screens may use shorter refresh intervals and live streams.
+
+They must clearly distinguish:
+
+- AI quality;
+- AI execution;
+- cost;
+- system health;
+- RAG;
+- document processing;
+- audit.
+
+Do not merge these into a generic “system status” concept.
+
+---
+
+# 151. Data Visualization Behavior
+
+Charts must:
+
+- reflect actual data;
+- expose loading/empty/error;
+- preserve accessible alternatives;
+- avoid decorative animation;
+- avoid misleading scales;
+- show data freshness where relevant.
+
+---
+
+# 152. Freshness Indicators
+
+For operational data, the UI may expose:
+
+```text
+Updated just now
+Updated 2 min ago
+Refreshing
+Live
+```
+
+Freshness indicators should be factual.
+
+---
+
+# 153. AI-Specific Visual Behavior
+
+AI surfaces may use the deeper AI token variant established in Phase 06C.
+
+Behaviorally:
+
+- AI is visually distinct;
+- AI remains native to GrowFlow;
+- progress is truthful;
+- generated content is labeled appropriately;
+- validation/QA state is visible;
+- no fake intelligence cues.
+
+---
+
+# 154. AI Output Trust Boundary
+
+All AI output is untrusted until:
+
+```text
+schema validation
++
+business validation
++
+QA/Judge
+```
+
+The frontend should not present raw AI output as canonical persisted state.
+
+---
+
+# 155. Generated Content Review
+
+Where a workflow requires review, the frontend should distinguish:
+
+```text
+Generated
+Validated
+Reviewed
+Approved
+Persisted
+```
+
+according to the backend lifecycle.
+
+---
+
+# 156. Streaming AI Components
+
+AI components should subscribe only to relevant execution scopes.
+
+They must:
+
+- show current execution state;
+- tolerate event loss;
+- reconcile after reconnect;
+- handle terminal state;
+- expose retry only when valid;
+- avoid indefinite “loading.”
+
+---
+
+# 157. Execution Completion
+
+When an AI execution completes:
+
+```text
+stream event
+ ↓
+terminal execution state
+ ↓
+fetch/reconcile result
+ ↓
+update canonical resource view
+```
+
+Do not rely solely on a final event payload if the canonical resource may have changed independently.
+
+---
+
+# 158. Execution Failure
+
+When an execution fails:
+
+- show failure;
+- preserve execution identity;
+- provide retry if supported;
+- preserve prior canonical version;
+- do not replace valid existing state with an empty failed state.
+
+---
+
+# 159. Existing State During Regeneration
+
+During blueprint/project/document regeneration:
+
+```text
+Existing canonical version
++
+new execution in progress
+```
+
+The previous valid version should remain accessible unless backend semantics explicitly replace it.
+
+This avoids destructive “blank while generating” UX.
+
+---
+
+# 160. Progressive Disclosure
+
+Complex workflow state should reveal detail progressively:
+
+```text
+High-level status
+ ↓
+Current stage
+ ↓
+Detailed execution information
+```
+
+The default interface should remain readable.
+
+---
+
+# 161. Loading + Existing Content
+
+Preferred:
+
+```text
+Existing content
++
+small refresh indicator
+```
+
+rather than:
+
+```text
+Existing content disappears
++
+full-page spinner
+```
+
+unless the existing content is invalid for the requested state.
+
+---
+
+# 162. Error + Existing Content
+
+If refresh fails while existing content remains valid:
+
+```text
+existing content
++
+non-blocking error
++
+retry
+```
+
+Do not unnecessarily blank the page.
+
+---
+
+# 163. Mutation + Navigation
+
+If a user submits a mutation and navigates away:
+
+- backend operation may continue;
+- frontend should not cancel it merely because the component unmounted;
+- navigation should not falsely indicate failure.
+
+---
+
+# 164. Route Transition During Mutation
+
+For short synchronous mutations:
+
+- warn or disable navigation only when data integrity requires it.
+
+For long-running operations:
+
+- allow navigation;
+- preserve operation identity;
+- surface progress through notifications/SSE.
+
+---
+
+# 165. Form Draft Recovery
+
+Draft recovery may be implemented for high-value forms.
+
+If used:
+
+- identify draft scope;
+- avoid leaking drafts between users;
+- expire old drafts;
+- clearly distinguish draft from persisted state.
+
+---
+
+# 166. Temporary Storage
+
+Browser storage may contain only non-sensitive UI preferences or explicitly approved draft data.
+
+Never place:
+
+- access tokens;
+- provider secrets;
+- sensitive project data;
+- private investigation content
+
+into generic local storage without explicit security architecture.
+
+---
+
+# 167. Frontend Security Boundary
+
+The frontend is an untrusted client.
+
+Security must not rely on:
+
+```text
+hidden route
+hidden button
+client-side role check
+client-side filter
+```
+
+Backend authorization is mandatory.
+
+---
+
+# 168. XSS Prevention
+
+Generated and user-provided content must be rendered through safe mechanisms.
+
+Markdown rendering must sanitize unsafe HTML according to the document/rendering architecture.
+
+Never inject arbitrary HTML from AI output without sanitization.
+
+---
+
+# 169. Markdown Security
+
+Markdown documents may contain:
+
+- links;
+- code;
+- formatting;
+- generated content.
+
+The frontend must control:
+
+- HTML allowance;
+- link behavior;
+- external navigation;
+- embedded content;
+- script execution.
+
+Scripts must never execute through document content.
+
+---
+
+# 170. External Links
+
+External links should be clearly distinguishable where useful.
+
+Do not automatically trust arbitrary generated URLs.
+
+Where product policy requires, use safe URL validation.
+
+---
+
+# 171. File Upload Behavior
+
+File uploads must represent:
+
+```text
+SELECTED
+VALIDATING
+UPLOADING
+PROCESSING
+READY
+FAILED
+```
+
+where applicable.
+
+Frontend validation does not replace backend validation.
+
+---
+
+# 172. Upload Cancellation
+
+If supported:
+
+```text
+uploading
+ ↓
+cancel
+ ↓
+transport cancelled
+```
+
+Backend processing may still exist if upload already completed.
+
+The frontend must distinguish transport cancellation from backend processing cancellation.
+
+---
+
+# 173. Document Preview
+
+Document preview must be resilient to:
+
+- unsupported formats;
+- processing states;
+- missing versions;
+- permission changes;
+- failed generation.
+
+Never render untrusted document content as executable HTML.
+
+---
+
+# 174. File Download
+
+Downloads should use authorized backend-controlled access.
+
+The frontend must not expose private storage credentials.
+
+---
+
+# 175. State Synchronization Priority
+
+When multiple sources disagree, priority is:
+
+```text
+Canonical API state
+    >
+Validated mutation response
+    >
+Trusted event payload
+    >
+Cached server state
+    >
+Local optimistic state
+    >
+UI assumptions
+```
+
+This hierarchy is mandatory.
+
+---
+
+# 176. Event vs Mutation Race
+
+Example:
+
+```text
+User updates task
+ ↓
+mutation pending
+
+SSE event arrives
+ ↓
+task changed elsewhere
+
+mutation response arrives
+```
+
+The frontend must resolve using:
+
+- server version;
+- timestamps where appropriate;
+- conflict semantics;
+- final canonical refetch.
+
+It must not simply apply events in arrival order.
+
+---
+
+# 177. Stale Cache Recovery
+
+If a resource appears inconsistent:
+
+```text
+detect mismatch
+ ↓
+invalidate
+ ↓
+refetch
+ ↓
+replace cache with canonical response
+```
+
+Do not patch the inconsistency indefinitely in client code.
+
+---
+
+# 178. Retry Backoff
+
+Retryable transient operations should use bounded backoff.
+
+The frontend must avoid:
+
+```text
+retry immediately forever
+```
+
+Backoff policy should be centralized.
+
+---
+
+# 179. Rate Limits
+
+On 429:
+
+- respect backend-provided retry information where available;
+- avoid immediate repeated requests;
+- communicate temporary limitation;
+- preserve user input.
+
+---
+
+# 180. Timeout Handling
+
+A timeout does not necessarily mean the backend operation failed.
+
+For synchronous requests:
+
+```text
+timeout
+→ reconcile if operation may have committed
+```
+
+For idempotent asynchronous commands:
+
+```text
+timeout
+→ query execution by idempotency/correlation identity
+```
+
+Do not blindly resubmit expensive operations.
+
+---
+
+# 181. Unknown Status Handling
+
+Frontend code must safely handle newly introduced backend enum values.
+
+Preferred behavior:
+
+```text
+unknown status
+→ generic safe representation
+→ telemetry
+```
+
+Do not crash because a new backend status was introduced.
+
+---
+
+# 182. API Contract Versioning
+
+Frontend API clients must be compatible with explicit API versions established by backend architecture.
+
+Breaking changes require:
+
+- coordinated implementation;
+- migration;
+- contract updates;
+- testing.
+
+---
+
+# 183. Type Safety
+
+API response and event schemas should be represented by typed contracts where the frontend stack supports it.
+
+Types must not become a substitute for runtime validation.
+
+Runtime validation is still required for untrusted network data.
+
+---
+
+# 184. Schema Validation
+
+Validate:
+
+- API envelopes;
+- SSE events;
+- complex generated content;
+- pagination structures;
+- execution states.
+
+Validation failures should be observable.
+
+---
+
+# 185. Feature Flags
+
+Feature flags may control rollout.
+
+A flag must not be treated as a security mechanism.
+
+Sensitive authorization still belongs to backend permissions.
+
+---
+
+# 186. Configuration
+
+Frontend configuration should separate:
+
+```text
+build-time configuration
+runtime configuration
+environment configuration
+```
+
+Do not embed secrets in public frontend bundles.
+
+---
+
+# 187. Environment Behavior
+
+At minimum:
+
+```text
+Development
+Testing
+Production
+```
+
+Optional later:
+
+```text
+Staging
+Preview
+```
+
+Development-only diagnostics must not accidentally ship to production.
+
+---
+
+# 188. Testing Strategy
+
+Frontend behavior must be tested at multiple levels.
+
+```text
+Unit
+ ↓
+Component
+ ↓
+Feature
+ ↓
+Integration
+ ↓
+E2E
+```
+
+Streaming and failure scenarios require dedicated tests.
+
+---
+
+# 189. State Unit Tests
+
+Test:
+
+- state transitions;
+- cache transformations;
+- error normalization;
+- event routing;
+- stale response rejection;
+- workflow transitions.
+
+---
+
+# 190. Component Tests
+
+Test:
+
+- loading;
+- empty;
+- error;
+- success;
+- disabled;
+- permission-aware;
+- responsive behavior where practical;
+- accessibility behavior.
+
+---
+
+# 191. API Integration Tests
+
+Test:
+
+- authentication;
+- authorization;
+- request construction;
+- response parsing;
+- validation errors;
+- 401;
+- 403;
+- 404;
+- 409;
+- 429;
+- 5xx;
+- timeout.
+
+---
+
+# 192. SSE Tests
+
+Test:
+
+- connect;
+- disconnect;
+- reconnect;
+- duplicate event;
+- malformed event;
+- unknown event;
+- out-of-order event;
+- missed event;
+- terminal execution event;
+- reconciliation.
+
+---
+
+# 193. AI Workflow Tests
+
+Test:
+
+```text
+queued
+running
+validation
+QA
+completed
+failed
+cancelled
+retry
+resume
+```
+
+Also test browser navigation during execution.
+
+---
+
+# 194. Blueprint Workflow E2E
+
+At minimum:
+
+```text
+assessment complete
+→ generation
+→ progress
+→ validation
+→ QA
+→ persisted blueprint
+→ navigation away
+→ return
+→ blueprint available
+```
+
+Failure paths must also be tested.
+
+---
+
+# 195. Project Change E2E
+
+Test:
+
+```text
+submit change
+→ impact analysis
+→ review
+→ approve
+→ regeneration
+→ validation
+→ QA
+→ persisted change
+```
+
+Also test rejection and failure.
+
+---
+
+# 196. Authentication E2E
+
+Test:
+
+- student login;
+- mentor login;
+- protected admin entry;
+- logout;
+- expired session;
+- deep link;
+- 401;
+- 403;
+- unauthorized workplace;
+- account suspension/inactivation.
+
+---
+
+# 197. Search E2E
+
+Test:
+
+- query;
+- debounce;
+- results;
+- no results;
+- permission filtering;
+- stale request;
+- network error;
+- canonical navigation.
+
+---
+
+# 198. Notification E2E
+
+Test:
+
+- receive notification;
+- unread count;
+- mark read;
+- deep link;
+- reconnect;
+- duplicate event;
+- related resource update.
+
+---
+
+# 199. Responsive Testing
+
+Test at minimum:
+
+- mobile;
+- tablet;
+- desktop.
+
+Include:
+
+- shell;
+- sidebar drawer;
+- tables;
+- forms;
+- modals;
+- dashboards;
+- AI execution;
+- document views.
+
+---
+
+# 200. Accessibility Testing
+
+Include:
+
+- keyboard;
+- focus;
+- screen reader semantics;
+- contrast;
+- reduced motion;
+- form errors;
+- dialogs;
+- navigation;
+- live regions.
+
+---
+
+# 201. Visual Regression
+
+Visual regression should validate:
+
+- design tokens;
+- shell;
+- major components;
+- role workspaces;
+- light/dark;
+- responsive states;
+- loading/empty/error/success;
+- AI states.
+
+Visual correctness must not be separated from behavioral correctness.
+
+---
+
+# 202. Contract Testing
+
+Frontend/backend contracts should be tested for:
+
+- API schemas;
+- event schemas;
+- status enums;
+- pagination;
+- error envelopes;
+- authorization responses.
+
+Contract drift must be detected before production.
+
+---
+
+# 203. Mocking Policy
+
+Mocks are appropriate for:
+
+- isolated component tests;
+- deterministic state tests;
+- failure simulation.
+
+Mocks must not replace integration testing entirely.
+
+High-risk workflows need real contract/integration coverage.
+
+---
+
+# 204. Test Data
+
+Test fixtures should represent:
+
+- active student;
+- active mentor;
+- authorized admin;
+- unauthorized resource;
+- project definition;
+- project instance;
+- blueprint versions;
+- running AI execution;
+- failed execution;
+- documents;
+- risks;
+- help requests;
+- notifications.
+
+---
+
+# 205. Security Testing
+
+Test:
+
+- unauthorized route access;
+- role mismatch;
+- stale session;
+- cache leakage;
+- cross-user state contamination;
+- malicious Markdown;
+- unsafe URLs;
+- file validation;
+- event scope validation.
+
+---
+
+# 206. Browser Storage Testing
+
+Verify that logout/account switching removes private cached state and temporary sensitive information.
+
+---
+
+# 207. Performance Testing
+
+Measure:
+
+- initial load;
+- route transition;
+- API latency impact;
+- rendering cost;
+- large tables;
+- chart rendering;
+- SSE event throughput;
+- memory growth;
+- reconnect behavior.
+
+---
+
+# 208. Memory Leak Testing
+
+Particular attention to:
+
+- SSE subscriptions;
+- timers;
+- event listeners;
+- large caches;
+- chart instances;
+- document previews;
+- file object URLs.
+
+---
+
+# 209. Frontend Directory Structure
+
+Recommended implementation structure:
+
+```text
+frontend/
+├── src/
+│   ├── app/
+│   │   ├── providers/
+│   │   ├── router/
+│   │   ├── layouts/
+│   │   └── runtime/
+│   ├── api/
+│   │   ├── client/
+│   │   ├── errors/
+│   │   ├── schemas/
+│   │   └── services/
+│   ├── auth/
+│   ├── authorization/
+│   ├── state/
+│   │   ├── server/
+│   │   ├── ui/
+│   │   └── streaming/
+│   ├── components/
+│   │   ├── foundations/
+│   │   ├── primitives/
+│   │   ├── composites/
+│   │   ├── domain/
+│   │   └── workflow/
+│   ├── features/
+│   │   ├── public/
+│   │   ├── student/
+│   │   ├── mentor/
+│   │   ├── admin/
+│   │   ├── projects/
+│   │   ├── assessments/
+│   │   ├── blueprints/
+│   │   ├── ai/
+│   │   ├── documents/
+│   │   ├── notifications/
+│   │   └── search/
+│   ├── sse/
+│   ├── routing/
+│   ├── forms/
+│   ├── hooks/
+│   ├── utils/
+│   ├── analytics/
+│   ├── observability/
+│   └── styles/
+└── tests/
+```
+
+Exact framework-specific naming may adapt to implementation, but architectural boundaries must remain.
+
+---
+
+# 210. Feature Boundary Rule
+
+A feature may own:
+
+- presentation;
+- feature-specific hooks;
+- query definitions;
+- mutation definitions;
+- local UI state;
+- feature-specific transformations.
+
+A feature must not:
+
+- bypass the API client;
+- access provider secrets;
+- directly access database infrastructure;
+- mutate another feature's state arbitrarily.
+
+---
+
+# 211. Shared State Boundary
+
+Shared state is allowed only when the data truly has cross-feature ownership.
+
+Good shared state:
+
+- authenticated user;
+- session;
+- notification count;
+- global search;
+- SSE connection.
+
+Avoid creating a giant global store containing every page's data.
+
+---
+
+# 212. Global Store Anti-Pattern
+
+Do not build:
+
+```text
+globalStore.projects
+globalStore.tasks
+globalStore.milestones
+globalStore.risks
+globalStore.documents
+...
+```
+
+simply because centralization appears convenient.
+
+Server-state caching belongs in a server-state system.
+
+UI state belongs near the UI that owns it.
+
+---
+
+# 213. State Colocation
+
+Prefer:
+
+```text
+feature
+ ├── query
+ ├── mutation
+ ├── UI state
+ └── components
+```
+
+when the state is feature-specific.
+
+Globalize only when there is a genuine application-wide need.
+
+---
+
+# 214. Dependency Direction
+
+Preferred:
+
+```text
+UI
+ ↓
+Feature
+ ↓
+Shared API/state infrastructure
+ ↓
+Transport
+```
+
+Not:
+
+```text
+API
+ ↓
+random UI component
+```
+
+Shared infrastructure must remain presentation-agnostic.
+
+---
+
+# 215. Component Data Contracts
+
+Components should receive explicit props/data contracts.
+
+Avoid components that:
+
+- reach into arbitrary global stores;
+- construct API requests internally;
+- infer backend state from labels.
+
+---
+
+# 216. Page Data Composition
+
+A page may compose multiple queries.
+
+Each query should have independent:
+
+- loading;
+- error;
+- empty;
+- refresh;
+- authorization.
+
+Avoid one monolithic “page data” request unless backend semantics justify it.
+
+---
+
+# 217. Partial Rendering
+
+Where safe, render successful sections even when another section is unavailable.
+
+This is especially important for:
+
+- dashboards;
+- project overview;
+- admin observability;
+- mentor overview.
+
+---
+
+# 218. Request Waterfalls
+
+Avoid unnecessary:
+
+```text
+request A
+→ wait
+→ request B
+→ wait
+→ request C
+```
+
+Parallelize independent queries where backend/API semantics allow.
+
+---
+
+# 219. Dependent Queries
+
+Use dependency ordering when genuinely required.
+
+Example:
+
+```text
+project
+ ↓
+project permissions
+ ↓
+permission-dependent resource
+```
+
+Do not issue requests that cannot succeed before prerequisite state exists.
+
+---
+
+# 220. Prefetching
+
+Prefetch only where user intent is predictable.
+
+Examples:
+
+- project detail when hovering a project row;
+- next assessment question if safe;
+- likely notification destination.
+
+Do not aggressively prefetch private or expensive AI data.
+
+---
+
+# 221. Cache Prefetch Security
+
+Prefetches must use the same authorization context as normal queries.
+
+Do not prefetch resources merely because an ID is known.
+
+---
+
+# 222. Form Submission Lifecycle
+
+Standard:
+
+```text
+IDLE
+ ↓
+VALIDATING
+ ↓
+SUBMITTING
+ ↓
+SUCCESS
+```
+
+or:
+
+```text
+SUBMITTING
+ ↓
+ERROR
+```
+
+A server response must determine final success.
+
+---
+
+# 223. Destructive Actions
+
+Destructive operations should require appropriate confirmation.
+
+Examples:
+
+- delete;
+- revoke;
+- remove assignment;
+- cancel expensive execution where irreversible.
+
+Confirmation must state the actual consequence.
+
+---
+
+# 224. Double Confirmation Avoidance
+
+Do not require repeated confirmation for trivial reversible actions.
+
+Confirmation should match risk.
+
+---
+
+# 225. Long-Running Confirmation
+
+For cancellation of significant work:
+
+```text
+Confirm cancellation
+→ send command
+→ cancellation requested
+→ backend confirmation
+```
+
+---
+
+# 226. Success Navigation
+
+After successful mutation, navigation should occur only if it improves workflow.
+
+Examples:
+
+```text
+Create project
+→ project workspace
+```
+
+```text
+Update task
+→ remain on task context
+```
+
+Do not redirect merely because a mutation succeeded.
+
+---
+
+# 227. Error Navigation
+
+When an error occurs, preserve the user's context whenever possible.
+
+Do not automatically redirect to a generic error page for localized failures.
+
+---
+
+# 228. Resource Lifecycle
+
+Frontend resource lifecycle should mirror backend lifecycle.
+
+For project:
+
+```text
+IDEA
+ASSESSMENT
+BLUEPRINT
+PLANNING
+IMPLEMENTATION
+TESTING
+DEPLOYMENT
+COMPLETED
+```
+
+The UI must not invent lifecycle states.
+
+---
+
+# 229. Task / Milestone / Progress Semantics
+
+The frontend must preserve the distinction:
+
+```text
+Task
+→ executable work
+
+Milestone
+→ grouping/checkpoint
+
+Progress
+→ measured advancement
+
+Phase
+→ lifecycle segment
+
+Health
+→ condition/status assessment
+```
+
+Do not merge these into one generic “status” field.
+
+---
+
+# 230. Health Indicators
+
+Health should represent backend-derived/project-derived condition.
+
+The frontend may visualize health but should not silently calculate authoritative health independently.
+
+---
+
+# 231. Risk Behavior
+
+Risk UI should distinguish:
+
+- risk identity;
+- severity;
+- probability;
+- impact;
+- mitigation;
+- status.
+
+Do not collapse risk into generic warning styling.
+
+---
+
+# 232. Assessment Behavior
+
+Assessment is a workflow.
+
+Frontend responsibilities:
+
+- question presentation;
+- answer input;
+- navigation;
+- progress presentation;
+- accessibility;
+- resume where supported;
+- submission;
+- completion.
+
+Backend owns:
+
+- scoring;
+- adaptive logic;
+- canonical answers;
+- assessment result.
+
+---
+
+# 233. Adaptive Assessment
+
+The frontend should not decide the next question based on hidden scoring logic.
+
+Backend returns the appropriate next state/question.
+
+---
+
+# 234. Assessment Recovery
+
+Refresh/navigation should recover from backend assessment state where supported.
+
+Avoid losing answers solely because a component remounted.
+
+---
+
+# 235. Assessment Completion
+
+Completion should:
+
+- confirm backend persistence;
+- transition to result workflow;
+- prevent accidental duplicate completion;
+- preserve result identity.
+
+---
+
+# 236. Project Definition vs Instance
+
+Frontend behavior must maintain the fundamental separation:
+
+```text
+Project Definition
+        ≠
+Student Project Instance
+```
+
+Definition pages edit reusable mentor-owned templates.
+
+Instance pages represent a student's actual project.
+
+---
+
+# 237. Definition Update Behavior
+
+When a definition changes:
+
+- do not silently mutate student instances;
+- surface notifications where backend sends them;
+- route users to appropriate change/adoption workflow;
+- preserve instance history.
+
+---
+
+# 238. Instance Change Adoption
+
+If students may adopt definition changes, the frontend must present:
+
+```text
+current instance
++
+available definition change
++
+impact
++
+decision
+```
+
+The backend remains authoritative.
+
+---
+
+# 239. Mentor Supervision State
+
+Mentor pages should be optimized for:
+
+- oversight;
+- filtering;
+- student context;
+- project health;
+- help requests;
+- activity;
+- notes.
+
+The frontend must respect mentor scope.
+
+---
+
+# 240. Admin Governance State
+
+Admin pages should be optimized for:
+
+- inspection;
+- governance;
+- observability;
+- audit;
+- cost;
+- security;
+- system health.
+
+Admin access must not become implicit impersonation.
+
+---
+
+# 241. Admin Investigation Behavior
+
+Investigation workflows must be read/inspection-oriented unless explicit governance actions are authorized.
+
+No hidden impersonation should occur.
+
+---
+
+# 242. Audit vs Activity
+
+Frontend representations must preserve:
+
+```text
+Activity
+→ user/project-facing meaningful events
+
+Audit
+→ governance/security record
+
+Logs
+→ technical diagnostics
+```
+
+Do not merge them into one feed.
+
+---
+
+# 243. Cost and Usage Behavior
+
+Cost/usage views should expose backend-derived measurements.
+
+The frontend must not calculate authoritative billing/cost numbers from approximate token counts.
+
+---
+
+# 244. AI Quality Behavior
+
+AI Quality is distinct from:
+
+```text
+AI execution
+AI cost
+system health
+```
+
+The UI must keep these concepts separate.
+
+---
+
+# 245. System Health Behavior
+
+System Health represents technical service condition.
+
+Example:
+
+```text
+API
+Database
+Queue
+AI Gateway
+RAG
+Storage
+SSE
+```
+
+The exact component inventory follows Phase 05.
+
+---
+
+# 246. Background Job Behavior
+
+Frontend job state comes from persistent backend execution/job records.
+
+The browser must not be the scheduler.
+
+---
+
+# 247. Browser Closure
+
+If the browser closes:
+
+```text
+backend operation continues
+```
+
+provided the backend accepted and owns the operation.
+
+On next login:
+
+```text
+fetch active/recent executions
+→ reconcile
+```
+
+---
+
+# 248. Execution History
+
+AI/background execution history should be available through backend records where product requirements expose it.
+
+The frontend should distinguish:
+
+```text
+current execution
+previous execution
+failed attempt
+successful execution
+```
+
+---
+
+# 249. Retry History
+
+Retry should not erase history.
+
+Each retry should remain traceable through execution/correlation records.
+
+---
+
+# 250. Failure Telemetry
+
+Failures should emit sufficient telemetry to diagnose:
+
+- feature;
+- route;
+- operation;
+- request;
+- resource;
+- execution;
+- environment.
+
+Avoid collecting unnecessary personal content.
+
+---
+
+# 251. Security Event Telemetry
+
+Authorization failures and suspicious client behavior may be observable through backend security/audit systems.
+
+Frontend telemetry should not attempt to become the authoritative security log.
+
+---
+
+# 252. Browser Compatibility
+
+Implementation should define supported browsers separately, but behavior must not depend on undocumented browser-specific quirks.
+
+---
+
+# 253. Time Handling
+
+Dates/times received from backend should be parsed consistently.
+
+The frontend must distinguish:
+
+- absolute timestamp;
+- date-only value;
+- local display;
+- user timezone;
+- project-specific timezone if defined.
+
+Do not infer timezone semantics from formatted strings.
+
+---
+
+# 254. Relative Time
+
+Relative labels such as:
+
+```text
+2 minutes ago
+```
+
+are presentation only.
+
+Canonical timestamp remains the source.
+
+---
+
+# 255. Clock Skew
+
+Do not assume browser clock is authoritative for backend event ordering.
+
+Server timestamps and versions take precedence.
+
+---
+
+# 256. Localization Readiness
+
+Even if V1 launches in one language, components should avoid hard-coded assumptions that make future localization impossible.
+
+Especially:
+
+- date formatting;
+- pluralization;
+- text width;
+- button labels;
+- notification counts.
+
+---
+
+# 257. Internationalized Number Formatting
+
+Metrics should use consistent number formatting.
+
+Cost, counts, percentages, and durations should not be formatted inconsistently across roles.
+
+---
+
+# 258. Duration Display
+
+AI/job durations should be derived from timestamps when possible.
+
+Avoid showing invented duration estimates.
+
+---
+
+# 259. Clipboard Behavior
+
+Copy actions should:
+
+- provide confirmation;
+- work through accessible controls;
+- not expose sensitive values unnecessarily.
+
+---
+
+# 260. Browser Permission APIs
+
+Browser permissions should be requested only when needed.
+
+GrowFlow should not depend on unnecessary browser permissions for core functionality.
+
+---
+
+# 261. File Drag-and-Drop
+
+If supported, drag-and-drop must have an equivalent keyboard/file-picker path.
+
+---
+
+# 262. Focus During Streaming
+
+AI progress updates must not steal focus.
+
+User interaction remains primary.
+
+---
+
+# 263. Interruptible AI UI
+
+Where backend cancellation is supported, users should have a visible cancellation path during long-running AI work.
+
+The state must distinguish:
+
+```text
+running
+cancel requested
+cancelled
+```
+
+---
+
+# 264. AI Retry UX
+
+Retry should communicate:
+
+- a new execution may be created;
+- previous attempt remains recorded;
+- current valid project state is preserved.
+
+---
+
+# 265. AI Provider Failure
+
+Provider failures should be abstracted from users unless useful.
+
+Prefer:
+
+```text
+AI service is temporarily unavailable
+```
+
+over exposing provider implementation details.
+
+Admin observability may expose provider-level details according to permissions.
+
+---
+
+# 266. AI Cost State
+
+Users generally see operation status rather than internal provider cost unless product requirements expose cost.
+
+Admins may see detailed cost/usage.
+
+---
+
+# 267. AI Execution Security
+
+Execution IDs must be authorization-scoped.
+
+Knowing an execution ID must not grant access to its trace.
+
+---
+
+# 268. Trace UI
+
+Admin trace views should load trace data through authorized APIs.
+
+Do not stream hidden reasoning or secrets.
+
+---
+
+# 269. AI Output Provenance
+
+Where useful, generated content should expose provenance such as:
+
+- generated by GrowFlow AI;
+- source project context;
+- generation time;
+- version.
+
+Do not expose internal prompts or confidential infrastructure details.
+
+---
+
+# 270. RAG Provenance
+
+If RAG-backed responses expose source references, those references must be authorization-safe and tied to accessible project documents.
+
+---
+
+# 271. RAG Failure UX
+
+If retrieval fails:
+
+- communicate reduced capability where relevant;
+- preserve existing canonical content;
+- avoid fabricating retrieved sources.
+
+---
+
+# 272. Document Generation + RAG
+
+Document generation may depend on project context and derived RAG state.
+
+The frontend should show meaningful dependency failure rather than generic failure where backend provides it.
+
+---
+
+# 273. Notification Flood Control
+
+The UI should avoid overwhelming users when many events arrive.
+
+Use grouping/coalescing for repetitive non-critical updates where product semantics permit.
+
+Do not suppress critical alerts.
+
+---
+
+# 274. SSE Event Batching
+
+Where event volume is high, the frontend may batch UI updates.
+
+Canonical event identity must still be preserved.
+
+---
+
+# 275. Background Refresh
+
+Background refresh must stop or reduce when:
+
+- page is hidden;
+- browser is suspended;
+- user leaves scope.
+
+SSE lifecycle should remain according to its global/scoped architecture.
+
+---
+
+# 276. Visibility Changes
+
+When a tab becomes visible again:
+
+```text
+visibility restored
+ ↓
+reconcile relevant canonical state
+ ↓
+resume normal UI
+```
+
+This protects against missed events during suspension.
+
+---
+
+# 277. Focused Reconciliation
+
+After reconnect/resume, reconcile:
+
+- current resource;
+- active workflow;
+- notification count;
+- critical dashboard summaries.
+
+Do not refetch the entire application blindly.
+
+---
+
+# 278. Navigation Guards
+
+Navigation guards are appropriate only for:
+
+- destructive loss of important unsaved work;
+- critical active interaction.
+
+Do not use guards to trap users in long-running backend operations.
+
+---
+
+# 279. Error Recovery Priority
+
+Recovery hierarchy:
+
+```text
+local retry
+→ targeted refetch
+→ workflow reconciliation
+→ route recovery
+→ global error
+```
+
+Use the least disruptive recovery that restores correctness.
+
+---
+
+# 280. UX Truthfulness
+
+The frontend must never:
+
+- say “saved” before persistence;
+- say “generated” before generation completion;
+- say “cancelled” before cancellation confirmation;
+- say “live” when disconnected;
+- show fake progress;
+- claim AI performed work it did not perform.
+
+---
+
+# 281. Component State Contract
+
+Every stateful component should define:
+
+```text
+Default
+Loading
+Disabled
+Focused
+Hovered
+Active
+Success
+Warning
+Error
+Empty
+Streaming
+```
+
+only where applicable.
+
+---
+
+# 282. Domain Component Contract
+
+Domain components must consume domain data rather than inventing business rules.
+
+Example:
+
+```text
+TaskCard
+```
+
+may display task status.
+
+It should not independently calculate authoritative project health.
+
+---
+
+# 283. Workflow Component Contract
+
+Workflow components should consume explicit state machines or status contracts.
+
+Avoid scattered boolean logic such as:
+
+```text
+isLoading
+isDone
+hasError
+isRetrying
+isCancelled
+```
+
+when a finite-state representation would be clearer.
+
+---
+
+# 284. Boolean State Anti-Pattern
+
+Avoid impossible combinations such as:
+
+```text
+isLoading = true
+isCompleted = true
+isFailed = true
+```
+
+Use a mutually coherent state model.
+
+---
+
+# 285. Derived UI State
+
+Derived values should be calculated from source state rather than separately persisted.
+
+Examples:
+
+```text
+canSubmit
+isTerminal
+showRetry
+showCancel
+```
+
+should be derived from workflow status and permissions.
+
+---
+
+# 286. State Transition Documentation
+
+Complex features must document:
+
+- states;
+- events;
+- transitions;
+- side effects;
+- recovery;
+- terminal conditions.
+
+This becomes part of implementation and test specifications.
+
+---
+
+# 287. API Side Effects
+
+API services should not unexpectedly mutate unrelated frontend state.
+
+Side effects should be explicit:
+
+```text
+mutation success
+→ invalidate task list
+```
+
+rather than hidden magic throughout the API client.
+
+---
+
+# 288. Cache Invalidation Ownership
+
+The feature owning a mutation should normally define the invalidation/reconciliation behavior.
+
+Global infrastructure handles transport; domain feature handles domain consequences.
+
+---
+
+# 289. Global Error Handling Ownership
+
+Transport-level normalization belongs to shared API infrastructure.
+
+Feature-level presentation belongs to feature UI.
+
+Do not make the API client decide how a particular page should visually display an error.
+
+---
+
+# 290. SSE Event Routing Ownership
+
+Shared SSE infrastructure:
+
+- connects;
+- validates;
+- parses;
+- deduplicates transport-level concerns.
+
+Feature/domain handlers:
+
+- decide how resource state should reconcile.
+
+---
+
+# 291. Notification Ownership
+
+Global notification infrastructure owns:
+
+- connection;
+- count;
+- list;
+- read state.
+
+Feature screens own:
+
+- contextual rendering.
+
+---
+
+# 292. Search Ownership
+
+Global search infrastructure owns:
+
+- query transport;
+- debounce;
+- result normalization;
+- cancellation.
+
+Role/domain routes own destination behavior.
+
+---
+
+# 293. Frontend/Backend Contract Table
+
+| Concern | Frontend | Backend |
+|---|---|---|
+| Identity | consume | authoritative |
+| Authorization | present appropriately | authoritative |
+| Domain state | represent/cache | authoritative |
+| Validation | UX validation | authoritative |
+| AI generation | display/orchestrate | execute |
+| QA | display result | execute gate |
+| Jobs | display | execute |
+| SSE | consume | publish |
+| RAG | display status/results | execute |
+| Documents | render | generate/persist |
+| Audit | display | authoritative |
+| Analytics | visualize | calculate/source |
+| Cost | display | calculate/source |
+
+---
+
+# 294. Stitch Implications
+
+Stitch designs must reflect behavior states explicitly.
+
+Every generated screen should account for:
+
+- initial loading;
+- loaded;
+- empty;
+- error;
+- disabled;
+- permission-aware;
+- streaming/processing where relevant.
+
+A visually beautiful screen that only represents the happy path is incomplete.
+
+---
+
+# 295. Stitch AI Screens
+
+AI-related Stitch designs must include:
+
+```text
+queued
+running
+validation
+QA
+completed
+failed
+retry
+```
+
+where applicable.
+
+Do not design only a static “AI result” screen.
+
+---
+
+# 296. Stitch Dashboard Screens
+
+Dashboard designs should account for partial widget failure and refreshing.
+
+The visual hierarchy must remain stable when a widget enters an error state.
+
+---
+
+# 297. Stitch Responsive Screens
+
+Responsive design must reflect behavior:
+
+```text
+desktop
+tablet
+mobile
+```
+
+not merely resize the same composition.
+
+---
+
+# 298. Implementation Sequence
+
+Recommended implementation order:
+
+```text
+1. API client
+2. Error normalization
+3. Auth/session
+4. Authorization context
+5. Server-state layer
+6. UI-state conventions
+7. SSE infrastructure
+8. Event validation/routing
+9. Workflow state machines
+10. Loading/error/empty patterns
+11. Feature API services
+12. Domain feature behavior
+13. AI workflows
+14. Document/RAG workflows
+15. Search/notifications
+16. Observability
+17. Testing
+18. Performance hardening
+```
+
+---
+
+# 299. Implementation Rule: Infrastructure First
+
+Do not build dozens of pages before the behavior foundation exists.
+
+Otherwise each page will implement:
+
+- its own API client;
+- its own loading logic;
+- its own error handling;
+- its own SSE;
+- its own permission checks.
+
+That creates architectural drift.
+
+---
+
+# 300. Implementation Rule: Reuse Behavioral Infrastructure
+
+When a new page needs server data:
+
+```text
+reuse API client
+reuse query conventions
+reuse error model
+reuse state model
+reuse permission model
+```
+
+Do not create a one-off pattern unless justified.
+
+---
+
+# 301. Implementation Rule: No Hidden Behavior
+
+Critical side effects must be discoverable.
+
+Avoid:
+
+```text
+component mounted
+→ secretly starts expensive AI generation
+```
+
+Prefer explicit user intent:
+
+```text
+button
+→ command
+→ execution
+```
+
+unless the workflow explicitly requires automatic background processing.
+
+---
+
+# 302. Implementation Rule: Explicit Async Boundaries
+
+Every asynchronous operation must define:
+
+- start;
+- active;
+- success;
+- failure;
+- cancellation if supported;
+- recovery.
+
+---
+
+# 303. Implementation Rule: Canonical Refresh
+
+If uncertainty exists about state:
+
+```text
+refetch canonical state
+```
+
+is preferred over increasingly complex client-side patching.
+
+---
+
+# 304. Implementation Rule: Preserve Valid State
+
+When a new operation fails, preserve the last valid canonical representation where possible.
+
+This is especially important for:
+
+- blueprints;
+- documents;
+- project state;
+- task lists;
+- AI-generated artifacts.
+
+---
+
+# 305. Implementation Rule: No Browser-Owned Jobs
+
+No page lifecycle may be the only thing keeping a backend job alive.
+
+---
+
+# 306. Implementation Rule: No Provider Calls
+
+Frontend code must never call:
+
+- OpenAI/provider APIs directly;
+- model endpoints directly;
+- API key pools;
+- RAG infrastructure.
+
+All AI access goes through GrowFlow backend.
+
+---
+
+# 307. Implementation Rule: No Direct Database
+
+Frontend must never directly access PostgreSQL/Supabase database tables as a replacement for the application API.
+
+---
+
+# 308. Implementation Rule: No Security by Hiding
+
+Hidden UI is not authorization.
+
+Every protected operation must be secured server-side.
+
+---
+
+# 309. Implementation Rule: No Fake State
+
+Do not create fake:
+
+- progress;
+- success;
+- completion;
+- AI reasoning;
+- cancellation;
+- connectivity.
+
+---
+
+# 310. Implementation Rule: No Giant Global State
+
+Keep state close to its owner.
+
+Use shared state only when ownership is genuinely global.
+
+---
+
+# 311. Implementation Rule: No Unbounded Polling
+
+Every polling operation must define:
+
+- interval;
+- termination;
+- failure behavior;
+- visibility behavior;
+- backoff.
+
+---
+
+# 312. Implementation Rule: No Unbounded Cache
+
+Caches must have:
+
+- scope;
+- invalidation;
+- lifecycle;
+- memory considerations.
+
+---
+
+# 313. Implementation Rule: No Silent Conflict Resolution
+
+When server state conflicts with local state, do not silently overwrite consequential user work.
+
+---
+
+# 314. Implementation Rule: Backend Wins
+
+When frontend assumptions conflict with backend canonical state:
+
+> **Backend state wins.**
+
+The frontend reconciles and updates its representation.
+
+---
+
+# 315. Behavioral Anti-Patterns
+
+The following are prohibited:
+
+1. API calls directly inside random UI components.
+2. Direct database access.
+3. Direct AI provider access.
+4. SSE treated as canonical database state.
+5. Global store containing all server state.
+6. Infinite polling.
+7. Fake AI progress.
+8. Fake success.
+9. Optimistic updates for consequential irreversible operations without rollback.
+10. Silent permission assumptions.
+11. Browser-dependent background jobs.
+12. Duplicate expensive generation.
+13. Ignoring stale responses.
+14. Ignoring event ordering.
+15. Ignoring reconnection.
+16. Full-page loading for every small request.
+17. Blank screen while valid content exists.
+18. Unbounded local storage of private data.
+19. Exposing tokens/secrets.
+20. Merging activity, audit, and logs.
+21. Merging AI quality, execution, and health.
+22. Silently mutating student instances after definition changes.
+23. Hiding backend failures.
+24. Treating unknown backend enum values as fatal.
+25. Overusing modals instead of canonical routes.
+
+---
+
+# 316. Behavioral Invariants
+
+These must remain true throughout implementation:
+
+1. Backend owns canonical state.
+2. Frontend owns presentation and interaction state.
+3. SSE is delivery, not truth.
+4. REST/API reconciliation restores truth.
+5. AI output is untrusted until validated.
+6. QA/Judge remains a backend quality gate.
+7. Authentication is backend-backed.
+8. Authorization is backend-authoritative.
+9. Roles are BUILD, SUPERVISE, GOVERN.
+10. Workplace selection is not role-theme switching.
+11. Project Definition and Project Instance remain separate.
+12. Long-running jobs survive browser navigation.
+13. Expensive operations are idempotency-aware.
+14. Stale responses cannot overwrite newer state.
+15. Events are validated.
+16. Event duplicates are tolerated.
+17. Reconnect triggers reconciliation.
+18. Loading/empty/error/success states are explicit.
+19. Existing valid data is preserved during refresh/failure where possible.
+20. No secrets exist in the frontend.
+21. No direct provider/database access exists.
+22. Search is authorization-aware.
+23. Notifications route to canonical destinations.
+24. Share links pass through normal authorization.
+25. Activity and audit remain distinct.
+26. Analytics and observability remain distinct.
+27. AI quality and system health remain distinct.
+28. Responsive behavior preserves domain semantics.
+29. Reduced motion is supported.
+30. Accessibility is behavioral, not decorative.
+31. Frontend state cannot replace backend persistence.
+32. Unknown events/statuses fail safely.
+33. Account switching isolates private cache.
+34. Logout clears private application state.
+35. Backend conflicts are explicitly reconciled.
+
+---
+
+# 317. Definition of Done — Infrastructure
+
+Phase 06F implementation foundation is complete when:
+
+- API client exists;
+- common error model exists;
+- authentication lifecycle exists;
+- authorization context exists;
+- server-state conventions exist;
+- UI-state conventions exist;
+- SSE infrastructure exists;
+- event validation exists;
+- event routing exists;
+- reconnection exists;
+- reconciliation exists;
+- cancellation exists where supported;
+- retry policy exists;
+- idempotency support exists;
+- workflow state conventions exist.
+
+---
+
+# 318. Definition of Done — UX States
+
+Complete when:
+
+- loading is defined;
+- refreshing is defined;
+- empty is defined;
+- error is defined;
+- success is defined;
+- partial failure is defined;
+- permission denial is defined;
+- network interruption is defined;
+- long-running state is defined;
+- AI state is defined;
+- cancellation is defined;
+- retry is defined.
+
+---
+
+# 319. Definition of Done — Security
+
+Complete when:
+
+- no secrets are shipped;
+- backend authorization is respected;
+- caches are isolated;
+- logout clears private state;
+- Markdown is sanitized;
+- file handling is safe;
+- search is authorization-aware;
+- SSE events are scope-validated;
+- trace access is protected;
+- admin workflows do not impersonate users.
+
+---
+
+# 320. Definition of Done — Reliability
+
+Complete when:
+
+- stale requests are rejected;
+- duplicate operations are controlled;
+- network failure is recoverable;
+- SSE reconnects;
+- missed events can be reconciled;
+- browser navigation does not kill backend jobs;
+- backend conflicts are handled;
+- timeouts are reconciled;
+- retries are bounded;
+- unknown statuses/events do not crash the app.
+
+---
+
+# 321. Definition of Done — Testing
+
+Complete when:
+
+- unit tests cover state transitions;
+- component tests cover UI states;
+- API integration tests cover errors;
+- SSE tests cover lifecycle;
+- AI workflows have E2E coverage;
+- assessment workflows have E2E coverage;
+- project-change workflows have E2E coverage;
+- authentication has E2E coverage;
+- search has E2E coverage;
+- notification behavior has E2E coverage;
+- responsive QA exists;
+- accessibility QA exists;
+- visual regression exists;
+- contract tests exist.
+
+---
+
+# 322. Definition of Done — Performance
+
+Complete when:
+
+- routes are appropriately split;
+- heavy components are lazy-loaded;
+- large lists are optimized;
+- SSE does not trigger excessive renders;
+- caches have bounded behavior;
+- memory leaks are tested;
+- images are optimized;
+- dashboard rendering is measured;
+- background refresh is controlled.
+
+---
+
+# 323. Definition of Done — Stitch Alignment
+
+Complete when:
+
+- Stitch screens reflect actual behavior;
+- async states have visual representations;
+- AI states are truthful;
+- loading/empty/error/success are represented;
+- responsive compositions match runtime behavior;
+- shell behavior matches Phase 06E;
+- component behavior matches Phase 06D;
+- tokens match Phase 06C.
+
+---
+
+# 324. Traceability to Phase 05
+
+| Phase 05 Architecture | Phase 06F Behavior |
+|---|---|
+| Canonical state | Server state |
+| Application services | API feature services |
+| REST | Query/mutation transport |
+| Persistent jobs | Long-running workflow state |
+| Persistent events | SSE delivery |
+| Reconciliation | Canonical refetch |
+| AI Gateway | AI execution UI |
+| LangGraph | AI progress/execution |
+| QA/Judge | AI validation state |
+| RAG | RAG processing state |
+| Documents | Document generation state |
+| Notifications | Notification state |
+| Audit | Admin audit views |
+| Authorization | Capability-aware UI |
+| Idempotency | Duplicate prevention |
+| Correlation IDs | Frontend telemetry |
+| Versioning | Conflict/stale-state handling |
+
+---
+
+# 325. Traceability to Phase 06D
+
+Phase 06F behavioral states must be consumable by the component system:
+
+```text
+Button
+→ disabled/loading
+
+Input
+→ validation/error
+
+Table
+→ loading/empty/error
+
+Dialog
+→ submitting/success/error
+
+AI Component
+→ queued/running/QA/completed/failed
+
+Workflow
+→ state-machine representation
+
+Notification
+→ unread/read/live
+```
+
+No component should invent a competing state vocabulary.
+
+---
+
+# 326. Traceability to Phase 06E
+
+Phase 06F must integrate with:
+
+- AppShell;
+- PublicShell;
+- AuthenticatedShell;
+- TopNav;
+- Workplace selector;
+- Sidebar;
+- mobile drawer;
+- search;
+- notifications;
+- profile;
+- settings;
+- route guards;
+- deep links.
+
+The shell owns global behavior; features own domain behavior.
+
+---
+
+# 327. Traceability to Phase 06C
+
+Behavioral state styling must use the canonical tokens.
+
+Examples:
+
+```text
+loading → neutral surface hierarchy
+success → semantic success
+warning → semantic warning
+error → semantic danger
+AI → AI token variant
+```
+
+No feature may introduce arbitrary colors merely to communicate state.
+
+---
+
+# 328. Traceability to Phase 06B
+
+Brand behavior remains:
+
+- one GrowFlow identity;
+- Connected Flow / Abstract G direction;
+- no role-specific branding;
+- Manrope;
+- restrained accent;
+- no neon AI identity.
+
+Runtime state does not create separate role themes.
+
+---
+
+# 329. Traceability to Phase 06A
+
+The behavior foundation must support every page/workflow from the canonical page inventory.
+
+No page may exist only as a static mock.
+
+Every applicable page must have defined:
+
+- data;
+- loading;
+- empty;
+- error;
+- permissions;
+- mutation behavior;
+- navigation;
+- streaming behavior.
+
+---
+
+# 330. Phase 06F Master Behavioral Flow
+
+The final architecture is:
+
+```text
+USER
+ ↓
+PAGE / COMPONENT
+ ↓
+UI STATE
+ ↓
+FEATURE QUERY / MUTATION
+ ↓
+API CLIENT
+ ↓
+AUTH + REQUEST CONTEXT
+ ↓
+FASTAPI
+ ↓
+APPLICATION SERVICE
+ ↓
+DOMAIN / CANONICAL STATE
+ ↓
+RESPONSE
+        +
+PERSISTENT EVENT / JOB
+ ↓
+FRONTEND NORMALIZATION
+ ↓
+SERVER STATE CACHE
+        +
+STREAMING STATE
+        +
+UI STATE
+ ↓
+RECONCILIATION
+ ↓
+COMPONENT RENDER
+```
+
+---
+
+# 331. Phase 06F Final Architectural Rules
+
+The following rules are mandatory:
+
+### Rule 1
+Frontend is a client, not a domain authority.
+
+### Rule 2
+Server state is cached, never owned canonically by the browser.
+
+### Rule 3
+UI state remains local unless genuinely global.
+
+### Rule 4
+Streaming state is transient delivery/execution state.
+
+### Rule 5
+SSE never replaces canonical API reads.
+
+### Rule 6
+Long-running operations are backend-owned.
+
+### Rule 7
+AI progress must be truthful.
+
+### Rule 8
+AI output is untrusted until backend validation and QA.
+
+### Rule 9
+Every consequential mutation requires backend confirmation.
+
+### Rule 10
+Expensive operations require duplicate protection.
+
+### Rule 11
+Stale responses cannot overwrite newer state.
+
+### Rule 12
+Event ordering and deduplication must be handled.
+
+### Rule 13
+Reconnect must lead to reconciliation.
+
+### Rule 14
+Errors must be contextual and recoverable where possible.
+
+### Rule 15
+Existing valid state should be preserved during refresh/failure.
+
+### Rule 16
+Frontend permission checks are UX only.
+
+### Rule 17
+Secrets never enter the frontend.
+
+### Rule 18
+No direct database/provider/RAG access.
+
+### Rule 19
+Project Definition and Project Instance remain isolated.
+
+### Rule 20
+All asynchronous workflows have explicit state machines.
+
+### Rule 21
+Unknown backend events/statuses fail safely.
+
+### Rule 22
+Logout/account switching clears private state.
+
+### Rule 23
+Search and notifications remain authorization-aware.
+
+### Rule 24
+Accessibility and responsive behavior are part of runtime behavior.
+
+### Rule 25
+Behavioral infrastructure is reused across pages.
+
+---
+
+# 332. Final Freeze Statement
+
+**Phase 06F — Frontend Behavior Foundation is FROZEN as the authoritative behavioral architecture for GrowFlow frontend implementation.**
+
+It establishes the complete runtime contract between:
+
+```text
+Design System
+      ↓
+Components
+      ↓
+Application Shell
+      ↓
+Frontend State
+      ↓
+API / REST
+      ↓
+SSE / Events
+      ↓
+Long-Running Jobs
+      ↓
+AI / Documents / RAG
+      ↓
+Canonical Backend State
+```
+
+The frontend is now defined as a **stateful, event-aware, authorization-aware client of GrowFlow's canonical backend architecture**.
+
+The next phase is:
+
+# **06G — Responsive + Accessibility Foundation**
+
+06G will formalize the cross-device and accessibility implementation layer before page-by-page design begins.
+
+---
+
+## 333. Phase 06F Completion Checklist
+
+- [x] Runtime architecture defined
+- [x] Server state defined
+- [x] UI state defined
+- [x] Streaming state defined
+- [x] State ownership defined
+- [x] API client architecture defined
+- [x] Request lifecycle defined
+- [x] Error normalization defined
+- [x] Authentication defined
+- [x] Authorization defined
+- [x] REST behavior defined
+- [x] SSE behavior defined
+- [x] Reconnection defined
+- [x] Event validation defined
+- [x] Reconciliation defined
+- [x] Caching defined
+- [x] Cache invalidation defined
+- [x] Mutations defined
+- [x] Optimistic update rules defined
+- [x] Idempotency defined
+- [x] Race-condition handling defined
+- [x] Stale-response handling defined
+- [x] Loading/empty/error/success defined
+- [x] Long-running operations defined
+- [x] AI execution behavior defined
+- [x] Blueprint workflow defined
+- [x] Project-change workflow defined
+- [x] Document-generation workflow defined
+- [x] Cancellation defined
+- [x] Retry defined
+- [x] Resume defined
+- [x] Polling rules defined
+- [x] Forms defined
+- [x] URL state defined
+- [x] Search defined
+- [x] Notifications defined
+- [x] Modal/drawer behavior defined
+- [x] Permission-aware UI defined
+- [x] Network degradation defined
+- [x] Error boundaries defined
+- [x] Observability defined
+- [x] Performance defined
+- [x] Security defined
+- [x] Testing defined
+- [x] State-machine conventions defined
+- [x] Frontend/backend contracts defined
+- [x] Stitch implications defined
+- [x] Directory structure defined
+- [x] Non-negotiable invariants defined
+- [x] Definition of Done defined
+- [x] Final freeze defined

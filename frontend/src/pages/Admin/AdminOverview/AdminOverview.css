@@ -1,0 +1,186 @@
+/**
+ * AD01 — Admin Overview Styles
+ */
+
+.gf-admin-overview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-8, 32px);
+  width: 100%;
+}
+
+.gf-admin-overview__header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--gf-space-3, 12px);
+}
+
+.gf-admin-overview__alert {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--gf-space-3, 12px) var(--gf-space-4, 16px);
+  background-color: var(--gf-color-danger-subtle, #fef2f2);
+  border: 1px solid var(--gf-color-danger-border, #fecaca);
+  border-radius: var(--gf-radius-md, 8px);
+  color: var(--gf-color-danger, #ef4444);
+  font-size: var(--gf-text-body-sm-size, 13px);
+}
+
+.gf-admin-overview__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--gf-space-4, 16px);
+}
+
+.gf-admin-overview__secondary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-6, 24px);
+}
+
+.gf-admin-overview__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gf-space-6, 24px);
+}
+
+@media (max-width: 900px) {
+  .gf-admin-overview__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.gf-admin-overview__card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.gf-admin-overview__card-header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.gf-admin-overview__card-title {
+  font-size: var(--gf-text-h4-size, 16px);
+  font-weight: 600;
+  color: var(--gf-color-text-primary, #0f172a);
+}
+
+.gf-admin-overview__metric-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-3, 12px);
+}
+
+.gf-admin-overview__metric-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--gf-space-2, 8px) 0;
+  border-bottom: 1px solid var(--gf-color-border-subtle, #e2e8f0);
+}
+
+.gf-admin-overview__metric-row:last-child {
+  border-bottom: none;
+}
+
+.gf-admin-overview__metric-label {
+  font-size: var(--gf-text-body-sm-size, 14px);
+  color: var(--gf-color-text-secondary, #64748b);
+}
+
+.gf-admin-overview__metric-value {
+  font-size: var(--gf-text-body-md-size, 15px);
+  font-weight: 600;
+  color: var(--gf-color-text-primary, #0f172a);
+}
+
+.gf-admin-overview__metric-value--success {
+  color: #10b981;
+}
+
+.gf-admin-overview__metric-value--danger {
+  color: #ef4444;
+}
+
+.gf-admin-overview__quick-links {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-3, 12px);
+}
+
+.gf-admin-overview__quick-link {
+  display: flex;
+  align-items: center;
+  gap: var(--gf-space-3, 12px);
+  padding: var(--gf-space-3, 12px);
+  border: 1px solid var(--gf-color-border-subtle, #e2e8f0);
+  border-radius: var(--gf-radius-md, 8px);
+  text-decoration: none;
+  background-color: var(--gf-color-bg-base, #f8fafc);
+  transition: all 0.2s ease;
+}
+
+.gf-admin-overview__quick-link:hover {
+  background-color: var(--gf-color-bg-surface, #ffffff);
+  border-color: var(--gf-color-accent, #6366f1);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.gf-admin-overview__quick-link-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--gf-radius-md, 8px);
+  flex-shrink: 0;
+}
+
+.gf-admin-overview__quick-link-icon--mentor {
+  background-color: #eef2ff;
+  color: #4f46e5;
+}
+
+.gf-admin-overview__quick-link-icon--student {
+  background-color: #ecfdf5;
+  color: #059669;
+}
+
+.gf-admin-overview__quick-link-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.gf-admin-overview__quick-link-title {
+  font-size: var(--gf-text-body-sm-size, 14px);
+  font-weight: 600;
+  color: var(--gf-color-text-primary, #0f172a);
+}
+
+.gf-admin-overview__quick-link-subtitle {
+  font-size: var(--gf-text-caption-size, 12px);
+  color: var(--gf-color-text-secondary, #64748b);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gf-admin-overview__quick-link-chevron {
+  width: 16px;
+  height: 16px;
+  color: var(--gf-color-text-tertiary, #94a3b8);
+  flex-shrink: 0;
+}
+
+.gf-admin-overview__skeleton-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-3, 12px);
+}

@@ -1,0 +1,4376 @@
+# GrowFlow — Phase 04
+# Frontend Documentation & Implementation Specification
+
+**Status:** FROZEN / AUTHORITATIVE  
+**Phase:** 04 — Frontend Documentation  
+**Project:** GrowFlow  
+**Applies to:** V1 frontend implementation  
+**Depends on:** Phase 01 — Frontend Page & Screen Inventory; Phase 02 — Information Architecture & Navigation Map; Phase 03 — Frontend Visual Design System & Experience Direction  
+**Documentation level:** Product specification + frontend engineering contract  
+**Primary principle:** No frontend surface required for V1 is left implicit.
+
+---
+
+## 00. Phase 04 Purpose
+
+Phase 04 converts the decisions frozen in Phases 01–03 into an implementation-grade frontend specification.
+
+The purpose is not to write frontend code. The purpose is to define, precisely enough for implementation, what the frontend must render, how users move through it, what data it consumes, what state it owns, what backend boundaries it crosses, what permissions apply, what happens during loading/error/empty/success/AI-processing states, and how the experience behaves across desktop, tablet, and mobile.
+
+Phase 04 is therefore the frontend execution contract for V1.
+
+### 00.1 What Phase 04 freezes
+
+This phase freezes:
+
+1. Frontend architecture boundaries.
+2. Application shell behavior.
+3. Global navigation behavior.
+4. Workplace selection behavior.
+5. Design-system implementation rules.
+6. Shared component responsibilities.
+7. Public website surface behavior.
+8. Authentication and onboarding behavior.
+9. Shared authenticated features.
+10. Student / BUILD frontend behavior.
+11. Mentor / SUPERVISE frontend behavior.
+12. Admin / GOVERN frontend behavior.
+13. System-state behavior.
+14. Frontend state ownership.
+15. API integration boundaries.
+16. SSE and asynchronous AI behavior.
+17. Permission and visibility behavior.
+18. Responsive behavior.
+19. Accessibility requirements.
+20. Security expectations.
+21. Frontend observability.
+22. Performance requirements.
+23. Testing requirements.
+24. Implementation rules and anti-patterns.
+25. Traceability from Phase 01 surfaces to Phase 04 specifications.
+
+### 00.2 Non-goals
+
+Phase 04 does not silently introduce:
+
+- a new role model;
+- a new project lifecycle;
+- a second design system;
+- direct frontend-to-provider AI calls;
+- a replacement for FastAPI;
+- a replacement for Supabase Auth;
+- a second canonical project database;
+- client-owned canonical domain state;
+- browser-dependent long-running AI execution;
+- a different navigation hierarchy;
+- a separate visual theme for each role.
+
+Any future architectural change must be explicitly proposed, reviewed, and frozen in the relevant later phase.
+
+---
+
+# 01. Frozen Context Inherited from Phases 01–03
+
+## 01.1 Role model
+
+| Role | Responsibility | Experience identity |
+|---|---|---|
+| Student | BUILD | Build projects, learn, execute, understand progress |
+| Mentor | SUPERVISE | Guide students, supervise projects, intervene |
+| Admin | GOVERN | Govern platform, inspect health, AI, security, cost |
+
+The three role names are conceptual/product language. They do not imply that every account automatically possesses every role.
+
+Authorization is backend-authoritative.
+
+---
+
+## 01.2 Canonical project lifecycle
+
+```text
+IDEA
+  ↓
+ASSESSMENT
+  ↓
+BLUEPRINT
+  ↓
+PLANNING
+  ↓
+IMPLEMENTATION
+  ↓
+TESTING
+  ↓
+DEPLOYMENT
+  ↓
+COMPLETED
+```
+
+The frontend represents this lifecycle but does not become its source of truth.
+
+---
+
+## 01.3 Canonical project information chain
+
+```text
+Task
+  ↓
+Milestone
+  ↓
+Progress
+  ↓
+Phase
+  ↓
+Health
+```
+
+This is a reusable frontend information model.
+
+A task contributes to milestone progress. Milestones contribute to project progress. Project progress is contextualized by the current lifecycle phase and health signals.
+
+The frontend must not independently invent conflicting progress calculations when canonical backend values exist.
+
+---
+
+## 01.4 Project Definition vs Student Project Instance
+
+These are separate concepts.
+
+### Project Definition
+
+A reusable mentor-authored project template/specification.
+
+### Student Project Instance
+
+A student's actual project created from or associated with a definition.
+
+Changing a Project Definition does not silently mutate an existing Student Project Instance.
+
+Existing students may receive a notification and may independently adopt a proposed change through the Project Change workflow.
+
+This separation must remain visible in:
+
+- routes;
+- labels;
+- permissions;
+- UI copy;
+- API boundaries;
+- audit events;
+- change workflows.
+
+---
+
+## 01.5 AI architecture
+
+The frontend never calls an AI provider directly.
+
+Canonical flow:
+
+```text
+Frontend
+   ↓
+FastAPI
+   ↓
+Application / Generation Service
+   ↓
+LangGraph
+   ↓
+Agents + Tools
+   ↓
+Structured Output
+   ↓
+Validation
+   ↓
+QA / Judge
+   ↓
+Deterministic Persistence
+   ↓
+Document Rendering
+   ↓
+Event
+   ↓
+Frontend
+```
+
+Exactly 12 logical AI agents are part of the current architecture:
+
+1. Idea
+2. Scope
+3. Technology
+4. Features
+5. Specification
+6. MVP
+7. Timeline / Duration
+8. Risk
+9. Task
+10. Milestone
+11. README
+12. QA / Judge
+
+The frontend treats these as execution/domain concepts and does not expose provider-specific implementation details unless an authorized Admin observability surface explicitly requires them.
+
+---
+
+## 01.6 AI Provider Gateway
+
+All AI provider access goes through the central AI Provider Gateway.
+
+No:
+
+- frontend provider SDK;
+- agent-specific provider credential;
+- browser-side API key;
+- direct provider URL;
+- hard-coded provider-specific frontend workflow
+
+is permitted.
+
+---
+
+## 01.7 RAG
+
+RAG is:
+
+- project-scoped;
+- derived/rebuildable;
+- separate from canonical PostgreSQL state.
+
+The frontend can display RAG/document-processing status but must not treat the RAG index as the canonical project database.
+
+---
+
+## 01.8 Background jobs and events
+
+Long-running work is persistent.
+
+A browser disconnect must not terminate:
+
+- blueprint generation;
+- document generation;
+- RAG processing;
+- long-running AI workflows;
+- other persistent background jobs.
+
+SSE is a delivery mechanism, not the job execution mechanism.
+
+The frontend must reconcile state after reconnecting.
+
+---
+
+# 02. Frontend Architecture
+
+## 02.1 Architectural layers
+
+The frontend follows this conceptual layering:
+
+```text
+Presentation Layer
+        ↓
+Page / Route Layer
+        ↓
+Feature Layer
+        ↓
+Domain UI Layer
+        ↓
+Shared Component Layer
+        ↓
+Data / API Layer
+        ↓
+State Management
+        ↓
+Backend
+```
+
+### Presentation Layer
+
+Responsible for:
+
+- visual rendering;
+- responsive layout;
+- typography;
+- spacing;
+- animation;
+- accessibility presentation.
+
+### Page / Route Layer
+
+Responsible for:
+
+- route entry;
+- route-level loading;
+- route-level error boundaries;
+- resource identity;
+- layout composition;
+- authorization-aware rendering.
+
+### Feature Layer
+
+Responsible for:
+
+- user-facing feature workflows;
+- forms;
+- mutations;
+- filtering;
+- local interaction logic;
+- feature-specific state.
+
+### Domain UI Layer
+
+Responsible for reusable GrowFlow domain representations such as:
+
+- project lifecycle;
+- task;
+- milestone;
+- risk;
+- health;
+- activity;
+- AI execution;
+- document;
+- assessment.
+
+### Shared Component Layer
+
+Responsible for generic UI primitives and common interaction patterns.
+
+### Data / API Layer
+
+Responsible for:
+
+- API client;
+- request serialization;
+- response parsing;
+- error normalization;
+- cache/query behavior;
+- mutation integration;
+- authentication headers;
+- SSE client.
+
+### State Management
+
+Separates:
+
+```text
+SERVER STATE
+UI STATE
+STREAMING STATE
+```
+
+---
+
+# 03. State Architecture
+
+## 03.1 Server State
+
+Canonical examples:
+
+- current user;
+- role authorization;
+- project;
+- project definition;
+- project instance;
+- tasks;
+- milestones;
+- risks;
+- documents;
+- GitHub connection status;
+- mentor notes;
+- help requests;
+- assessment results;
+- blueprint;
+- notifications;
+- activity;
+- analytics;
+- AI execution records.
+
+Server state should be fetched and reconciled through the API layer.
+
+---
+
+## 03.2 UI State
+
+Examples:
+
+- open modal;
+- selected tab;
+- expanded table row;
+- filter values;
+- sort direction;
+- sidebar collapsed state;
+- mobile drawer open/closed;
+- temporary form values;
+- selected items;
+- local search text;
+- confirmation dialog visibility.
+
+UI state is not canonical domain state.
+
+---
+
+## 03.3 Streaming State
+
+Examples:
+
+- AI generation currently running;
+- execution stage;
+- progress events;
+- SSE connection state;
+- live notification arrival;
+- document processing state;
+- RAG processing state;
+- background job status;
+- reconnecting state.
+
+Streaming state must reconcile back into server state.
+
+---
+
+## 03.4 State ownership rule
+
+A piece of data must have one clear owner.
+
+```text
+Canonical business truth → Backend
+Presentation representation → Frontend
+Temporary interaction state → Frontend
+Live event transport → Frontend streaming layer
+```
+
+The frontend must not create a second canonical version of business truth.
+
+---
+
+# 04. Application Shell
+
+## 04.1 Unified website navigation
+
+One global top navigation language is used across the website.
+
+The top navigation contains, where appropriate:
+
+- GrowFlow identity/logo;
+- Features;
+- Documentation;
+- Contact;
+- Workplace;
+- Search;
+- Notifications;
+- Profile;
+- Login;
+- Sign Up.
+
+Public links can be reduced or adapted inside authenticated workplace contexts, but the visual/navigation system remains unified.
+
+---
+
+## 04.2 Workplace selector
+
+The Workplace control is a major navigation entry.
+
+It exposes:
+
+- Student / BUILD;
+- Mentor / SUPERVISE;
+- Admin / GOVERN.
+
+### Logged-out behavior
+
+| Selection | Destination |
+|---|---|
+| Student | Student sign in |
+| Mentor | Mentor sign in |
+| Admin | Protected Admin entry |
+
+Admin does not have public registration.
+
+### Logged-in behavior
+
+Only authorized workplaces are actionable/visible.
+
+Default destinations:
+
+```text
+Student → /student/dashboard
+Mentor  → /mentor/overview
+Admin   → /admin/overview
+```
+
+The frontend may present role availability but backend authorization remains authoritative.
+
+---
+
+## 04.3 Separate Login and Sign Up
+
+When logged out:
+
+- Login is separate from Sign Up.
+- Student and Mentor authentication routes are separate.
+- Admin has no public signup.
+
+Routes:
+
+```text
+/auth/student/sign-in
+/auth/student/register
+/auth/student/recover
+
+/auth/mentor/sign-in
+/auth/mentor/register
+/auth/mentor/recover
+```
+
+---
+
+## 04.4 Profile
+
+Canonical route:
+
+```text
+/profile
+```
+
+Profile is an identity/account surface.
+
+Settings are separate:
+
+```text
+/settings
+/settings/profile
+/settings/preferences
+```
+
+---
+
+## 04.5 Sidebar
+
+Authenticated workplaces use a persistent role-specific sidebar.
+
+### Student
+
+- Dashboard
+- Projects
+
+### Mentor
+
+- Overview
+- Groups
+- Students
+- Projects
+- Project Definitions
+- Project Instances
+- At Risk
+- Help Requests
+- Activity
+- AI Mentor
+
+### Admin
+
+- Overview
+- Mentors
+- Students
+- Groups
+- Projects
+- AI Observatory
+- Cost & Usage
+- System Health
+- Documents & RAG
+- Security & Audit
+- Analytics
+
+The sidebar is a navigation structure, not a second top navigation.
+
+---
+
+## 04.6 Responsive shell
+
+### Desktop
+
+- persistent top navigation;
+- persistent sidebar;
+- independent content scrolling;
+- dense workspace layout.
+
+### Tablet
+
+- sidebar may collapse;
+- content remains structured;
+- top navigation remains available;
+- controls may condense.
+
+### Mobile
+
+- top navigation remains global;
+- sidebar becomes a drawer;
+- content becomes single-column or intentionally stacked;
+- tables use controlled horizontal scrolling, responsive row layouts, or detail views;
+- secondary controls move into drawers where appropriate.
+
+---
+
+# 05. Route Rules
+
+All routes:
+
+- lowercase;
+- kebab-case;
+- meaningful;
+- stable;
+- refresh-safe;
+- deep-linkable.
+
+Collections use plural nouns.
+
+Examples:
+
+```text
+/projects
+/students
+/groups
+/tasks
+```
+
+Specific resources use IDs.
+
+```text
+/projects/:projectId
+/students/:studentId
+```
+
+Nested routes preserve resource context.
+
+Query parameters are for:
+
+- filters;
+- sorting;
+- search;
+- view state;
+- pagination;
+- temporary list configuration.
+
+Routes are for resource identity.
+
+---
+
+# 06. Design-System Implementation
+
+## 06.1 Visual identity
+
+The frozen visual direction is:
+
+> Soft Intelligence
+
+Core characteristics:
+
+- calm;
+- restrained;
+- warm;
+- precise;
+- editorial;
+- operational;
+- information-dense without visual noise.
+
+---
+
+## 06.2 Appearance
+
+Default:
+
+```text
+Soft white / warm light
+```
+
+Dark counterpart:
+
+```text
+Soft charcoal
+```
+
+Dark mode is not a simple color inversion.
+
+Both modes must preserve:
+
+- hierarchy;
+- contrast;
+- surface relationships;
+- semantic status meaning;
+- visual identity.
+
+---
+
+## 06.3 Typography
+
+Use a Manrope-style geometric humanist sans direction.
+
+Typography hierarchy must distinguish:
+
+- page title;
+- section title;
+- subsection;
+- body;
+- labels;
+- metadata;
+- helper text;
+- numerical metrics;
+- code;
+- AI/system messages.
+
+Do not make every piece of text large or bold.
+
+---
+
+## 06.4 Color
+
+Use:
+
+- muted neutrals;
+- one subtle primary accent;
+- restrained semantic colors;
+- a slightly deeper AI variant.
+
+Avoid:
+
+- rainbow role themes;
+- neon AI;
+- excessive gradients;
+- decorative color everywhere.
+
+---
+
+## 06.5 Surfaces
+
+Surface hierarchy should be quiet.
+
+Preferred:
+
+- background separation;
+- subtle borders;
+- restrained shadows;
+- spacing;
+- typography;
+- grouping.
+
+Avoid card-everything design.
+
+---
+
+## 06.6 Cards
+
+Cards are used when they establish meaningful grouping.
+
+Cards should not exist merely because the component library has a Card component.
+
+---
+
+## 06.7 Tables
+
+Tables are first-class operational interfaces.
+
+They should support:
+
+- dense rows;
+- clear headers;
+- sortable columns where meaningful;
+- filters;
+- pagination;
+- status;
+- row actions;
+- responsive behavior;
+- keyboard access.
+
+Tables should feel integrated into the page rather than floating as unrelated boxes.
+
+---
+
+## 06.8 AI visual language
+
+AI surfaces are slightly deeper visually than normal application surfaces.
+
+AI styling may use:
+
+- deeper tonal hierarchy;
+- clear execution indicators;
+- structured output blocks;
+- controlled motion.
+
+Avoid:
+
+- glowing neon interfaces;
+- fake typing effects;
+- endless animated gradients;
+- anthropomorphic decoration that hides system state.
+
+---
+
+# 07. Motion
+
+## 07.1 Public experience
+
+Public website motion can be more expressive.
+
+Hero interaction follows:
+
+```text
+Float → Settle
+```
+
+Motion should feel physical and intentional.
+
+---
+
+## 07.2 Authenticated experience
+
+Motion is subordinate to productivity.
+
+Use:
+
+- subtle entrance;
+- small state transitions;
+- restrained hover/focus;
+- controlled progress animation;
+- meaningful movement.
+
+Do not animate every component.
+
+---
+
+## 07.3 Reduced motion
+
+Respect reduced-motion preferences.
+
+When reduced motion is enabled:
+
+- remove nonessential movement;
+- reduce parallax;
+- reduce transition distance;
+- preserve functional feedback without animation dependency.
+
+---
+
+# 08. Global Component Contract
+
+The following components are shared primitives/domain components.
+
+## 08.1 Basic controls
+
+- Button
+- Icon Button
+- Input
+- Select
+- Combobox
+- Textarea
+- Checkbox
+- Radio
+- Switch
+
+Every control must define:
+
+- default;
+- hover;
+- focus;
+- active;
+- disabled;
+- validation;
+- loading where applicable.
+
+---
+
+## 08.2 Feedback components
+
+- Badge
+- Status Indicator
+- Toast
+- Alert
+- Skeleton
+- Empty State
+- Error State
+- Progress Indicator
+
+Feedback must be explicit and accessible.
+
+---
+
+## 08.3 Navigation components
+
+- Top Navigation
+- Sidebar
+- Breadcrumb
+- Tabs
+- Pagination
+- Dropdown
+- Command/Search
+
+---
+
+## 08.4 Overlay components
+
+- Modal
+- Drawer
+- Tooltip
+- Confirmation Dialog
+
+Overlays must:
+
+- trap focus where appropriate;
+- support keyboard dismissal;
+- restore focus;
+- expose accessible labels;
+- not hide critical errors.
+
+---
+
+## 08.5 Domain components
+
+- Project Lifecycle Indicator
+- Project Health Indicator
+- Task Item
+- Task Table
+- Milestone Summary
+- Risk Indicator
+- Activity Item
+- Notification Item
+- AI Execution Indicator
+- AI Execution Timeline
+- Document Preview
+- Code Block
+- Metric
+- Chart
+- Filter Bar
+- Data Table
+
+---
+
+# 09. Standard Page Contract
+
+Every page specification must answer the following:
+
+1. Page ID.
+2. Page name.
+3. Route.
+4. Role.
+5. Purpose.
+6. Entry points.
+7. Exit/navigation paths.
+8. Layout.
+9. Regions.
+10. Components.
+11. Required data.
+12. Server state.
+13. UI state.
+14. Streaming state.
+15. User actions.
+16. Permissions.
+17. API dependencies.
+18. SSE/event dependencies.
+19. Loading state.
+20. Empty state.
+21. Error state.
+22. Success state.
+23. AI state, if applicable.
+24. Responsive behavior.
+25. Accessibility.
+26. Security.
+27. Observability.
+28. Related pages.
+29. Implementation constraints.
+
+For V1, ordinary pages use this Level 2 contract.
+
+Complex/high-risk workflows use Level 3 documentation.
+
+---
+
+# 10. Public Website Specification
+
+## P01 — Landing / Hero
+
+**Route:** `/`
+
+### Purpose
+
+Introduce GrowFlow, explain the core value proposition, establish trust, and communicate the BUILD / SUPERVISE / GOVERN model.
+
+### Main regions
+
+1. Global navigation.
+2. Hero statement.
+3. Visual storytelling element.
+4. Product capability highlights.
+5. Workflow/lifecycle explanation.
+6. Role/value explanation.
+7. Architecture/scalability/reliability storytelling.
+8. Documentation/feature entry.
+9. Footer.
+
+### Experience
+
+The hero should be statement-first and visually editorial.
+
+Use contextual visual storytelling rather than generic stock imagery.
+
+### States
+
+Public page should handle:
+
+- normal load;
+- image lazy-loading;
+- failed noncritical media;
+- reduced-motion mode.
+
+### Responsive
+
+Hero composition changes structurally on mobile rather than merely shrinking.
+
+---
+
+## P02 — Features
+
+**Route:** `/features`
+
+### Purpose
+
+Explain GrowFlow's major capabilities.
+
+### Content categories
+
+- project lifecycle;
+- AI-assisted planning;
+- assessment;
+- blueprint generation;
+- task/milestone management;
+- mentor supervision;
+- project health;
+- documents;
+- GitHub;
+- AI Mentor;
+- admin observability;
+- security/governance.
+
+### Interaction
+
+Feature sections may use progressive reveal and restrained scroll motion.
+
+No decorative interaction may prevent access to the actual information.
+
+---
+
+## P03 — Documentation
+
+**Route:** `/documentation`
+
+### Purpose
+
+Provide public technical/product documentation.
+
+### Regions
+
+- documentation navigation;
+- search;
+- document list;
+- document content;
+- related documents.
+
+### Dynamic document route
+
+```text
+/documentation/:slug
+```
+
+### States
+
+- loading;
+- document not found;
+- search no results;
+- content unavailable.
+
+---
+
+## P04 — Contact
+
+**Route:** `/contact`
+
+### Purpose
+
+Provide a clear contact/request path.
+
+### Regions
+
+- context;
+- form;
+- contact information if applicable;
+- submission feedback.
+
+### Form states
+
+```text
+Idle
+→ Editing
+→ Validating
+→ Submitting
+→ Success / Error
+```
+
+---
+
+# 11. Authentication & Onboarding
+
+## 11.1 Authentication state machine
+
+```text
+Unauthenticated
+      ↓
+Authentication Requested
+      ↓
+Authenticating
+      ↓
+Authenticated
+      ↓
+Role Resolution
+      ↓
+Authorization
+      ↓
+Destination Restoration
+```
+
+Failure branches:
+
+- authentication failed;
+- authorization failed;
+- inactive account;
+- session expired;
+- network failure.
+
+---
+
+## A01 — Student Sign In
+
+**Route:** `/auth/student/sign-in`
+
+Contains:
+
+- identity fields;
+- password;
+- validation;
+- submit;
+- recovery link;
+- registration link;
+- contextual GrowFlow identity.
+
+Success:
+
+```text
+Authenticate
+→ Resolve student authorization
+→ Restore intended route or
+→ /student/dashboard
+```
+
+---
+
+## A02 — Student Registration
+
+**Route:** `/auth/student/register`
+
+Contains:
+
+- required registration fields;
+- validation;
+- password requirements;
+- consent/terms where applicable;
+- submission;
+- post-registration routing.
+
+No mentor/admin role is implicitly granted.
+
+---
+
+## A03 — Student Password Recovery
+
+**Route:** `/auth/student/recover`
+
+States:
+
+- initial;
+- email/input validation;
+- submission;
+- success;
+- failure;
+- retry.
+
+Never expose whether an unrelated account exists beyond the intended security model.
+
+---
+
+## A04 — Mentor Sign In
+
+**Route:** `/auth/mentor/sign-in`
+
+Same authentication quality bar as student sign-in, but mentor destination and authorization are distinct.
+
+Default destination:
+
+```text
+/mentor/overview
+```
+
+---
+
+## A05 — Mentor Registration
+
+**Route:** `/auth/mentor/register`
+
+Mentor registration must create the appropriate mentor identity path.
+
+Any approval/inactivation state must be represented explicitly if backend policy requires it.
+
+---
+
+## A06 — Mentor Password Recovery
+
+**Route:** `/auth/mentor/recover`
+
+Same recovery principles as student recovery.
+
+---
+
+## A07 — Student Onboarding
+
+Purpose:
+
+- establish student context;
+- explain BUILD workflow;
+- collect required onboarding information;
+- orient the user to projects.
+
+Onboarding must be resumable if the backend records incomplete onboarding.
+
+---
+
+## A08 — Mentor Onboarding
+
+Purpose:
+
+- establish mentor context;
+- explain SUPERVISE workflow;
+- configure relevant mentor information;
+- orient the mentor to groups/projects/students.
+
+---
+
+## A09 — Protected Admin Entry
+
+**Purpose:** controlled entry into GOVERN.
+
+Rules:
+
+- no public Admin signup;
+- admin access is authorization-controlled;
+- failed authorization is not presented as ordinary authentication failure;
+- sensitive access attempts can be audited.
+
+---
+
+# 12. Shared Authenticated Surfaces
+
+## X01 — Global Search
+
+**Route:** `/search`
+
+### Requirements
+
+Search must be:
+
+- role-aware;
+- authorization-aware;
+- resource-aware;
+- deep-link capable.
+
+Possible result classes:
+
+- projects;
+- students;
+- groups;
+- tasks;
+- documents;
+- notifications;
+- other authorized resources.
+
+The frontend never displays resources the backend has not authorized.
+
+---
+
+## X02 — Notifications Center
+
+**Route:** `/notifications`
+
+Notifications should contain:
+
+- title;
+- message;
+- time;
+- read/unread state;
+- source;
+- action/deep link where applicable.
+
+Notifications generated by asynchronous workflows should point to canonical resources or workflow states.
+
+---
+
+## X03 — Profile
+
+**Route:** `/profile`
+
+Contains:
+
+- identity;
+- account information;
+- role/workplace context;
+- profile actions.
+
+---
+
+## X04 — Settings
+
+Routes:
+
+```text
+/settings
+/settings/profile
+/settings/preferences
+```
+
+Settings separate identity/profile concerns from preference concerns.
+
+---
+
+## X05 — Share Interaction
+
+Sharing uses canonical resource URLs.
+
+The UI should make clear:
+
+- what is being shared;
+- destination/resource;
+- access implications where applicable.
+
+Never imply public access if the resource remains permission-protected.
+
+---
+
+# 13. Student / BUILD Specification
+
+## Student information architecture
+
+```text
+/student/dashboard
+/student/projects
+/student/projects/catalog
+/student/projects/new
+/student/projects/:projectId
+```
+
+---
+
+## S01 — Student Dashboard
+
+**Route:** `/student/dashboard`
+
+### Purpose
+
+Provide a high-signal visual data instrument for the student's work.
+
+### Regions
+
+1. Welcome/context.
+2. Current project(s).
+3. Lifecycle position.
+4. Progress.
+5. Milestones.
+6. Tasks.
+7. Health.
+8. Risks.
+9. Recent activity.
+10. AI/background execution state.
+11. Mentor feedback/help-request signals.
+
+### Dashboard principle
+
+It should answer quickly:
+
+- What am I working on?
+- Where am I in the lifecycle?
+- What should I do next?
+- Am I at risk?
+- What changed?
+- Is AI/background work running?
+
+---
+
+## S02 — Student Projects
+
+**Route:** `/student/projects`
+
+List student project instances.
+
+Support:
+
+- search;
+- filtering;
+- sorting where useful;
+- status/lifecycle;
+- health;
+- recent activity;
+- direct navigation.
+
+---
+
+## S03 — Create Your Own Project
+
+**Route:** `/student/projects/new`
+
+This is a workflow, not a simple form.
+
+Suggested stages:
+
+```text
+Project Intent
+→ Initial Information
+→ Assessment
+→ Blueprint Generation
+→ Blueprint QA/Approval
+→ Project Creation
+```
+
+The workflow must survive navigation if backend persistence supports resumability.
+
+---
+
+## S04 — Mentor Project Catalog
+
+**Route:** `/student/projects/catalog`
+
+Displays available Project Definitions.
+
+The user is selecting a reusable definition, not directly modifying a project instance.
+
+---
+
+## S05 — Mentor Project Detail / Selection
+
+**Route:** `/student/projects/catalog/:definitionId`
+
+Shows:
+
+- project purpose;
+- scope;
+- features;
+- technology expectations;
+- requirements;
+- difficulty/level if available;
+- mentor/context;
+- selection action.
+
+Selecting a definition leads into the Student Project Instance creation flow.
+
+---
+
+## S06 — Project Information / Profile
+
+This surface presents foundational project identity and information.
+
+It should distinguish:
+
+- definition-originated information;
+- student-specific instance information;
+- current lifecycle state.
+
+---
+
+# 14. Assessment Workflow
+
+## S07 — Assessment Introduction
+
+**Route:** `/student/projects/:projectId/assessment`
+
+Purpose:
+
+- explain why assessment exists;
+- show expected effort;
+- explain adaptive behavior;
+- begin assessment.
+
+---
+
+## S08 — Assessment Question Interface
+
+**Route:** `/student/projects/:projectId/assessment/questions`
+
+Must support:
+
+- current question;
+- answer;
+- progress;
+- validation;
+- navigation rules;
+- save/resume where supported.
+
+---
+
+## S09 — Adaptive Assessment
+
+**Route:** `/student/projects/:projectId/assessment/adaptive`
+
+The UI displays the adaptive flow without attempting to calculate the adaptive strategy independently.
+
+Backend/assessment service owns question selection.
+
+---
+
+## S10 — Assessment Completion
+
+**Route:** `/student/projects/:projectId/assessment/completed`
+
+Shows:
+
+- completion confirmation;
+- next action;
+- processing state if results are still being prepared.
+
+---
+
+## S11 — Assessment Result / Project Understanding
+
+**Route:** `/student/projects/:projectId/assessment/result`
+
+Shows:
+
+- project understanding;
+- relevant findings;
+- capability/knowledge signals where defined;
+- implications for blueprint/project preparation.
+
+The result is presented as system-generated information, not as an arbitrary frontend score.
+
+---
+
+# 15. Blueprint Workflow
+
+## S12 — Blueprint Generation
+
+**Route:** `/student/projects/:projectId/blueprint`
+
+### State machine
+
+```text
+Not Started
+    ↓
+Generating
+    ↓
+Generated
+    ↓
+Validating
+    ↓
+QA / Judge
+    ↓
+Approved
+```
+
+The UI must expose meaningful progress without pretending to know internal model reasoning.
+
+### During generation
+
+Display:
+
+- execution status;
+- current high-level stage;
+- progress if authoritative;
+- elapsed/started information where useful;
+- ability to navigate away;
+- notification expectation.
+
+---
+
+## S13 — Blueprint Generation Failure / Recovery
+
+Failure must be explicit.
+
+Possible states:
+
+- transient network failure;
+- backend job failure;
+- AI execution failure;
+- validation failure;
+- QA rejection.
+
+Actions may include:
+
+- retry;
+- inspect failure summary;
+- return;
+- request regeneration where authorized.
+
+Do not automatically retry indefinitely.
+
+---
+
+## S14 — Blueprint QA / Approval
+
+Displays:
+
+- generated blueprint;
+- validation status;
+- QA/Judge status;
+- issues if present;
+- approval state;
+- next action.
+
+The frontend does not override QA/Judge results.
+
+---
+
+# 16. Student Project Workspace
+
+Canonical base:
+
+```text
+/student/projects/:projectId
+```
+
+The workspace is contextual and uses the project as the primary information boundary.
+
+## Workspace navigation
+
+```text
+overview
+blueprint
+blueprint/document
+tasks
+tasks/:taskId
+milestones
+milestones/:milestoneId
+risks
+risks/:riskId
+roadmap
+documents
+documents/:documentId
+github
+activity
+ai-mentor
+help-requests
+mentor-feedback
+changes
+changes/:changeId
+```
+
+---
+
+## S15 — Project Overview
+
+Should provide:
+
+- lifecycle;
+- project health;
+- progress;
+- current phase;
+- milestones;
+- task summary;
+- risks;
+- recent activity;
+- mentor signals;
+- active AI jobs.
+
+---
+
+## S16 — Blueprint Workspace
+
+Shows structured blueprint data.
+
+Possible sections:
+
+- idea;
+- scope;
+- technology;
+- features;
+- specification;
+- MVP;
+- timeline;
+- risks;
+- tasks;
+- milestones;
+- README.
+
+These correspond to the logical AI/domain pipeline but must be displayed as coherent project information.
+
+---
+
+## S17 — Blueprint Document Viewer
+
+Displays rendered blueprint document.
+
+Requirements:
+
+- readable typography;
+- section navigation where useful;
+- document state;
+- generation metadata where authorized;
+- print/export affordance only if supported.
+
+---
+
+## S18 — Tasks
+
+Supports:
+
+- list/table;
+- filtering;
+- sorting;
+- status;
+- priority;
+- assignment where applicable;
+- milestone relationship;
+- due information;
+- task actions.
+
+---
+
+## S19 — Task Detail
+
+Displays:
+
+- title;
+- description;
+- status;
+- priority;
+- milestone;
+- phase;
+- due information;
+- progress;
+- dependencies where supported;
+- activity;
+- notes;
+- actions.
+
+---
+
+## S20 — Milestones
+
+Displays milestone list and progress.
+
+Each milestone should expose:
+
+- status;
+- progress;
+- task counts;
+- timeline;
+- health context.
+
+---
+
+## S21 — Milestone Detail
+
+Displays:
+
+- milestone purpose;
+- tasks;
+- progress;
+- dates;
+- dependencies;
+- status;
+- activity.
+
+---
+
+## S22 — Risks
+
+Risk surface should provide:
+
+- risk list;
+- severity;
+- probability;
+- status;
+- owner if applicable;
+- mitigation;
+- project impact.
+
+---
+
+## S23 — Risk Detail
+
+Displays:
+
+- risk description;
+- severity;
+- probability;
+- impact;
+- mitigation;
+- status;
+- linked project/milestone/task where applicable;
+- activity.
+
+---
+
+## S24 — Roadmap / Timeline
+
+**Route:** `/student/projects/:projectId/roadmap`
+
+Visualize:
+
+- phases;
+- milestones;
+- dates;
+- progress;
+- dependencies where supported.
+
+Calendar/timeline views must remain readable at different widths.
+
+---
+
+## S25 — Documents
+
+List project documents.
+
+Display:
+
+- title;
+- type;
+- state;
+- updated time;
+- generation/processing status;
+- relevant actions.
+
+---
+
+## S26 — Document Detail / Preview
+
+Displays document content or preview.
+
+Must support processing states.
+
+---
+
+## S27 — GitHub
+
+Shows GitHub integration state.
+
+Possible states:
+
+```text
+Not Connected
+Connecting
+Connected
+Syncing
+Synced
+Sync Error
+Disconnected
+```
+
+Do not expose credentials or secrets.
+
+---
+
+## S28 — Activity
+
+Chronological project activity.
+
+Each activity item should include:
+
+- event type;
+- actor/system;
+- time;
+- concise description;
+- resource link where useful.
+
+---
+
+## S29 — AI Mentor
+
+A project-contextual AI interaction surface.
+
+The frontend must:
+
+- preserve project context;
+- clearly indicate AI responses;
+- expose processing state;
+- display failures;
+- prevent duplicate submissions where appropriate;
+- preserve useful conversation/history if backend supports it.
+
+AI Mentor does not bypass authorization or canonical project services.
+
+---
+
+## S30 — Help Requests
+
+Students can:
+
+- view requests;
+- create a request;
+- inspect status;
+- follow responses.
+
+State model may include:
+
+```text
+Draft
+→ Submitted
+→ Acknowledged
+→ In Progress
+→ Resolved
+→ Closed
+```
+
+Exact backend states remain authoritative.
+
+---
+
+## S31 — Mentor Notes / Mentor Feedback
+
+Student-facing representation of mentor-provided feedback.
+
+Differentiate:
+
+- note;
+- actionable feedback;
+- status/change request;
+- private mentor information if applicable.
+
+Never leak mentor-private content.
+
+---
+
+# 17. Project Change Workflow
+
+## S32 — Project Change / Impact Review
+
+**Route:** `/student/projects/:projectId/changes`
+
+### Workflow
+
+```text
+Change Requested
+      ↓
+Impact Analysis
+      ↓
+Impact Review
+      ↓
+Regeneration
+      ↓
+Validation / QA
+      ↓
+Persisted Change
+```
+
+The frontend must show the current stage.
+
+### Impact review
+
+Clearly show:
+
+- proposed change;
+- affected project areas;
+- affected tasks;
+- affected milestones;
+- affected documents;
+- affected technology/features where relevant;
+- user action required.
+
+---
+
+## S33 — Project Change Review / Regeneration Result
+
+**Route:** `/student/projects/:projectId/changes/:changeId`
+
+Shows:
+
+- request;
+- impact analysis;
+- regeneration state;
+- QA/validation;
+- final diff/summary where supported;
+- acceptance/rejection state.
+
+No silent mutation occurs.
+
+---
+
+# 18. Mentor / SUPERVISE Specification
+
+## M01 — Mentor Overview
+
+**Route:** `/mentor/overview`
+
+High-level supervision instrument.
+
+Must answer:
+
+- Which groups need attention?
+- Which students are at risk?
+- Which projects changed?
+- Which help requests need attention?
+- What activity is recent?
+- Which AI/background events matter?
+
+---
+
+## M02 — Groups Directory
+
+List mentor groups.
+
+Support:
+
+- search;
+- filtering;
+- group health;
+- student count;
+- project count;
+- activity.
+
+---
+
+## M03 — Group Creation
+
+**Route:** `/mentor/groups/new`
+
+Workflow/form:
+
+```text
+Input
+→ Validate
+→ Submit
+→ Confirm
+```
+
+Permission must be enforced server-side.
+
+---
+
+## M04 — Group Workspace
+
+**Route:** `/mentor/groups/:groupId`
+
+Core regions:
+
+- group summary;
+- students;
+- projects;
+- at-risk signals;
+- activity;
+- AI Mentor.
+
+---
+
+## M05 — Group Students View
+
+Shows students belonging to the group.
+
+---
+
+## M06 — Group Projects View
+
+Shows projects associated with the group.
+
+---
+
+## M07 — Group At-Risk View
+
+Focuses on:
+
+- risk;
+- inactivity;
+- blocked tasks;
+- overdue milestones;
+- unresolved help requests;
+- project health.
+
+Avoid implying a student is personally deficient; represent project/system signals accurately.
+
+---
+
+## M08 — Group Activity
+
+Chronological group activity.
+
+---
+
+## M09 — Group AI Mentor
+
+Contextual AI support for mentor supervision.
+
+It must respect mentor permissions and group scope.
+
+---
+
+## M10 — Students Directory
+
+Mentor-accessible students.
+
+Use dense table/list patterns.
+
+---
+
+## M11 — Student Detail
+
+Displays:
+
+- student context;
+- groups;
+- projects;
+- health;
+- activity;
+- mentor notes;
+- help requests.
+
+---
+
+## M12 — Student Projects
+
+Student-specific project list.
+
+---
+
+## M13 — Student Activity
+
+Chronological student activity visible to the mentor.
+
+---
+
+## M14 — Student Mentor Notes
+
+Mentor note management.
+
+Actions:
+
+- create;
+- edit where permitted;
+- archive/delete where permitted;
+- inspect history where supported.
+
+---
+
+## M15 — Student Help Requests
+
+Mentor response surface for student requests.
+
+---
+
+## M16 — Projects Directory
+
+Mentor project-instance overview.
+
+---
+
+## M17 — Project Definitions
+
+List mentor-authored definitions.
+
+Distinguish definitions from student instances.
+
+---
+
+## M18 — Project Definition Detail
+
+Displays:
+
+- purpose;
+- scope;
+- technology;
+- features;
+- specification;
+- requirements;
+- assignments;
+- version/change context.
+
+---
+
+## M19 — Create Project Definition
+
+Creation workflow.
+
+The UI should validate structure before submission but backend validation is authoritative.
+
+---
+
+## M20 — Edit Project Definition
+
+Editing a definition must not mutate student instances.
+
+If a definition update has downstream implications, expose the impact/notification behavior.
+
+---
+
+## M21 — Definition Assignment View
+
+Shows:
+
+- assigned students/groups;
+- assignment state;
+- available actions.
+
+---
+
+## M22 — Student Project Instances
+
+Mentor view of actual student project instances.
+
+---
+
+## M23 — Student Project Instance Detail
+
+Mentor's project-level supervision view.
+
+Contains:
+
+- lifecycle;
+- health;
+- progress;
+- blueprint;
+- tasks;
+- milestones;
+- risks;
+- documents;
+- GitHub;
+- activity;
+- mentor intervention surfaces.
+
+---
+
+## M24 — Instance Blueprint
+
+Mentor-readable blueprint representation.
+
+---
+
+## M25 — Instance Tasks
+
+Mentor task supervision.
+
+Actions depend on permission.
+
+---
+
+## M26 — Instance Milestones
+
+Mentor milestone supervision.
+
+---
+
+## M27 — Instance Risks
+
+Mentor risk supervision.
+
+---
+
+## M28 — Instance Documents
+
+Mentor document access subject to authorization.
+
+---
+
+## M29 — Instance GitHub
+
+Mentor GitHub/project integration visibility.
+
+Never expose secrets.
+
+---
+
+## M30 — Instance Activity
+
+Project event history.
+
+---
+
+## M31 — At Risk Directory
+
+Cross-student/project risk directory.
+
+Prioritize high-signal intervention information.
+
+---
+
+## M32 — At Risk Detail
+
+Displays why an item is considered at risk, using evidence-backed project signals.
+
+---
+
+## M33 — Mentor Help Requests
+
+Mentor-level help request queue.
+
+---
+
+## M34 — Mentor Notes
+
+Mentor's note management workspace.
+
+---
+
+## M35 — Mentor Activity
+
+Mentor-facing activity stream.
+
+---
+
+## M36 — Mentor AI
+
+Mentor-wide AI assistance.
+
+Must respect:
+
+- mentor authorization;
+- student privacy;
+- group boundaries;
+- project scope.
+
+---
+
+# 19. Admin / GOVERN Specification
+
+Admin is an operational governance workplace, not a normal project-management dashboard.
+
+## AD01 — Admin Overview
+
+Shows:
+
+- platform health;
+- user counts;
+- groups/projects;
+- AI activity;
+- cost/usage;
+- system status;
+- security/audit alerts;
+- document/RAG status.
+
+---
+
+## AD02 — Mentor Directory
+
+Operational mentor directory.
+
+---
+
+## AD03 — Mentor Detail
+
+Shows administrative mentor information and authorized operational state.
+
+---
+
+## AD04 — Student Directory
+
+Administrative student directory.
+
+---
+
+## AD05 — Student Detail
+
+Administrative student inspection surface.
+
+---
+
+## AD06 — Groups Directory
+
+Platform-level groups.
+
+---
+
+## AD07 — Group Detail
+
+Operational group inspection.
+
+---
+
+## AD08 — Projects Directory
+
+Platform project inventory.
+
+---
+
+## AD09 — Project Definition Monitoring
+
+Monitor definitions without confusing them with instances.
+
+---
+
+## AD10 — Student Project Instance Monitoring
+
+Platform-level project-instance monitoring.
+
+---
+
+# 20. AI Observatory
+
+## AD11 — AI Observatory Overview
+
+High-level AI operations view.
+
+Show:
+
+- executions;
+- success/failure;
+- latency;
+- usage;
+- quality;
+- provider/gateway state where appropriate;
+- system-level trends.
+
+---
+
+## AD12 — AI Usage
+
+Usage by meaningful dimensions:
+
+- time;
+- model/provider abstraction;
+- agent;
+- project;
+- execution;
+- role where authorized.
+
+---
+
+## AD13 — Agent Executions
+
+List logical agent executions.
+
+Useful fields:
+
+- execution ID;
+- agent;
+- project;
+- status;
+- start/end;
+- duration;
+- outcome;
+- token/cost metadata where authorized.
+
+---
+
+## AD14 — AI Trace Detail
+
+Level 3 engineering/observability surface.
+
+Must support:
+
+- execution identity;
+- lifecycle;
+- agent sequence;
+- tools;
+- structured inputs/outputs where permitted;
+- validation;
+- QA/Judge;
+- failures;
+- timing;
+- provider gateway metadata;
+- correlation IDs.
+
+Sensitive information must be redacted according to backend policy.
+
+---
+
+## AD15 — AI Quality
+
+Display quality metrics and QA/Judge outcomes.
+
+Do not present quality metrics without clear definitions.
+
+---
+
+# 21. Cost & Usage
+
+## AD16 — Cost & Usage Overview
+
+Show:
+
+- aggregate usage;
+- cost;
+- trends;
+- major cost drivers;
+- threshold/alert states.
+
+---
+
+## AD17 — Cost Breakdown
+
+Break down by relevant dimensions such as:
+
+- agent;
+- model/provider abstraction;
+- project;
+- time;
+- execution.
+
+---
+
+## AD18 — API Key Pool Monitoring
+
+Monitor provider-key pool health without exposing secret key values.
+
+Display:
+
+- key identity alias;
+- status;
+- usage;
+- rate/health signals;
+- failure state.
+
+---
+
+# 22. System Health
+
+## AD19 — System Health Overview
+
+System health instrument.
+
+Components may include:
+
+- API;
+- database;
+- AI gateway;
+- background jobs;
+- event delivery;
+- document processing;
+- RAG;
+- external integrations.
+
+---
+
+## AD20 — System Component Detail
+
+Shows:
+
+- component status;
+- health checks;
+- recent failures;
+- latency;
+- dependency signals;
+- incident context.
+
+---
+
+# 23. Documents & RAG
+
+## AD21 — Documents & RAG Overview
+
+High-level document and RAG operational status.
+
+---
+
+## AD22 — RAG Monitoring
+
+Show:
+
+- processing state;
+- indexing state;
+- failures;
+- rebuild state;
+- project association;
+- timestamps.
+
+RAG remains derived state.
+
+---
+
+## AD23 — Document Generation Monitoring
+
+Monitor document jobs:
+
+```text
+Queued
+→ Processing
+→ Generated
+→ Validated
+→ Failed
+```
+
+The frontend should provide enough information to distinguish a queued job from a failed job.
+
+---
+
+# 24. Security & Audit
+
+## AD24 — Security & Audit Overview
+
+Shows:
+
+- security events;
+- audit activity;
+- investigation requests;
+- suspicious/error signals where defined.
+
+---
+
+## AD25 — Audit Log
+
+Dense operational table.
+
+Support:
+
+- time;
+- actor;
+- action;
+- resource;
+- outcome;
+- correlation/reference;
+- filters.
+
+---
+
+## AD26 — Investigation Requests
+
+List controlled investigation requests.
+
+---
+
+## AD27 — Investigation Detail / Inspection
+
+High-sensitivity surface.
+
+Must enforce:
+
+- explicit authorization;
+- auditability;
+- controlled access;
+- redaction;
+- no unauthorized impersonation.
+
+Admin investigation does not imply user impersonation.
+
+---
+
+# 25. Platform Analytics
+
+## AD28 — Platform Analytics
+
+High-level platform analytics.
+
+---
+
+## AD29 — Platform Analytics Detail
+
+Detailed analytical drill-down.
+
+Charts must be decision-useful, not decorative.
+
+---
+
+# 26. System-State Specification
+
+## SYS01 — 404
+
+Resource/page not found.
+
+Provide:
+
+- clear explanation;
+- safe navigation;
+- return action.
+
+Do not expose unnecessary backend details.
+
+---
+
+## SYS02 — 403
+
+Authenticated but not authorized.
+
+Explain that access is not permitted without leaking sensitive resource existence.
+
+---
+
+## SYS03 — 401
+
+Authentication/session issue.
+
+Provide:
+
+- sign-in/re-authentication action;
+- safe return-to context.
+
+---
+
+## SYS04 — Suspended / Inactive Account
+
+Clearly distinguish inactive/suspended state from generic failure.
+
+Provide appropriate support/recovery route.
+
+---
+
+## SYS05 — Generic Application Error
+
+Unexpected frontend/application failure.
+
+Provide:
+
+- clear message;
+- retry;
+- safe navigation;
+- reference ID where appropriate.
+
+---
+
+## SYS06 — Network/API Failure
+
+Distinguish:
+
+- offline/network;
+- API unavailable;
+- timeout;
+- request failure.
+
+Where safe, allow retry.
+
+---
+
+## SYS07 — AI Service Unavailable
+
+Clearly indicate that AI functionality is unavailable.
+
+Do not imply the whole application is down if only AI is affected.
+
+---
+
+## SYS08 — AI Execution Failed
+
+Show:
+
+- failed stage;
+- safe summary;
+- retry/recovery action where supported;
+- execution reference where useful.
+
+---
+
+## SYS09 — AI Execution In Progress
+
+Show:
+
+- active processing;
+- current state;
+- progress if authoritative;
+- navigation safety;
+- notification expectation.
+
+---
+
+## SYS10 — RAG / Document Processing State
+
+Show processing states clearly:
+
+```text
+Queued
+→ Processing
+→ Completed
+```
+
+or:
+
+```text
+Queued
+→ Processing
+→ Failed
+```
+
+---
+
+# 27. API Integration Contract
+
+## 27.1 Boundary
+
+```text
+UI
+ ↓
+Feature/Data Layer
+ ↓
+API Client
+ ↓
+FastAPI
+ ↓
+Application Services
+ ↓
+Canonical Domain Services
+ ↓
+Database / External Systems
+```
+
+The frontend must not bypass this boundary.
+
+---
+
+## 27.2 API client responsibilities
+
+The API client should centralize:
+
+- base configuration;
+- authentication;
+- request serialization;
+- response parsing;
+- error normalization;
+- correlation/request metadata where required;
+- retry policy where appropriate.
+
+---
+
+## 27.3 API errors
+
+Frontend should normalize backend errors into categories such as:
+
+- authentication;
+- authorization;
+- validation;
+- not found;
+- conflict;
+- rate limit;
+- server error;
+- network;
+- timeout;
+- asynchronous job failure.
+
+Exact backend codes remain authoritative.
+
+---
+
+## 27.4 Mutation lifecycle
+
+```text
+Idle
+→ Submitting
+→ Server Confirmed
+→ Reconcile
+```
+
+Failure:
+
+```text
+Submitting
+→ Failed
+→ Retry / Correct
+```
+
+Optimistic UI is allowed only where the operation is safe and rollback is well-defined.
+
+Canonical state must ultimately be confirmed by the backend.
+
+---
+
+# 28. SSE / Event Architecture
+
+## 28.1 SSE lifecycle
+
+```text
+Connect
+ ↓
+Authenticate
+ ↓
+Subscribe
+ ↓
+Receive Event
+ ↓
+Validate Event
+ ↓
+Update Streaming State
+ ↓
+Invalidate / Reconcile Server State
+ ↓
+Render
+```
+
+---
+
+## 28.2 Required behaviors
+
+The frontend must handle:
+
+- initial connection;
+- authentication;
+- disconnect;
+- reconnect;
+- duplicate events;
+- stale events;
+- malformed events;
+- ordering concerns;
+- terminal events;
+- background completion.
+
+---
+
+## 28.3 Reconciliation
+
+SSE is not the canonical database.
+
+After an important event:
+
+1. update immediate streaming UI;
+2. invalidate/re-fetch relevant server state;
+3. render canonical response.
+
+---
+
+## 28.4 Leaving a page during AI execution
+
+Allowed and expected.
+
+The background job continues server-side.
+
+On return:
+
+- fetch current state;
+- inspect execution status;
+- show completion/failure;
+- reconcile documents/project state.
+
+---
+
+# 29. AI Frontend Contract
+
+## 29.1 AI states
+
+At minimum:
+
+```text
+Not Started
+Queued
+Running
+Validating
+QA / Judge
+Completed
+Failed
+Cancelled
+```
+
+Use only states actually returned/supported by the backend.
+
+---
+
+## 29.2 AI progress
+
+Progress can be:
+
+- stage-based;
+- percentage-based;
+- event-based.
+
+Never fabricate a percentage.
+
+If exact progress is unavailable, use stage/status language.
+
+---
+
+## 29.3 AI output
+
+AI output must be rendered as structured application data where structured output exists.
+
+Do not make raw model text the canonical domain object.
+
+---
+
+## 29.4 AI failure
+
+AI failures should be:
+
+- understandable;
+- actionable;
+- non-sensitive;
+- traceable where authorized.
+
+Do not expose provider secrets or internal sensitive traces.
+
+---
+
+# 30. Forms
+
+All forms use:
+
+```text
+Idle
+→ Editing
+→ Validating
+→ Submitting
+→ Success / Error
+```
+
+### Requirements
+
+- field-level validation;
+- form-level validation;
+- accessible errors;
+- submit loading state;
+- duplicate-submit protection;
+- server error mapping;
+- preservation of valid user input after recoverable failure.
+
+---
+
+# 31. Permissions Model
+
+Permission must be thought of in three layers.
+
+## 31.1 Visibility
+
+Should the user see that something exists?
+
+## 31.2 Accessibility
+
+Can the user open it?
+
+## 31.3 Action authorization
+
+Can the user perform the requested operation?
+
+These are not interchangeable.
+
+Example:
+
+A mentor may see a project in a directory but not necessarily edit every project property.
+
+Backend authorization remains authoritative.
+
+---
+
+# 32. Security Rules
+
+The frontend must:
+
+- never contain secret provider API keys;
+- never expose passwords/tokens unnecessarily;
+- never trust client-only authorization;
+- never assume role from URL alone;
+- never bypass backend authorization;
+- never reveal unauthorized resources through search;
+- never expose private mentor/admin data;
+- never expose GitHub secrets;
+- avoid unsafe rendering of untrusted content;
+- sanitize/escape rendered user-generated content according to implementation framework;
+- treat document content and AI output as untrusted input where appropriate;
+- avoid leaking sensitive identifiers in error messages;
+- use secure authentication/session handling supplied by the chosen auth architecture.
+
+---
+
+# 33. Responsive Specification
+
+Every page must be designed for:
+
+1. Desktop.
+2. Tablet.
+3. Mobile.
+
+## 33.1 Desktop
+
+Prioritize:
+
+- information density;
+- multi-column layouts;
+- persistent navigation;
+- data tables;
+- dashboards;
+- side-by-side context.
+
+## 33.2 Tablet
+
+Prioritize:
+
+- collapsible navigation;
+- reduced columns;
+- stacked secondary content;
+- readable tables.
+
+## 33.3 Mobile
+
+Prioritize:
+
+- primary action;
+- primary information;
+- single-column flow;
+- drawer navigation;
+- scrollable or transformed tables;
+- bottom/inline actions where appropriate.
+
+Never simply shrink a desktop layout until text becomes unusable.
+
+---
+
+# 34. Accessibility
+
+Accessibility is part of implementation, not a later polish phase.
+
+Every page/component must support:
+
+- keyboard navigation;
+- visible focus;
+- semantic HTML;
+- accessible labels;
+- form error association;
+- appropriate ARIA only when necessary;
+- sufficient contrast;
+- meaningful status announcements;
+- screen-reader-compatible dialogs/drawers;
+- reduced-motion preference;
+- logical heading hierarchy.
+
+## Dynamic state announcements
+
+Important events such as:
+
+- save success;
+- validation error;
+- AI completion;
+- AI failure;
+- network failure
+
+must be communicated accessibly.
+
+---
+
+# 35. Observability
+
+Frontend observability should cover:
+
+## Navigation
+
+- route load performance;
+- route transition timing;
+- failed route loads.
+
+## API
+
+- latency;
+- error category;
+- timeout;
+- failed mutations.
+
+## AI
+
+- execution UI failures;
+- stale execution display;
+- streaming disconnect;
+- failed reconciliation.
+
+## UX-critical workflows
+
+Monitor failures in:
+
+- authentication;
+- project creation;
+- assessment;
+- blueprint generation;
+- blueprint approval;
+- project changes;
+- document generation;
+- GitHub connection;
+- help requests.
+
+Do not capture sensitive user content merely for observability.
+
+---
+
+# 36. Performance
+
+## 36.1 Initial load
+
+Optimize:
+
+- critical assets;
+- JavaScript size;
+- fonts;
+- images;
+- above-the-fold rendering.
+
+## 36.2 Route loading
+
+Use appropriate code splitting/lazy loading for large workplace areas.
+
+Admin observability pages should not unnecessarily inflate public/student bundles.
+
+## 36.3 Tables
+
+For large datasets use appropriate:
+
+- pagination;
+- virtualization;
+- server-side filtering;
+- server-side sorting.
+
+## 36.4 Images
+
+Use:
+
+- appropriate dimensions;
+- modern formats where supported;
+- lazy loading;
+- meaningful alt text.
+
+## 36.5 Charts
+
+Charts must not become a major performance bottleneck.
+
+## 36.6 SSE
+
+Avoid unnecessary simultaneous connections.
+
+Connection ownership should follow authenticated application/session needs rather than every component opening its own connection.
+
+---
+
+# 37. Error-Boundary Strategy
+
+Recommended hierarchy:
+
+```text
+Application Boundary
+    ↓
+Role Boundary
+    ↓
+Feature Boundary
+    ↓
+Page Boundary
+    ↓
+Component Boundary
+```
+
+A failure in one feature should not unnecessarily crash the entire authenticated workplace.
+
+---
+
+# 38. Loading / Empty / Error / Success Rules
+
+Every data-dependent surface must explicitly define:
+
+### Loading
+
+Use skeletons/placeholders that preserve layout where possible.
+
+### Empty
+
+Explain:
+
+- what is empty;
+- why it may be empty;
+- what action can create/populate it.
+
+### Error
+
+Explain:
+
+- what failed;
+- whether retry is safe;
+- what the user can do next.
+
+### Success
+
+Confirm meaningful mutations without excessive toast spam.
+
+### Processing
+
+For background operations, distinguish:
+
+```text
+Not started
+Queued
+Processing
+Completed
+Failed
+```
+
+Do not use an indefinite generic spinner for long-running workflows.
+
+---
+
+# 39. Search Contract
+
+Global search:
+
+- role-aware;
+- permission-aware;
+- debounced where appropriate;
+- supports keyboard interaction;
+- supports result categories;
+- preserves deep links;
+- handles no results;
+- handles loading;
+- handles network failure.
+
+Search results must be generated from authorized backend data.
+
+---
+
+# 40. Notifications Contract
+
+Notification lifecycle:
+
+```text
+Generated
+→ Delivered
+→ Seen
+→ Read
+```
+
+Exact states depend on backend implementation.
+
+Important asynchronous notifications should deep-link to the canonical resource/workflow.
+
+Examples:
+
+- blueprint completed;
+- blueprint failed;
+- document generated;
+- project change requires review;
+- mentor feedback received;
+- help request updated;
+- project risk changed.
+
+---
+
+# 41. Activity Contract
+
+Activity is a derived representation of events.
+
+Each item should distinguish:
+
+- human actor;
+- system action;
+- AI action where relevant;
+- timestamp;
+- resource.
+
+Activity must not be treated as the canonical source for domain state.
+
+---
+
+# 42. Project Health Presentation
+
+Health is a derived signal.
+
+The frontend should present:
+
+- overall health;
+- contributing signals;
+- trend where available;
+- actionable context.
+
+Avoid arbitrary visual scores with no definition.
+
+If a health calculation exists on the backend, display the canonical value and supporting signals rather than recomputing a different score.
+
+---
+
+# 43. Project Lifecycle Presentation
+
+Lifecycle should be consistent everywhere.
+
+```text
+IDEA
+ASSESSMENT
+BLUEPRINT
+PLANNING
+IMPLEMENTATION
+TESTING
+DEPLOYMENT
+COMPLETED
+```
+
+The current lifecycle stage should be visually recognizable without relying only on color.
+
+---
+
+# 44. Project Information Hierarchy
+
+The frontend should progressively reveal information:
+
+```text
+Project
+ ├── Lifecycle
+ ├── Health
+ ├── Progress
+ ├── Phase
+ ├── Milestones
+ │    └── Tasks
+ ├── Risks
+ ├── Documents
+ ├── Activity
+ └── Integrations
+```
+
+This hierarchy should remain coherent across Student and Mentor workspaces.
+
+---
+
+# 45. Modal / Drawer / Page / Workflow Rules
+
+## Full page
+
+Use for:
+
+- major destinations;
+- substantial information;
+- resource detail;
+- primary workflows.
+
+## Nested route / view
+
+Use for:
+
+- closely related resource representations;
+- project workspace sections.
+
+## Modal
+
+Use for:
+
+- short focused actions;
+- confirmation;
+- small edits.
+
+Examples:
+
+- Create Task;
+- Edit Task;
+- Add Risk;
+- Confirm Delete;
+- Assign Student.
+
+## Drawer
+
+Use for:
+
+- contextual secondary information;
+- mobile navigation;
+- notification preview;
+- quick details;
+- filters.
+
+## Workflow
+
+Use for:
+
+- multi-stage;
+- long-running;
+- resumable;
+- high-consequence operations.
+
+Examples:
+
+- project creation;
+- assessment;
+- blueprint generation;
+- project changes;
+- admin investigations.
+
+---
+
+# 46. Complex Workflow Level 3 Specification
+
+The following receive deeper engineering documentation during implementation:
+
+1. Authentication + role resolution.
+2. Student project creation.
+3. Assessment.
+4. Blueprint generation.
+5. Blueprint QA/approval.
+6. Project change/impact analysis.
+7. AI Mentor.
+8. Document generation.
+9. RAG processing.
+10. SSE/reconnection.
+11. Admin AI Trace.
+12. Investigation workflow.
+13. GitHub integration.
+
+Level 3 documentation must define:
+
+- state machine;
+- events;
+- transitions;
+- API calls;
+- optimistic/confirmed behavior;
+- failure recovery;
+- navigation behavior;
+- cancellation rules;
+- reconnect behavior;
+- permission checks;
+- audit implications.
+
+---
+
+# 47. Testing Strategy
+
+## 47.1 Unit tests
+
+Test:
+
+- pure formatting;
+- state transformations;
+- permission helpers;
+- route helpers;
+- data normalization;
+- validation.
+
+## 47.2 Component tests
+
+Test:
+
+- controls;
+- forms;
+- tables;
+- modals;
+- drawers;
+- lifecycle indicators;
+- AI states;
+- error states.
+
+## 47.3 Integration tests
+
+Test:
+
+- page + API layer;
+- authentication;
+- server-state reconciliation;
+- mutations;
+- SSE;
+- feature workflows.
+
+## 47.4 E2E tests
+
+Critical V1 paths:
+
+### Authentication
+
+```text
+Student login
+Mentor login
+Admin protected entry
+Recovery
+```
+
+### Student
+
+```text
+Create project
+Assessment
+Blueprint generation
+Blueprint approval
+Tasks
+Milestones
+Project change
+```
+
+### Mentor
+
+```text
+Create group
+View student
+Inspect project
+Respond to help request
+Edit definition
+```
+
+### Admin
+
+```text
+Inspect platform
+Inspect AI execution
+Inspect system health
+Inspect audit
+Inspect cost/usage
+```
+
+---
+
+# 48. Critical Acceptance Scenarios
+
+The frontend is not considered complete if these fail:
+
+1. User can enter the correct workplace.
+2. Unauthorized workplace access is blocked.
+3. Separate Login and Sign Up behave correctly.
+4. Deep links survive authentication.
+5. Student can reach project workspace.
+6. Project lifecycle is represented consistently.
+7. Assessment can complete.
+8. Blueprint generation can show queued/running/completed/failed states.
+9. Leaving the page does not kill background AI work.
+10. Returning to a project reconciles current job state.
+11. Mentor can distinguish Project Definitions from Project Instances.
+12. Definition edits do not silently change instances.
+13. Project changes show impact before mutation.
+14. Notifications deep-link correctly.
+15. Search respects authorization.
+16. Admin AI Trace does not expose unauthorized sensitive information.
+17. Mobile navigation remains usable.
+18. Keyboard navigation works for critical workflows.
+19. API failures have recoverable UI.
+20. SSE disconnect/reconnect does not leave permanently stale state.
+
+---
+
+# 49. Frontend Implementation Rules
+
+## Rule 01 — Backend is authoritative
+
+Never treat client state as canonical domain state.
+
+## Rule 02 — No silent architecture changes
+
+Do not alter frozen architecture without explicit phase review.
+
+## Rule 03 — One design system
+
+All roles share the same visual system.
+
+## Rule 04 — No role-specific color themes
+
+Role identity is communicated through content and navigation.
+
+## Rule 05 — AI is native, not decorative
+
+AI interfaces must communicate real state.
+
+## Rule 06 — No fake AI progress
+
+Never invent percentages or execution stages.
+
+## Rule 07 — Long-running work is persistent
+
+Browser navigation must not terminate server jobs.
+
+## Rule 08 — SSE is transport
+
+SSE does not become the source of truth.
+
+## Rule 09 — Reconcile after events
+
+Important events trigger server-state reconciliation.
+
+## Rule 10 — Permission is backend-controlled
+
+Frontend checks are UX protection, not security.
+
+## Rule 11 — Search is authorization-aware
+
+Never show inaccessible results.
+
+## Rule 12 — Project Definition and Instance remain separate
+
+No UI shortcut may collapse them.
+
+## Rule 13 — Use route identity correctly
+
+Resource identity belongs in routes.
+
+## Rule 14 — Use query parameters correctly
+
+Filtering/view state belongs in query parameters.
+
+## Rule 15 — Avoid card overload
+
+Grouping must have semantic value.
+
+## Rule 16 — Avoid visual noise
+
+Nothing should scream; hierarchy must still exist.
+
+## Rule 17 — Accessibility is mandatory
+
+Do not defer keyboard/semantic/accessibility work.
+
+## Rule 18 — Responsive behavior is structural
+
+Do not merely shrink desktop interfaces.
+
+## Rule 19 — Errors are product states
+
+Do not hide errors behind console logs.
+
+## Rule 20 — Empty states are intentional
+
+An empty list is not automatically an error.
+
+## Rule 21 — Loading must preserve context
+
+Avoid layout jumps when practical.
+
+## Rule 22 — Mutation confirmation matters
+
+Canonical mutations must reconcile with server state.
+
+## Rule 23 — Sensitive information is minimized
+
+Only show what the role and operation require.
+
+## Rule 24 — No direct provider integration
+
+All AI access goes through the backend architecture.
+
+## Rule 25 — No frontend secrets
+
+No provider/API secrets in client bundles.
+
+## Rule 26 — No unnecessary global state
+
+Keep state as local as possible.
+
+## Rule 27 — Domain components should be reusable
+
+Do not duplicate project/task/milestone/risk representations unnecessarily.
+
+## Rule 28 — Observability must respect privacy
+
+Do not log sensitive user or project content without justification.
+
+## Rule 29 — Charts must answer questions
+
+No decorative analytics.
+
+## Rule 30 — Motion must have purpose
+
+No animation for animation's sake.
+
+## Rule 31 — Reduced motion must work
+
+Functional meaning must survive reduced motion.
+
+## Rule 32 — Deep links must be first-class
+
+Pages should survive refresh and direct navigation.
+
+## Rule 33 — Back navigation should be meaningful
+
+Avoid workflows that destroy user context unnecessarily.
+
+## Rule 34 — Preserve user input after recoverable errors
+
+Do not make users retype everything.
+
+## Rule 35 — Prevent accidental duplicate actions
+
+Especially for:
+
+- submissions;
+- generation;
+- destructive operations.
+
+## Rule 36 — Confirm destructive actions
+
+Use clear confirmation where consequences are meaningful.
+
+## Rule 37 — Do not expose internal implementation unnecessarily
+
+Users need meaningful system state, not internal framework details.
+
+## Rule 38 — Keep public and workplace experiences distinct
+
+Public can be expressive; authenticated workspaces prioritize productivity.
+
+## Rule 39 — Use contextual imagery
+
+Avoid generic stock-heavy product storytelling.
+
+## Rule 40 — Maintain visual consistency
+
+Typography, spacing, radii, iconography, status semantics, and surfaces must remain coherent.
+
+---
+
+# 50. Anti-Patterns Explicitly Rejected
+
+The following are not part of the GrowFlow V1 design direction:
+
+- generic SaaS template appearance;
+- excessive glassmorphism;
+- neon AI interfaces;
+- rainbow role themes;
+- card-everything dashboards;
+- excessive shadows;
+- giant pills everywhere;
+- unnecessary gradients;
+- decorative charts;
+- animated background noise;
+- fake AI typing;
+- excessive parallax;
+- stock-heavy storytelling;
+- unreadably small metadata;
+- inconsistent icon families;
+- inconsistent radii;
+- dark mode as simple inversion;
+- arbitrary frontend-calculated business truth;
+- direct browser-to-AI-provider calls;
+- browser-owned long-running AI jobs;
+- unauthorized role switching;
+- impersonation as a normal admin feature.
+
+---
+
+# 51. Documentation Structure for the Frontend Workspace
+
+The implementation documentation should be organized as:
+
+```text
+GROWFLOW FRONTEND DOCUMENTATION
+│
+├── 00_MASTER_INDEX
+├── 01_FRONTEND_ARCHITECTURE
+├── 02_APPLICATION_SHELL
+├── 03_DESIGN_SYSTEM_IMPLEMENTATION
+├── 04_GLOBAL_COMPONENTS
+├── 05_PUBLIC_WEBSITE
+├── 06_AUTHENTICATION_ONBOARDING
+├── 07_SHARED_AUTHENTICATED
+├── 08_STUDENT_BUILD
+├── 09_MENTOR_SUPERVISE
+├── 10_ADMIN_GOVERN
+├── 11_SYSTEM_STATES
+├── 12_FRONTEND_API_CONTRACTS
+├── 13_AI_STREAMING_EVENTS
+├── 14_RESPONSIVE_ACCESSIBILITY
+├── 15_SECURITY_PERMISSIONS
+├── 16_TESTING
+└── 17_IMPLEMENTATION_RULES
+```
+
+The files may later be split into multiple implementation documents without changing the frozen contract.
+
+---
+
+# 52. Phase 01 → Phase 04 Traceability
+
+Every Phase 01 page/surface has a Phase 04 home.
+
+| Phase 01 Area | Phase 04 Coverage |
+|---|---|
+| P01–P04 | Public Website |
+| A01–A09 | Authentication & Onboarding |
+| X01–X05 | Shared Authenticated |
+| S01–S14 | Student Core + Assessment + Blueprint |
+| S15–S33 | Student Project Workspace + Change Workflow |
+| M01–M36 | Mentor / SUPERVISE |
+| AD01–AD29 | Admin / GOVERN |
+| SYS01–SYS10 | System States |
+
+No Phase 01 surface is silently removed.
+
+P05 Public Project / Architecture Showcase remains a future/optional surface and, according to the earlier decision, its V1 storytelling is folded into Landing/Documentation rather than requiring a separate `/showcase` route.
+
+---
+
+# 53. Phase 02 → Phase 04 Traceability
+
+Phase 04 preserves:
+
+- unified global top navigation;
+- Workplace selector;
+- BUILD / SUPERVISE / GOVERN;
+- separate Login and Sign Up;
+- role-specific authentication routes;
+- protected Admin entry;
+- Profile;
+- Settings;
+- role-specific sidebars;
+- nested project workspace;
+- resource IDs in routes;
+- query parameters for filters/view state;
+- canonical notification deep links;
+- canonical share URLs;
+- mobile sidebar drawer;
+- 401/403/404 separation;
+- persistent asynchronous workflows.
+
+---
+
+# 54. Phase 03 → Phase 04 Traceability
+
+Phase 04 implements the Phase 03 visual direction:
+
+| Frozen Direction | Frontend Implementation |
+|---|---|
+| Soft Intelligence | Calm, precise, restrained visual language |
+| Warm light | Default warm/soft-white surfaces |
+| Soft charcoal | Dark counterpart |
+| One system | Shared components across roles |
+| Manrope-style | Unified typography direction |
+| Muted color | Restrained palette |
+| One accent | Subtle primary accent |
+| Quiet cards | Semantic grouping only |
+| Dense tables | Operational data interfaces |
+| Editorial imagery | Public storytelling |
+| Deeper AI | Distinct but native AI layer |
+| Distinct login | Composition differs, system remains shared |
+| Visual dashboards | Information instruments |
+| Statement hero | Public landing experience |
+| Float → Settle | Public scroll interaction |
+| Subtle physical motion | Controlled motion |
+| No role themes | Shared visual identity |
+| Same light/dark identity | Surface transformation, not inversion |
+| Nothing screams | Hierarchy through composition, not noise |
+
+---
+
+# 55. V1 Frontend Definition of Done
+
+Phase 04 frontend implementation is complete only when:
+
+### Architecture
+
+- [ ] frontend layers are respected;
+- [ ] API boundary is centralized;
+- [ ] state ownership is explicit;
+- [ ] no canonical business state is client-owned.
+
+### Navigation
+
+- [ ] global navigation works;
+- [ ] Workplace selector works;
+- [ ] role-specific sidebars work;
+- [ ] deep links work;
+- [ ] refresh works;
+- [ ] back navigation is meaningful.
+
+### Authentication
+
+- [ ] student login works;
+- [ ] student registration works;
+- [ ] student recovery works;
+- [ ] mentor login works;
+- [ ] mentor registration works;
+- [ ] mentor recovery works;
+- [ ] protected admin entry works;
+- [ ] 401/403 behavior is distinct;
+- [ ] return-to navigation works.
+
+### Student
+
+- [ ] dashboard;
+- [ ] projects;
+- [ ] catalog;
+- [ ] project creation;
+- [ ] assessment;
+- [ ] adaptive assessment;
+- [ ] results;
+- [ ] blueprint generation;
+- [ ] blueprint QA;
+- [ ] project workspace;
+- [ ] tasks;
+- [ ] milestones;
+- [ ] risks;
+- [ ] roadmap;
+- [ ] documents;
+- [ ] GitHub;
+- [ ] activity;
+- [ ] AI Mentor;
+- [ ] help requests;
+- [ ] mentor feedback;
+- [ ] project changes.
+
+### Mentor
+
+- [ ] overview;
+- [ ] groups;
+- [ ] students;
+- [ ] projects;
+- [ ] definitions;
+- [ ] instances;
+- [ ] at-risk;
+- [ ] help requests;
+- [ ] notes;
+- [ ] activity;
+- [ ] AI Mentor.
+
+### Admin
+
+- [ ] overview;
+- [ ] directories;
+- [ ] projects;
+- [ ] AI Observatory;
+- [ ] cost/usage;
+- [ ] API-key monitoring;
+- [ ] system health;
+- [ ] documents/RAG;
+- [ ] security/audit;
+- [ ] investigations;
+- [ ] analytics.
+
+### Async AI
+
+- [ ] queued state;
+- [ ] running state;
+- [ ] validation state;
+- [ ] QA state;
+- [ ] completed state;
+- [ ] failure state;
+- [ ] reconnect;
+- [ ] reconciliation;
+- [ ] notifications.
+
+### UX
+
+- [ ] loading states;
+- [ ] empty states;
+- [ ] error states;
+- [ ] success states;
+- [ ] responsive layouts;
+- [ ] accessibility;
+- [ ] reduced motion;
+- [ ] keyboard interaction.
+
+### Engineering
+
+- [ ] unit tests;
+- [ ] component tests;
+- [ ] integration tests;
+- [ ] E2E critical paths;
+- [ ] observability;
+- [ ] performance checks;
+- [ ] security review.
+
+---
+
+# 56. Phase 04 Freeze Statement
+
+Phase 04 is frozen as the **Frontend Documentation & Implementation Specification** for GrowFlow V1.
+
+The frozen contract establishes:
+
+1. what frontend surfaces exist;
+2. where they live;
+3. how navigation works;
+4. how the application shell behaves;
+5. how the design system is implemented;
+6. how every role's workspace is structured;
+7. how project resources are represented;
+8. how assessment and blueprint workflows operate;
+9. how project changes operate;
+10. how AI execution is represented;
+11. how SSE and background jobs are handled;
+12. how frontend state is divided;
+13. how API integration works;
+14. how permissions are represented;
+15. how security boundaries are respected;
+16. how responsive behavior works;
+17. how accessibility is implemented;
+18. how errors/loading/empty states work;
+19. how observability and performance are handled;
+20. how the frontend is tested;
+21. what implementation patterns are prohibited.
+
+This document is the authoritative frontend specification for V1 unless a later phase explicitly supersedes a particular decision.
+
+---
+
+# 57. Final Phase Sequence
+
+The GrowFlow planning sequence now stands as:
+
+```text
+PHASE 01
+Frontend Page & Screen Inventory
+        ↓
+PHASE 02
+Information Architecture & Navigation
+        ↓
+PHASE 03
+Visual Design System & Experience Direction
+        ↓
+PHASE 04
+Frontend Documentation & Implementation Specification
+        ↓
+PHASE 05
+[Next approved phase]
+```
+
+Phase 04 should not be treated as coding yet.
+
+It is the specification layer that makes subsequent frontend implementation deterministic and reviewable.
+
+---
+
+# Appendix A — Canonical Route Inventory
+
+## Public
+
+```text
+/
+├── features
+├── documentation
+│   └── :slug
+├── contact
+└── auth
+    ├── student
+    │   ├── sign-in
+    │   ├── register
+    │   └── recover
+    └── mentor
+        ├── sign-in
+        ├── register
+        └── recover
+```
+
+## Shared
+
+```text
+/search
+/notifications
+/profile
+/settings
+/settings/profile
+/settings/preferences
+```
+
+## Student
+
+```text
+/student
+├── dashboard
+└── projects
+    ├── catalog
+    │   └── :definitionId
+    ├── new
+    └── :projectId
+        ├── overview
+        ├── assessment
+        │   ├── questions
+        │   ├── adaptive
+        │   ├── completed
+        │   └── result
+        ├── blueprint
+        ├── blueprint/document
+        ├── tasks
+        │   └── :taskId
+        ├── milestones
+        │   └── :milestoneId
+        ├── risks
+        │   └── :riskId
+        ├── roadmap
+        ├── documents
+        │   └── :documentId
+        ├── github
+        ├── activity
+        ├── ai-mentor
+        ├── help-requests
+        ├── mentor-feedback
+        └── changes
+            └── :changeId
+```
+
+## Mentor
+
+```text
+/mentor
+├── overview
+├── groups
+│   ├── new
+│   └── :groupId
+│       ├── students
+│       ├── projects
+│       ├── at-risk
+│       ├── activity
+│       └── ai-mentor
+├── students
+│   └── :studentId
+│       ├── projects
+│       ├── activity
+│       ├── mentor-notes
+│       └── help-requests
+├── projects
+├── project-definitions
+│   ├── new
+│   └── :definitionId
+│       ├── edit
+│       └── assignments
+├── project-instances
+│   └── :instanceId
+│       ├── blueprint
+│       ├── tasks
+│       ├── milestones
+│       ├── risks
+│       ├── documents
+│       ├── github
+│       └── activity
+├── at-risk
+│   └── :entityId
+├── help-requests
+├── activity
+└── ai-mentor
+```
+
+## Admin
+
+```text
+/admin
+├── overview
+├── mentors
+│   └── :mentorId
+├── students
+│   └── :studentId
+├── groups
+│   └── :groupId
+├── projects
+├── project-definitions
+│   └── :definitionId
+├── project-instances
+│   └── :instanceId
+├── ai-observatory
+│   ├── usage
+│   ├── executions
+│   ├── traces
+│   │   └── :traceId
+│   └── quality
+├── cost-usage
+│   ├── overview
+│   ├── breakdown
+│   └── api-keys
+├── system-health
+│   └── components
+│       └── :componentId
+├── documents-rag
+│   ├── rag
+│   └── document-generation
+├── security-audit
+│   ├── audit-log
+│   └── investigations
+│       └── :investigationId
+└── analytics
+    └── platform
+```
+
+## System
+
+```text
+/401
+/403
+/404
+```
+
+Other system states remain contextual unless a later architecture decision makes them route-addressable.
+
+---
+
+# Appendix B — Canonical Frontend State Vocabulary
+
+Use consistent vocabulary.
+
+```text
+idle
+loading
+ready
+empty
+submitting
+processing
+queued
+running
+validating
+qa
+success
+failed
+cancelled
+reconnecting
+offline
+unauthorized
+forbidden
+not_found
+inactive
+```
+
+Do not create multiple synonyms for the same state without a product reason.
+
+---
+
+# Appendix C — Canonical Workflow Vocabulary
+
+## Authentication
+
+```text
+Unauthenticated
+→ Authenticating
+→ Authenticated
+→ Role Resolution
+→ Authorization
+→ Destination Restoration
+```
+
+## Assessment
+
+```text
+Introduction
+→ Question Interface
+→ Adaptive Questions
+→ Completion
+→ Result
+→ Blueprint Generation
+```
+
+## Blueprint
+
+```text
+Not Started
+→ Generating
+→ Generated
+→ Validating
+→ QA / Judge
+→ Approved
+```
+
+## Project Change
+
+```text
+Change Requested
+→ Impact Analysis
+→ Impact Review
+→ Regeneration
+→ Validation / QA
+→ Persisted Change
+```
+
+## Documents
+
+```text
+Queued
+→ Processing
+→ Generated / Completed
+```
+
+## RAG
+
+```text
+Queued
+→ Processing
+→ Indexed / Completed
+```
+
+---
+
+# Appendix D — Final Engineering Principle
+
+The frontend should make GrowFlow feel simple without making the system simple.
+
+The user should experience:
+
+```text
+Clarity
++
+Context
++
+Progress
++
+Trust
++
+Control
+```
+
+while the implementation underneath supports:
+
+```text
+Canonical state
++
+Persistent workflows
++
+AI orchestration
++
+Validation
++
+QA
++
+Authorization
++
+Observability
+```
+
+The frontend's responsibility is to make that complexity legible, actionable, and consistent.
+
+**Phase 04: FROZEN.**

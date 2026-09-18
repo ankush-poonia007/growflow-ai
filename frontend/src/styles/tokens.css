@@ -1,0 +1,294 @@
+/* ==========================================================================
+   GrowFlow Design Tokens
+   Source: Phase 06C Frontend Design Tokens (FROZEN / AUTHORITATIVE)
+   Design System: Soft Intelligence
+   Primary Accent: #6F7F63 (GrowFlow Sage)
+   Default Appearance: Warm Light
+   ========================================================================== */
+
+:root {
+  /* -----------------------------------------------------------------------
+     COLORS — Light Theme (Default)
+     ----------------------------------------------------------------------- */
+
+  /* Backgrounds & Surfaces */
+  --gf-color-bg: #F7F7F4;
+  --gf-color-surface: #FFFFFF;
+  --gf-color-secondary: #F2F2EE;
+  --gf-color-tertiary: #EDEDE8;
+
+  /* Text */
+  --gf-color-text-primary: #1C1C1A;
+  --gf-color-text-secondary: #5F625D;
+  --gf-color-text-tertiary: #858780;
+
+  /* Borders */
+  --gf-color-border-subtle: #E5E5DF;
+  --gf-color-border-standard: #D9D9D2;
+  --gf-color-border-strong: #C9C9C0;
+
+  /* Accent — GrowFlow Sage */
+  --gf-color-accent: #6F7F63;
+  --gf-color-accent-hover: #607055;
+  --gf-color-accent-active: #526149;
+  --gf-color-accent-soft: #E9EDE5;
+  --gf-color-accent-border: #B8C2AE;
+  --gf-color-accent-text: #FFFFFF;
+
+  /* Semantic — Success */
+  --gf-color-success: #477A5A;
+  --gf-color-success-soft: #E7F0E9;
+
+  /* Semantic — Warning */
+  --gf-color-warning: #9A7135;
+  --gf-color-warning-soft: #F5EDDD;
+
+  /* Semantic — Danger */
+  --gf-color-danger: #A6534D;
+  --gf-color-danger-soft: #F6E8E6;
+
+  /* Semantic — Info */
+  --gf-color-info: #54718A;
+  --gf-color-info-soft: #E8EEF3;
+
+  /* AI */
+  --gf-color-ai: #5F6B7A;
+  --gf-color-ai-surface: #ECEEF1;
+  --gf-color-ai-border: #D4D8DD;
+  --gf-color-ai-emphasis: #424D5A;
+
+  /* -----------------------------------------------------------------------
+     TYPOGRAPHY
+     Canonical: Manrope (UI) + JetBrains Mono (technical)
+     ----------------------------------------------------------------------- */
+
+  /* Font Families */
+  --gf-font-family: 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --gf-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Typography Scale */
+  --gf-text-display-xl: 700 64px/1.05 var(--gf-font-family);
+  --gf-text-display-xl-size: 64px;
+  --gf-text-display-xl-lh: 1.05;
+  --gf-text-display-xl-weight: 700;
+  --gf-text-display-xl-ls: -0.03em;
+
+  --gf-text-display-l-size: 56px;
+  --gf-text-display-l-lh: 1.08;
+  --gf-text-display-l-weight: 700;
+  --gf-text-display-l-ls: -0.03em;
+
+  --gf-text-display-m-size: 48px;
+  --gf-text-display-m-lh: 1.10;
+  --gf-text-display-m-weight: 700;
+  --gf-text-display-m-ls: -0.025em;
+
+  --gf-text-h1-size: 40px;
+  --gf-text-h1-lh: 1.15;
+  --gf-text-h1-weight: 700;
+  --gf-text-h1-ls: -0.02em;
+
+  --gf-text-h2-size: 32px;
+  --gf-text-h2-lh: 1.20;
+  --gf-text-h2-weight: 700;
+  --gf-text-h2-ls: -0.015em;
+
+  --gf-text-h3-size: 26px;
+  --gf-text-h3-lh: 1.25;
+  --gf-text-h3-weight: 700;
+  --gf-text-h3-ls: -0.01em;
+
+  --gf-text-h4-size: 22px;
+  --gf-text-h4-lh: 1.30;
+  --gf-text-h4-weight: 600;
+  --gf-text-h4-ls: -0.005em;
+
+  --gf-text-h5-size: 18px;
+  --gf-text-h5-lh: 1.35;
+  --gf-text-h5-weight: 600;
+  --gf-text-h5-ls: 0;
+
+  --gf-text-h6-size: 16px;
+  --gf-text-h6-lh: 1.40;
+  --gf-text-h6-weight: 600;
+  --gf-text-h6-ls: 0;
+
+  --gf-text-body-lg-size: 17px;
+  --gf-text-body-lg-lh: 1.60;
+  --gf-text-body-lg-weight: 400;
+
+  --gf-text-body-size: 15px;
+  --gf-text-body-lh: 1.55;
+  --gf-text-body-weight: 400;
+
+  --gf-text-body-sm-size: 14px;
+  --gf-text-body-sm-lh: 1.50;
+  --gf-text-body-sm-weight: 400;
+
+  --gf-text-caption-size: 13px;
+  --gf-text-caption-lh: 1.45;
+  --gf-text-caption-weight: 400;
+
+  --gf-text-metadata-size: 12px;
+  --gf-text-metadata-lh: 1.40;
+  --gf-text-metadata-weight: 500;
+
+  /* Monospace Scale */
+  --gf-text-code-lg-size: 15px;
+  --gf-text-code-size: 14px;
+  --gf-text-code-sm-size: 13px;
+  --gf-text-code-meta-size: 12px;
+
+  /* -----------------------------------------------------------------------
+     SPACING
+     Base: 4px scale
+     ----------------------------------------------------------------------- */
+  --gf-space-1: 2px;
+  --gf-space-2: 4px;
+  --gf-space-3: 8px;
+  --gf-space-4: 12px;
+  --gf-space-5: 16px;
+  --gf-space-6: 20px;
+  --gf-space-7: 24px;
+  --gf-space-8: 32px;
+  --gf-space-9: 40px;
+  --gf-space-10: 48px;
+  --gf-space-11: 64px;
+  --gf-space-12: 80px;
+  --gf-space-13: 96px;
+  --gf-space-14: 128px;
+
+  /* -----------------------------------------------------------------------
+     RADIUS
+     ----------------------------------------------------------------------- */
+  --gf-radius-xs: 4px;
+  --gf-radius-sm: 6px;
+  --gf-radius-md: 8px;
+  --gf-radius-lg: 12px;
+  --gf-radius-xl: 16px;
+  --gf-radius-2xl: 20px;
+  --gf-radius-full: 9999px;
+
+  /* -----------------------------------------------------------------------
+     ELEVATION / SHADOWS
+     ----------------------------------------------------------------------- */
+  --gf-shadow-none: none;
+  --gf-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --gf-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
+  --gf-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.08);
+
+  /* -----------------------------------------------------------------------
+     SIZING
+     ----------------------------------------------------------------------- */
+
+  /* Buttons */
+  --gf-btn-height: 40px;
+  --gf-btn-height-lg: 48px;
+  --gf-btn-height-sm: 32px;
+  --gf-btn-px: 16px;
+  --gf-btn-px-lg: 20px;
+  --gf-btn-px-sm: 12px;
+
+  /* Inputs */
+  --gf-input-height: 40px;
+  --gf-input-height-lg: 48px;
+  --gf-input-height-sm: 36px;
+
+  /* Navigation */
+  --gf-nav-height-public: 72px;
+  --gf-nav-height-auth: 64px;
+  --gf-sidebar-width: 248px;
+  --gf-sidebar-collapsed: 72px;
+
+  /* Touch targets */
+  --gf-touch-min: 44px;
+
+  /* -----------------------------------------------------------------------
+     MOTION
+     ----------------------------------------------------------------------- */
+  --gf-duration-fast: 150ms;
+  --gf-duration-normal: 200ms;
+  --gf-duration-slow: 300ms;
+  --gf-duration-entrance: 500ms;
+  --gf-ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --gf-ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --gf-ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --gf-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* -----------------------------------------------------------------------
+     INTERACTION SYSTEM — "Float -> Settle" Canonical Tokens
+     ----------------------------------------------------------------------- */
+  --gf-interaction-translate-y: -2.5px;
+  --gf-interaction-translate-y-subtle: -1.5px;
+  --gf-interaction-translate-x: 3px;
+  --gf-interaction-duration: var(--gf-duration-normal);
+  --gf-interaction-duration-fast: var(--gf-duration-fast);
+  --gf-interaction-ease: var(--gf-ease-out);
+  --gf-interaction-ease-settle: var(--gf-ease-default);
+  --gf-interaction-shadow: var(--gf-shadow-md);
+  --gf-interaction-shadow-subtle: var(--gf-shadow-sm);
+  --gf-interaction-border: var(--gf-color-accent);
+  --gf-interaction-border-subtle: var(--gf-color-border-strong);
+  --gf-interaction-surface: var(--gf-color-surface);
+
+  /* -----------------------------------------------------------------------
+     BREAKPOINTS (for reference — used in media queries)
+     Mobile: < 768px
+     Tablet: 768px – 1199px
+     Desktop: >= 1200px
+     ----------------------------------------------------------------------- */
+
+  /* -----------------------------------------------------------------------
+     LAYOUT
+     ----------------------------------------------------------------------- */
+  --gf-container-max: 1200px;
+  --gf-container-wide: 1400px;
+  --gf-content-max: 720px;
+  --gf-container-px: 24px;
+}
+
+/* =========================================================================
+   Dark Theme
+   Applied via [data-theme="dark"] on <html>
+   ========================================================================= */
+
+[data-theme="dark"] {
+  --gf-color-bg: #171816;
+  --gf-color-surface: #20221F;
+  --gf-color-secondary: #1E201D;
+  --gf-color-tertiary: #262824;
+
+  --gf-color-text-primary: #F0F1EC;
+  --gf-color-text-secondary: #C2C5BD;
+  --gf-color-text-tertiary: #91958C;
+
+  --gf-color-border-subtle: #30332E;
+  --gf-color-border-standard: #3A3D37;
+  --gf-color-border-strong: #4A4E47;
+
+  --gf-color-accent: #9AAA8D;
+  --gf-color-accent-hover: #A8B79C;
+  --gf-color-accent-active: #B7C5AB;
+  --gf-color-accent-soft: #2B3328;
+  --gf-color-accent-text: #171816;
+
+  --gf-color-success: #7FB18C;
+  --gf-color-success-soft: #1E2E22;
+
+  --gf-color-warning: #D0A962;
+  --gf-color-warning-soft: #2D2518;
+
+  --gf-color-danger: #D27A72;
+  --gf-color-danger-soft: #2E1C1A;
+
+  --gf-color-info: #88A8C0;
+  --gf-color-info-soft: #1C2630;
+
+  --gf-color-ai-surface: #292D30;
+  --gf-color-ai-border: #3C4246;
+  --gf-color-ai-emphasis: #A9B2BB;
+
+  --gf-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --gf-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --gf-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.4);
+}

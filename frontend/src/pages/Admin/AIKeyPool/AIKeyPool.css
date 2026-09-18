@@ -1,0 +1,211 @@
+.gf-ai-keys {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.gf-ai-keys__alert {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 1.25rem;
+  background-color: var(--color-danger-bg, #fef2f2);
+  border: 1px solid var(--color-danger-border, #fecaca);
+  color: var(--color-danger-text, #991b1b);
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--text-sm, 0.875rem);
+}
+
+.gf-ai-keys__notice-banner {
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-left: 4px solid var(--color-primary, #0284c7);
+  border-radius: var(--radius-lg, 12px);
+  padding: 1.25rem;
+}
+
+.gf-ai-keys__notice-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.gf-ai-keys__notice-pills {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.gf-ai-keys__pill {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  border-radius: 4px;
+  padding: 0.1875rem 0.5rem;
+}
+
+.gf-ai-keys__pill--primary {
+  color: #0369a1;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+}
+
+.gf-ai-keys__pill--neutral {
+  color: #475569;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+}
+
+.gf-ai-keys__pill--success {
+  color: #065f46;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+}
+
+.gf-ai-keys__notice-text {
+  font-size: var(--text-xs, 0.75rem);
+  color: var(--color-text-muted, #64748b);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.gf-ai-keys__kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.gf-ai-keys__section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.gf-ai-keys__section-head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.gf-ai-keys__section-title {
+  font-size: var(--text-lg, 1.125rem);
+  font-weight: 600;
+  color: var(--color-text, #0f172a);
+  margin: 0;
+}
+
+.gf-ai-keys__subtext {
+  font-size: var(--text-xs, 0.75rem);
+  color: var(--color-text-muted, #64748b);
+}
+
+/* Slot Grid */
+.gf-ai-keys__slots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.gf-ai-keys__slot-card {
+  display: flex;
+  flex-direction: column;
+  border-top: 3px solid transparent;
+}
+
+.gf-ai-keys__slot-card--configured {
+  border-top-color: #10b981;
+}
+
+.gf-ai-keys__slot-card--empty {
+  border-top-color: #cbd5e1;
+  opacity: 0.8;
+}
+
+.gf-ai-keys__slot-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.gf-ai-keys__slot-index {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--color-text-muted, #64748b);
+  letter-spacing: 0.05em;
+}
+
+.gf-ai-keys__slot-title {
+  font-size: var(--text-sm, 0.875rem);
+  font-weight: 600;
+  margin: 0.125rem 0 0 0;
+}
+
+.gf-ai-keys__slot-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.gf-ai-keys__slot-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.gf-ai-keys__slot-field-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-text-muted, #64748b);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.gf-ai-keys__slot-mono {
+  font-family: var(--font-mono, monospace);
+  font-size: var(--text-xs, 0.75rem);
+  color: var(--color-text, #0f172a);
+}
+
+.gf-ai-keys__slot-mono--masked {
+  color: #0369a1;
+  font-weight: 600;
+}
+
+.gf-ai-keys__slot-posture {
+  font-size: var(--text-xs, 0.75rem);
+  font-weight: 600;
+  color: var(--color-text, #0f172a);
+}
+
+/* Params Grid */
+.gf-ai-keys__params-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.25rem;
+}
+
+.gf-ai-keys__param-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.gf-ai-keys__param-label {
+  font-size: var(--text-xs, 0.75rem);
+  font-weight: 600;
+  color: var(--color-text-muted, #64748b);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.gf-ai-keys__param-val {
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--color-text, #0f172a);
+}

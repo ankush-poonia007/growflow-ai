@@ -1,0 +1,120 @@
+.gf-not-found {
+  min-height: calc(100vh - 160px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-12) var(--space-4);
+}
+
+.gf-not-found__card {
+  max-width: 540px;
+  width: 100%;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: var(--space-12) var(--space-8);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.gf-not-found__badge {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-sage-600, #4f5f46);
+  background: var(--color-sage-50, #f4f6f3);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  margin-bottom: var(--space-6);
+}
+
+.gf-not-found__graphic {
+  color: var(--text-tertiary);
+  margin-bottom: var(--space-6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gf-not-found__ring {
+  opacity: 0.4;
+  animation: gf-spin-slow 24s linear infinite;
+  transform-origin: center;
+}
+
+@keyframes gf-spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.gf-not-found__title {
+  margin: 0 0 var(--space-3) 0;
+  font-size: var(--font-size-3xl);
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.025em;
+  line-height: var(--line-height-tight);
+}
+
+.gf-not-found__description {
+  margin: 0 0 var(--space-8) 0;
+  font-size: var(--font-size-base);
+  color: var(--text-secondary);
+  line-height: var(--line-height-relaxed);
+  max-width: 440px;
+}
+
+.gf-not-found__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.gf-not-found__primary-btn,
+.gf-not-found__secondary-btn {
+  min-width: 150px;
+}
+
+@media (max-width: 640px) {
+  .gf-not-found {
+    padding: var(--space-8) var(--space-4);
+  }
+
+  .gf-not-found__card {
+    padding: var(--space-8) var(--space-5);
+  }
+
+  .gf-not-found__badge {
+    margin-bottom: var(--space-4);
+  }
+
+  .gf-not-found__graphic {
+    margin-bottom: var(--space-4);
+  }
+
+  .gf-not-found__description {
+    margin-bottom: var(--space-6);
+  }
+
+  .gf-not-found__actions {
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .gf-not-found__primary-btn,
+  .gf-not-found__secondary-btn {
+    width: 100%;
+  }
+}

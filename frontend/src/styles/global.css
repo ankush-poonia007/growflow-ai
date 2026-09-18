@@ -1,0 +1,374 @@
+/* ==========================================================================
+   GrowFlow Global Styles
+   Applied after reset.css and tokens.css
+   ========================================================================== */
+
+body {
+  font-family: var(--gf-font-family);
+  font-size: var(--gf-text-body-size);
+  line-height: var(--gf-text-body-lh);
+  font-weight: var(--gf-text-body-weight);
+  color: var(--gf-color-text-primary);
+  background-color: var(--gf-color-bg);
+}
+
+/* -----------------------------------------------------------------------
+   Focus States
+   Visible focus rings for keyboard navigation — WCAG 2.1 AA
+   ----------------------------------------------------------------------- */
+
+:focus-visible {
+  outline: 2px solid var(--gf-color-accent);
+  outline-offset: 2px;
+  border-radius: var(--gf-radius-xs);
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* -----------------------------------------------------------------------
+   Selection
+   ----------------------------------------------------------------------- */
+
+::selection {
+  background-color: var(--gf-color-accent-soft);
+  color: var(--gf-color-text-primary);
+}
+
+/* -----------------------------------------------------------------------
+   Scrollbar — Subtle, matches Soft Intelligence
+   ----------------------------------------------------------------------- */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--gf-color-border-standard);
+  border-radius: var(--gf-radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gf-color-border-strong);
+}
+
+/* -----------------------------------------------------------------------
+   Reduced Motion
+   ----------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .gf-interactive,
+  .gf-interactive--subtle,
+  .gf-interactive--horizontal,
+  .gf-interactive-parent,
+  .gf-interactive-child,
+  .gf-sequence-item,
+  .gf-btn,
+  .gf-header__link,
+  .gf-header__workplace-trigger,
+  .gf-mobile-nav__link {
+    transform: none !important;
+  }
+}
+
+/* -----------------------------------------------------------------------
+   Root App Container
+   ----------------------------------------------------------------------- */
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* -----------------------------------------------------------------------
+   Link Base — Text Links vs Interactive Product Blocks
+   Inline text links retain restrained color transitions.
+   Product blocks, cards, and complex wrappers strictly protect child text colors.
+   ----------------------------------------------------------------------- */
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+a.gf-link:hover,
+p a:not([class]):hover,
+span a:not([class]):hover {
+  color: var(--gf-color-accent);
+}
+
+/* -----------------------------------------------------------------------
+   GLOBAL INTERACTION STANDARD — NO SIBLING DIMMING
+   When one element in a group, sequence, list, or grid is hovered,
+   sibling elements strictly remain opacity: 1, sharp, and readable.
+   ----------------------------------------------------------------------- */
+:has(> :hover) > :not(:hover) {
+  opacity: 1;
+}
+
+/* -----------------------------------------------------------------------
+   CANONICAL INTERACTION UTILITIES — "Float -> Settle"
+   The standard interaction language for GrowFlow cards, blocks,
+   nodes, and interactive surfaces across P01-P05 and all future pages.
+   ----------------------------------------------------------------------- */
+
+/* 1. Base Interactive Block (Float -> Settle) */
+.gf-interactive {
+  transition:
+    transform var(--gf-interaction-duration) var(--gf-interaction-ease-settle),
+    box-shadow var(--gf-interaction-duration) var(--gf-interaction-ease-settle),
+    border-color var(--gf-interaction-duration) var(--gf-interaction-ease-settle),
+    background-color var(--gf-interaction-duration) var(--gf-interaction-ease-settle);
+  outline: none;
+  cursor: default;
+}
+
+.gf-interactive:hover,
+.gf-interactive:focus-visible {
+  transform: translateY(var(--gf-interaction-translate-y));
+  box-shadow: var(--gf-interaction-shadow);
+  border-color: var(--gf-interaction-border);
+}
+
+.gf-interactive:focus-visible {
+  outline: 2px solid var(--gf-color-accent);
+  outline-offset: 2px;
+}
+
+/* 2. Subtle Interactive (Pills, small tags, compact nodes) */
+.gf-interactive--subtle {
+  transition:
+    transform var(--gf-interaction-duration-fast) var(--gf-interaction-ease-settle),
+    box-shadow var(--gf-interaction-duration-fast) var(--gf-interaction-ease-settle),
+    border-color var(--gf-interaction-duration-fast) var(--gf-interaction-ease-settle),
+    background-color var(--gf-interaction-duration-fast) var(--gf-interaction-ease-settle);
+  outline: none;
+  cursor: default;
+}
+
+.gf-interactive--subtle:hover,
+.gf-interactive--subtle:focus-visible {
+  transform: translateY(var(--gf-interaction-translate-y-subtle));
+  box-shadow: var(--gf-interaction-shadow-subtle);
+  border-color: var(--gf-interaction-border);
+}
+
+.gf-interactive--subtle:focus-visible {
+  outline: 2px solid var(--gf-color-accent);
+  outline-offset: 1px;
+}
+
+/* 3. Horizontal Interactive (List rows, activity feeds) */
+.gf-interactive--horizontal {
+  transition:
+    transform var(--gf-interaction-duration-fast) var(--gf-interaction-ease-settle),
+    background-color var(--gf-interaction-duration-fast) var(--gf-interaction-ease-settle),
+    border-color var(--gf-interaction-duration-fast) var(--gf-interaction-ease-settle);
+  outline: none;
+  cursor: default;
+}
+
+.gf-interactive--horizontal:hover,
+.gf-interactive--horizontal:focus-visible {
+  transform: translateX(var(--gf-interaction-translate-x));
+  background-color: var(--gf-color-secondary);
+}
+
+.gf-interactive--horizontal:focus-visible {
+  outline: 2px solid var(--gf-color-accent);
+  outline-offset: 1px;
+}
+
+/* 4. Parent / Child Group Hierarchy */
+.gf-interactive-group {
+  position: relative;
+}
+
+.gf-interactive-parent {
+  transition:
+    transform var(--gf-interaction-duration) var(--gf-interaction-ease-settle),
+    border-color var(--gf-interaction-duration) var(--gf-interaction-ease-settle),
+    box-shadow var(--gf-interaction-duration) var(--gf-interaction-ease-settle);
+  outline: none;
+}
+
+.gf-interactive-parent:hover {
+  transform: translateY(var(--gf-interaction-translate-y-subtle));
+  border-color: var(--gf-interaction-border-subtle);
+  box-shadow: var(--gf-interaction-shadow-subtle);
+}
+
+.gf-interactive-parent:focus-visible {
+  outline: 2px solid var(--gf-color-accent);
+  outline-offset: 2px;
+}
+
+/* Coordinated child response when parent is hovered */
+.gf-interactive-parent:hover .gf-interactive-child {
+  border-color: var(--gf-color-border-standard);
+}
+
+/* Child item direct hover: primary emphasis on child, parent connected, siblings stable at opacity 1 */
+.gf-interactive-child {
+  transition:
+    transform var(--gf-interaction-duration) var(--gf-interaction-ease-settle),
+    border-color var(--gf-interaction-duration) var(--gf-interaction-ease-settle),
+    box-shadow var(--gf-interaction-duration) var(--gf-interaction-ease-settle),
+    background-color var(--gf-interaction-duration) var(--gf-interaction-ease-settle);
+  outline: none;
+}
+
+.gf-interactive-child:hover,
+.gf-interactive-child:focus-visible {
+  transform: translateY(var(--gf-interaction-translate-y));
+  border-color: var(--gf-interaction-border);
+  box-shadow: var(--gf-interaction-shadow-subtle);
+  background-color: var(--gf-color-surface);
+}
+
+.gf-interactive-child:focus-visible {
+  outline: 2px solid var(--gf-color-accent);
+  outline-offset: 2px;
+}
+
+/* 5. Sequence Flow Pattern (A -> B -> C -> D) */
+.gf-sequence-group {
+  position: relative;
+}
+
+.gf-sequence-item {
+  transition:
+    transform var(--gf-interaction-duration) var(--gf-interaction-ease-settle),
+    box-shadow var(--gf-interaction-duration) var(--gf-interaction-ease-settle),
+    border-color var(--gf-interaction-duration) var(--gf-interaction-ease-settle),
+    background-color var(--gf-interaction-duration) var(--gf-interaction-ease-settle);
+  outline: none;
+  cursor: default;
+}
+
+.gf-sequence-item:hover,
+.gf-sequence-item:focus-visible {
+  transform: translateY(var(--gf-interaction-translate-y));
+  box-shadow: var(--gf-interaction-shadow);
+  border-color: var(--gf-interaction-border);
+}
+
+.gf-sequence-item:focus-visible {
+  outline: 2px solid var(--gf-color-accent);
+  outline-offset: 2px;
+}
+
+/* Sequence Connectors: subtle highlight on hover without glow or animation */
+.gf-connector {
+  transition:
+    border-color var(--gf-interaction-duration-fast) var(--gf-interaction-ease),
+    color var(--gf-interaction-duration-fast) var(--gf-interaction-ease);
+}
+
+.gf-sequence-item:hover + .gf-connector,
+.gf-sequence-item:focus-visible + .gf-connector {
+  border-color: var(--gf-interaction-border);
+  color: var(--gf-color-accent);
+}
+
+/* -----------------------------------------------------------------------
+   Smooth scroll
+   ----------------------------------------------------------------------- */
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* -----------------------------------------------------------------------
+   Container Utility
+   ----------------------------------------------------------------------- */
+
+.gf-container {
+  width: 100%;
+  max-width: var(--gf-container-max);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--gf-container-px);
+  padding-right: var(--gf-container-px);
+}
+
+.gf-container--wide {
+  max-width: var(--gf-container-wide);
+}
+
+/* -----------------------------------------------------------------------
+   Section Spacing — Public Pages
+   ----------------------------------------------------------------------- */
+
+.gf-section {
+  padding-top: var(--gf-space-13);
+  padding-bottom: var(--gf-space-13);
+}
+
+@media (max-width: 767px) {
+  .gf-section {
+    padding-top: var(--gf-space-11);
+    padding-bottom: var(--gf-space-11);
+  }
+
+  :root {
+    --gf-container-px: 16px;
+  }
+}
+
+/* -----------------------------------------------------------------------
+   Scroll Reveal Animation
+   ----------------------------------------------------------------------- */
+
+.gf-reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity var(--gf-duration-entrance) var(--gf-ease-out),
+    transform var(--gf-duration-entrance) var(--gf-ease-out);
+}
+
+.gf-reveal--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gf-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* -----------------------------------------------------------------------
+   Visually Hidden (screen reader only)
+   ----------------------------------------------------------------------- */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

@@ -1,0 +1,181 @@
+.gf-definition-edit {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  width: 100%;
+}
+
+.gf-definition-edit--loading,
+.gf-definition-edit--error {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.gf-definition-edit__error-card {
+  padding: var(--space-8);
+  text-align: center;
+  max-width: 480px;
+  margin: var(--space-12) auto;
+}
+
+.gf-definition-edit__version-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  background: var(--color-sage-50, #f6f8f5);
+  border: 1px solid var(--color-sage-200, #d5e0d2);
+  border-radius: var(--radius-lg);
+}
+
+.gf-definition-edit__version-notice-icon {
+  color: var(--color-sage-700, #394b32);
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.gf-definition-edit__version-notice-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.gf-definition-edit__version-notice-title {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-sage-900, #1e2b1b);
+}
+
+.gf-definition-edit__version-notice-desc {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-sage-800, #2c3e27);
+  line-height: var(--line-height-normal);
+}
+
+.gf-definition-edit__server-error {
+  padding: var(--space-4) var(--space-5);
+  background: var(--color-danger-50, #fef2f2);
+  border: 1px solid var(--color-danger-200, #fecaca);
+  border-radius: var(--radius-md);
+  color: var(--color-danger-800, #991b1b);
+  font-size: var(--font-size-sm);
+}
+
+.gf-definition-edit__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.gf-definition-edit__card {
+  padding: var(--space-6);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.gf-definition-edit__section-title {
+  margin: 0;
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: var(--space-3);
+}
+
+.gf-definition-edit__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.gf-definition-edit__row {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.gf-definition-edit__field--half {
+  flex: 1;
+}
+
+.gf-definition-edit__label {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.gf-definition-edit__required {
+  color: var(--color-danger-500, #ef4444);
+}
+
+.gf-definition-edit__field-hint {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+}
+
+.gf-definition-edit__field-error {
+  font-size: var(--font-size-xs);
+  color: var(--color-danger-600, #dc2626);
+  font-weight: 500;
+}
+
+.gf-definition-form__textarea {
+  width: 100%;
+  padding: var(--space-3);
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  resize: vertical;
+  line-height: var(--line-height-normal);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.gf-definition-form__textarea:focus-visible {
+  outline: none;
+  border-color: var(--color-sage-600);
+  box-shadow: 0 0 0 2px var(--color-sage-100);
+}
+
+.gf-definition-form__textarea--error {
+  border-color: var(--color-danger-500);
+}
+
+.gf-definition-form__select {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.gf-definition-form__select:focus-visible {
+  border-color: var(--color-sage-600);
+  box-shadow: 0 0 0 2px var(--color-sage-100);
+}
+
+.gf-definition-edit__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-4);
+  padding-top: var(--space-2);
+}
+
+@media (max-width: 640px) {
+  .gf-definition-edit__row {
+    flex-direction: column;
+  }
+}
