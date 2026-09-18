@@ -1,0 +1,186 @@
+.gf-ai-execs {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.gf-ai-execs__alert {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 1.25rem;
+  background-color: var(--color-danger-bg, #fef2f2);
+  border: 1px solid var(--color-danger-border, #fecaca);
+  color: var(--color-danger-text, #991b1b);
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--text-sm, 0.875rem);
+}
+
+.gf-ai-execs__kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.gf-ai-execs__controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.gf-ai-execs__filters {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.gf-ai-execs__filter-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.gf-ai-execs__filter-label {
+  font-size: var(--text-xs, 0.75rem);
+  font-weight: 600;
+  color: var(--color-text-muted, #64748b);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.gf-ai-execs__select {
+  padding: 0.375rem 0.75rem;
+  font-size: var(--text-sm, 0.875rem);
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: var(--radius-md, 8px);
+  color: var(--color-text, #0f172a);
+}
+
+.gf-ai-execs__pagination-info {
+  font-size: var(--text-xs, 0.75rem);
+  color: var(--color-text-muted, #64748b);
+}
+
+.gf-ai-execs__table-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.gf-ai-execs__table-wrapper {
+  overflow-x: auto;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: var(--radius-lg, 12px);
+}
+
+.gf-ai-execs__table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: var(--text-sm, 0.875rem);
+}
+
+.gf-ai-execs__table th {
+  background: var(--color-surface-subtle, #f8fafc);
+  padding: 0.75rem 1rem;
+  font-size: var(--text-xs, 0.75rem);
+  font-weight: 600;
+  color: var(--color-text-muted, #64748b);
+  border-bottom: 1px solid var(--color-border, #e2e8f0);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.gf-ai-execs__table td {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid var(--color-border, #e2e8f0);
+  color: var(--color-text, #0f172a);
+}
+
+.gf-ai-execs__table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.gf-ai-execs__code-link {
+  font-family: var(--font-mono, monospace);
+  color: var(--color-primary, #0284c7);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.gf-ai-execs__code-link:hover {
+  text-decoration: underline;
+}
+
+.gf-ai-execs__target-tag {
+  font-size: var(--text-xs, 0.75rem);
+  color: var(--color-text-muted, #64748b);
+  font-family: var(--font-mono, monospace);
+}
+
+.gf-ai-execs__mono-cell {
+  font-family: var(--font-mono, monospace);
+  font-size: var(--text-xs, 0.75rem);
+  color: var(--color-text-muted, #64748b);
+}
+
+.gf-ai-execs__prog-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.gf-ai-execs__prog-bar {
+  width: 70px;
+  height: 6px;
+  background: var(--color-border, #e2e8f0);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.gf-ai-execs__prog-fill {
+  height: 100%;
+  background: var(--color-primary, #0284c7);
+}
+
+.gf-ai-execs__prog-text {
+  font-size: var(--text-xs, 0.75rem);
+  color: var(--color-text-muted, #64748b);
+  min-width: 32px;
+}
+
+.gf-ai-execs__action-link {
+  font-size: var(--text-sm, 0.875rem);
+  font-weight: 500;
+  color: var(--color-primary, #0284c7);
+  text-decoration: none;
+}
+
+.gf-ai-execs__action-link:hover {
+  text-decoration: underline;
+}
+
+.gf-ai-execs__empty {
+  padding: 3rem 1rem;
+}
+
+.gf-ai-execs__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.gf-ai-execs__page-indicator {
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--color-text-muted, #64748b);
+}

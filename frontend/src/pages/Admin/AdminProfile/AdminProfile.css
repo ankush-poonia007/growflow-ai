@@ -1,0 +1,104 @@
+/**
+ * AdminProfile Styles
+ */
+
+.gf-admin-profile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-6, 24px);
+  width: 100%;
+}
+
+.gf-admin-profile__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gf-space-6, 24px);
+}
+
+@media (max-width: 800px) {
+  .gf-admin-profile__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.gf-admin-profile__card {
+  height: 100%;
+}
+
+.gf-admin-profile__info-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-3, 12px);
+}
+
+.gf-admin-profile__info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--gf-space-2, 8px) 0;
+  border-bottom: 1px solid var(--gf-color-border-subtle, #e2e8f0);
+  font-size: var(--gf-text-body-sm-size, 13px);
+}
+
+.gf-admin-profile__info-row:last-child {
+  border-bottom: none;
+}
+
+.gf-admin-profile__label {
+  color: var(--gf-color-text-secondary, #64748b);
+  font-weight: 500;
+}
+
+.gf-admin-profile__value {
+  font-weight: 600;
+  color: var(--gf-color-text-primary, #0f172a);
+}
+
+.gf-admin-profile__code {
+  font-family: monospace;
+  background-color: var(--gf-color-bg-base, #f1f5f9);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--gf-color-text-primary, #0f172a);
+}
+
+.gf-admin-profile__clearance-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-4, 16px);
+}
+
+.gf-admin-profile__clearance-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--gf-space-3, 12px);
+}
+
+.gf-admin-profile__clearance-check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #eef2ff;
+  color: #4f46e5;
+  font-size: 12px;
+  font-weight: bold;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.gf-admin-profile__clearance-item strong {
+  display: block;
+  font-size: 13px;
+  color: var(--gf-color-text-primary, #0f172a);
+}
+
+.gf-admin-profile__clearance-item p {
+  font-size: 12px;
+  color: var(--gf-color-text-secondary, #64748b);
+  margin: 2px 0 0;
+  line-height: 1.4;
+}

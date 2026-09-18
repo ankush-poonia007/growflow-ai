@@ -1,0 +1,109 @@
+/**
+ * AdminSettings Styles
+ */
+
+.gf-admin-settings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-6, 24px);
+  width: 100%;
+}
+
+.gf-admin-settings__alert {
+  padding: var(--gf-space-3, 12px) var(--gf-space-4, 16px);
+  border-radius: var(--gf-radius-md, 8px);
+  font-size: var(--gf-text-body-sm-size, 13px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.gf-admin-settings__alert--error {
+  background-color: var(--gf-color-danger-subtle, #fef2f2);
+  border: 1px solid var(--gf-color-danger-border, #fecaca);
+  color: var(--gf-color-danger, #ef4444);
+}
+
+.gf-admin-settings__alert--success {
+  background-color: #ecfdf5;
+  border: 1px solid #d1fae5;
+  color: #065f46;
+}
+
+.gf-admin-settings__skeleton-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-4, 16px);
+}
+
+.gf-admin-settings__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-6, 24px);
+}
+
+.gf-admin-settings__field-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-4, 16px);
+}
+
+.gf-admin-settings__toggle-label {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--gf-space-3, 12px);
+  cursor: pointer;
+}
+
+.gf-admin-settings__checkbox {
+  margin-top: 3px;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--gf-color-accent, #6366f1);
+  cursor: pointer;
+}
+
+.gf-admin-settings__toggle-label strong {
+  display: block;
+  font-size: var(--gf-text-body-sm-size, 14px);
+  color: var(--gf-color-text-primary, #0f172a);
+}
+
+.gf-admin-settings__toggle-label p {
+  font-size: var(--gf-text-caption-size, 12px);
+  color: var(--gf-color-text-secondary, #64748b);
+  margin: 2px 0 0;
+}
+
+.gf-admin-settings__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-1, 4px);
+}
+
+.gf-admin-settings__label {
+  font-size: var(--gf-text-label-md-size, 13px);
+  font-weight: 500;
+  color: var(--gf-color-text-secondary, #475569);
+}
+
+.gf-admin-settings__select {
+  height: 42px;
+  padding: 0 var(--gf-space-4, 16px);
+  background-color: var(--gf-color-bg-base, #f8fafc);
+  border: 1px solid var(--gf-color-border-default, #cbd5e1);
+  border-radius: var(--gf-radius-md, 8px);
+  font-size: var(--gf-text-body-sm-size, 14px);
+  color: var(--gf-color-text-primary, #0f172a);
+  max-width: 400px;
+  outline: none;
+}
+
+.gf-admin-settings__select:focus {
+  border-color: var(--gf-color-accent, #6366f1);
+}
+
+.gf-admin-settings__actions {
+  display: flex;
+  justify-content: flex-end;
+}
