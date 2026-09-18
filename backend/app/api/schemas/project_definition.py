@@ -79,3 +79,22 @@ class ProjectDefinitionAssignSchema(BaseModel):
     student_id: str
     group_id: str | None = None
     deadline: datetime | None = None
+
+
+class ProjectDefinitionCatalogItemSchema(BaseModel):
+    """Student-facing catalog item schema for an available mentor project definition."""
+
+    id: str
+    name: str
+    status: str
+    version_number: int | None = None
+    problem: str = ""
+    proposed_solution: str = ""
+    complexity: str = "INTERMEDIATE"
+    description: str = ""
+    duration: str = ""
+    constraints: str = ""
+    assumptions: str = ""
+    technology_snapshot: list[Any] = Field(default_factory=list)
+    created_at: datetime | None = None
+    updated_at: datetime | None = None

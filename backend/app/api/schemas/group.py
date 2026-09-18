@@ -39,6 +39,7 @@ class GroupResponseSchema(BaseModel):
     name: str
     join_code: str
     status: str
+    mentor_name: str | None = None
     created_at: datetime | None = None
     updated_at: datetime | None = None
 
@@ -52,6 +53,9 @@ class GroupMembershipResponseSchema(BaseModel):
     status: str
     joined_at: datetime | None = None
     left_at: datetime | None = None
+    group_name: str | None = None
+    mentor_name: str | None = None
+    join_code: str | None = None
 
 
 class GroupStudentResponseSchema(BaseModel):

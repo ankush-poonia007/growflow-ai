@@ -217,6 +217,15 @@ class ProjectInstanceModel(Base, UUIDPrimaryKeyMixin, TimestampMixin):
         nullable=False,
     )
     progress_percentage: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+
+    @property
+    def progress_percent(self) -> int:
+        return self.progress_percentage
+
+    @progress_percent.setter
+    def progress_percent(self, val: int) -> None:
+        self.progress_percentage = val
+
     status: Mapped[str] = mapped_column(
         String(50),
         default=ProjectStatus.ACTIVE.value,

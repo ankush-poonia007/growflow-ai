@@ -119,14 +119,13 @@ class GroupService:
             return await self._group_repo.list_by_mentor(current_user.user_id)
 
         if current_user.is_student:
-            memberships = await self._group_repo.list_student_memberships(
+            group_pairs = await self._group_repo.list_groups_with_mentors_for_student(
                 current_user.user_id, status=GroupMembershipStatus.ACTIVE.value
             )
             groups: list[GroupModel] = []
-            for m in memberships:
-                grp = await self._group_repo.get_by_id(m.group_id)
-                if grp:
-                    groups.append(grp)
+            for grp, mentor in group_pairs:
+                setattr(grp, "mentor_name", mentor.full_name or mentor.email)
+                groups.append(grp)
             return groups
 
         return []
@@ -192,6 +191,8 @@ class GroupService:
             metadata={"student_id": str(student_id), "join_code": join_code},
             correlation_id=correlation_id,
         )
+        setattr(membership, "group_name", group.name)
+        setattr(membership, "join_code", group.join_code)
         return membership
 
     async def list_group_students(

@@ -14,6 +14,7 @@ from datetime import UTC, datetime, timedelta
 import uuid
 
 import jwt
+from cryptography.hazmat.primitives.asymmetric import ec
 import pytest
 
 from backend.app.config.settings import Settings
@@ -67,6 +68,52 @@ def _create_test_jwt(
     if custom_claims:
         payload.update(custom_claims)
     return jwt.encode(payload, secret, algorithm=algorithm)
+
+
+_TEST_EC_PRIVATE_KEY = ec.generate_private_key(ec.SECP256R1())
+_TEST_EC_PUBLIC_KEY = _TEST_EC_PRIVATE_KEY.public_key()
+_TEST_KID = "test-ec-kid-001"
+_TEST_JWKS_URL = "https://test.supabase.co/auth/v1/.well-known/jwks.json"
+
+
+class MockPyJWKClient:
+    """Mock PyJWKClient for unit tests without network calls."""
+
+    def __init__(self, key_id: str = _TEST_KID, public_key: object = _TEST_EC_PUBLIC_KEY) -> None:
+        self._key_id = key_id
+        self._public_key = public_key
+
+    def get_signing_key_from_jwt(self, token: str) -> object:
+        header = jwt.get_unverified_header(token)
+        kid = header.get("kid")
+        if kid != self._key_id:
+            raise jwt.PyJWKError(f"Key with ID {kid} not found")
+        return type("SigningKey", (), {"key": self._public_key, "key_id": self._key_id})()
+
+
+def _create_test_es256_jwt(
+    *,
+    user_id: uuid.UUID | None = None,
+    email: str = "student@example.com",
+    expires_in_seconds: int = 3600,
+    private_key: object = _TEST_EC_PRIVATE_KEY,
+    kid: str = _TEST_KID,
+    audience: str = _TEST_AUDIENCE,
+    issuer: str = _TEST_ISSUER,
+    custom_claims: dict[str, object] | None = None,
+) -> str:
+    now = datetime.now(UTC)
+    payload: dict[str, object] = {
+        "sub": str(user_id or uuid.uuid4()),
+        "email": email,
+        "aud": audience,
+        "iss": issuer,
+        "iat": int(now.timestamp()),
+        "exp": int((now + timedelta(seconds=expires_in_seconds)).timestamp()),
+    }
+    if custom_claims:
+        payload.update(custom_claims)
+    return jwt.encode(payload, private_key, algorithm="ES256", headers={"kid": kid})  # type: ignore[arg-type]
 
 
 # ---------------------------------------------------------------------------
@@ -210,6 +257,124 @@ class TestSupabaseJWTVerifier:
         with pytest.raises(AuthenticationException) as exc_info:
             verifier.verify(unsigned_token)
         assert exc_info.value.code == "AUTH_INVALID_TOKEN"
+
+    @pytest.mark.unit
+    def test_valid_es256_token_verification(self) -> None:
+        """Valid ES256 token with correct EC signature, audience, and issuer is successfully verified."""
+        user_uuid = uuid.uuid4()
+        token = _create_test_es256_jwt(user_id=user_uuid, email="student.es256@example.com")
+        settings = _make_test_settings(JWT_JWKS_URL=_TEST_JWKS_URL)
+        mock_jwks = MockPyJWKClient()
+        verifier = SupabaseJWTVerifier(settings=settings, jwks_client=mock_jwks)  # type: ignore[arg-type]
+
+        result = verifier.verify(token)
+
+        assert result.user_id == user_uuid
+        assert result.email == "student.es256@example.com"
+        assert result.claims["aud"] == _TEST_AUDIENCE
+        assert result.claims["iss"] == _TEST_ISSUER
+
+    @pytest.mark.unit
+    def test_es256_expired_token_raises_token_expired(self) -> None:
+        """Expired ES256 token raises AUTH_TOKEN_EXPIRED (401)."""
+        expired_token = _create_test_es256_jwt(expires_in_seconds=-60)
+        settings = _make_test_settings(JWT_JWKS_URL=_TEST_JWKS_URL)
+        mock_jwks = MockPyJWKClient()
+        verifier = SupabaseJWTVerifier(settings=settings, jwks_client=mock_jwks)  # type: ignore[arg-type]
+
+        with pytest.raises(AuthenticationException) as exc_info:
+            verifier.verify(expired_token)
+        assert exc_info.value.code == "AUTH_TOKEN_EXPIRED"
+        assert exc_info.value.status_code == 401
+
+    @pytest.mark.unit
+    def test_es256_invalid_signature_raises_signature_error(self) -> None:
+        """ES256 token signed with different EC private key raises AUTH_INVALID_SIGNATURE (401)."""
+        different_private_key = ec.generate_private_key(ec.SECP256R1())
+        bad_token = _create_test_es256_jwt(private_key=different_private_key)
+        settings = _make_test_settings(JWT_JWKS_URL=_TEST_JWKS_URL)
+        mock_jwks = MockPyJWKClient()
+        verifier = SupabaseJWTVerifier(settings=settings, jwks_client=mock_jwks)  # type: ignore[arg-type]
+
+        with pytest.raises(AuthenticationException) as exc_info:
+            verifier.verify(bad_token)
+        assert exc_info.value.code == "AUTH_INVALID_SIGNATURE"
+        assert exc_info.value.status_code == 401
+
+    @pytest.mark.unit
+    def test_es256_invalid_audience_raises_audience_error(self) -> None:
+        """ES256 token with wrong audience raises AUTH_INVALID_AUDIENCE (401)."""
+        token = _create_test_es256_jwt(audience="wrong-audience")
+        settings = _make_test_settings(JWT_JWKS_URL=_TEST_JWKS_URL)
+        mock_jwks = MockPyJWKClient()
+        verifier = SupabaseJWTVerifier(settings=settings, jwks_client=mock_jwks)  # type: ignore[arg-type]
+
+        with pytest.raises(AuthenticationException) as exc_info:
+            verifier.verify(token)
+        assert exc_info.value.code == "AUTH_INVALID_AUDIENCE"
+        assert exc_info.value.status_code == 401
+
+    @pytest.mark.unit
+    def test_es256_invalid_issuer_raises_issuer_error(self) -> None:
+        """ES256 token with wrong issuer raises AUTH_INVALID_ISSUER (401)."""
+        token = _create_test_es256_jwt(issuer="https://malicious.issuer.co/auth/v1")
+        settings = _make_test_settings(JWT_JWKS_URL=_TEST_JWKS_URL)
+        mock_jwks = MockPyJWKClient()
+        verifier = SupabaseJWTVerifier(settings=settings, jwks_client=mock_jwks)  # type: ignore[arg-type]
+
+        with pytest.raises(AuthenticationException) as exc_info:
+            verifier.verify(token)
+        assert exc_info.value.code == "AUTH_INVALID_ISSUER"
+        assert exc_info.value.status_code == 401
+
+    @pytest.mark.unit
+    def test_es256_unknown_kid_raises_signature_error(self) -> None:
+        """ES256 token with unknown kid in header raises AUTH_INVALID_SIGNATURE (401)."""
+        token = _create_test_es256_jwt(kid="unknown-kid-does-not-exist")
+        settings = _make_test_settings(JWT_JWKS_URL=_TEST_JWKS_URL)
+        mock_jwks = MockPyJWKClient()
+        verifier = SupabaseJWTVerifier(settings=settings, jwks_client=mock_jwks)  # type: ignore[arg-type]
+
+        with pytest.raises(AuthenticationException) as exc_info:
+            verifier.verify(token)
+        assert exc_info.value.code == "AUTH_INVALID_SIGNATURE"
+        assert exc_info.value.status_code == 401
+
+    @pytest.mark.unit
+    def test_unsupported_rsa_algorithm_rejected(self) -> None:
+        """Tokens using unsupported algorithms like RS256 are rejected with AUTH_INVALID_TOKEN."""
+        from cryptography.hazmat.primitives.asymmetric import rsa
+
+        rsa_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        now = datetime.now(UTC)
+        payload: dict[str, object] = {
+            "sub": str(uuid.uuid4()),
+            "email": "test@example.com",
+            "aud": _TEST_AUDIENCE,
+            "iss": _TEST_ISSUER,
+            "exp": int((now + timedelta(hours=1)).timestamp()),
+        }
+        token = jwt.encode(payload, rsa_key, algorithm="RS256")  # type: ignore[arg-type]
+        settings = _make_test_settings(JWT_JWKS_URL=_TEST_JWKS_URL)
+        verifier = SupabaseJWTVerifier(settings=settings)
+
+        with pytest.raises(AuthenticationException) as exc_info:
+            verifier.verify(token)
+        assert exc_info.value.code == "AUTH_INVALID_TOKEN"
+        assert exc_info.value.status_code == 401
+
+    @pytest.mark.unit
+    def test_es256_unconfigured_jwks_fails_closed(self) -> None:
+        """ES256 token received when JWKS URL is unconfigured fails closed with AUTH_CONFIGURATION_ERROR."""
+        token = _create_test_es256_jwt()
+        settings = _make_test_settings(JWT_JWKS_URL=None)
+        settings.database.SUPABASE_URL = None
+        verifier = SupabaseJWTVerifier(settings=settings, jwks_client=None)
+
+        with pytest.raises(AuthenticationException) as exc_info:
+            verifier.verify(token)
+        assert exc_info.value.code == "AUTH_CONFIGURATION_ERROR"
+        assert exc_info.value.status_code == 401
 
 
 # ---------------------------------------------------------------------------

@@ -17,6 +17,7 @@ from fastapi import APIRouter, status
 from backend.app.api.dependencies.auth import (  # noqa: TC001
     CurrentUserDep,
     RequireMentor,
+    RequireStudent,
 )
 from backend.app.api.dependencies.correlation import CorrelationIdDep  # noqa: TC001
 from backend.app.api.dependencies.services import ProjectDefinitionServiceDep  # noqa: TC001
@@ -24,6 +25,7 @@ from backend.app.api.responses.base import success_response
 from backend.app.api.schemas.project import ProjectResponseSchema
 from backend.app.api.schemas.project_definition import (
     ProjectDefinitionAssignSchema,
+    ProjectDefinitionCatalogItemSchema,
     ProjectDefinitionCreateSchema,
     ProjectDefinitionResponseSchema,
     ProjectDefinitionUpdateSchema,
@@ -104,20 +106,152 @@ async def list_project_definitions(
     current_user: RequireMentor,
     definition_service: ProjectDefinitionServiceDep,
 ) -> JSONResponse:
-    definitions = await definition_service.list_definitions(current_user.user_id)
-    data = [
-        ProjectDefinitionResponseSchema(
-            id=str(d.id),
-            owner_mentor_id=str(d.owner_mentor_id),
-            name=d.name,
-            status=d.status,
-            current_version_id=str(d.current_version_id) if d.current_version_id else None,
-            created_at=d.created_at,
-            updated_at=d.updated_at,
-        ).model_dump()
-        for d in definitions
-    ]
+    items = await definition_service.list_definitions(current_user.user_id)
+    data = []
+    for d, version in items:
+        v_data = None
+        if version:
+            v_data = ProjectDefinitionVersionResponseSchema(
+                id=str(version.id),
+                project_definition_id=str(version.project_definition_id),
+                version_number=version.version_number,
+                name=version.name,
+                problem=version.problem,
+                proposed_solution=version.proposed_solution,
+                complexity=version.complexity,
+                description=version.description,
+                duration=version.duration,
+                constraints=version.constraints,
+                assumptions=version.assumptions,
+                technology_snapshot=version.technology_snapshot or [],
+                created_by=str(version.created_by),
+                created_at=version.created_at,
+            )
+        data.append(
+            ProjectDefinitionResponseSchema(
+                id=str(d.id),
+                owner_mentor_id=str(d.owner_mentor_id),
+                name=d.name,
+                status=d.status,
+                current_version_id=str(d.current_version_id) if d.current_version_id else None,
+                current_version=v_data,
+                created_at=d.created_at,
+                updated_at=d.updated_at,
+            ).model_dump()
+        )
     return success_response(message="Project definitions retrieved.", data=data)
+
+
+@router.get(
+    "/catalog",
+    summary="List Student Mentor Project Catalog",
+    response_model=list[ProjectDefinitionCatalogItemSchema],
+    status_code=status.HTTP_200_OK,
+)
+async def list_student_catalog(
+    current_user: RequireStudent,
+    definition_service: ProjectDefinitionServiceDep,
+) -> JSONResponse:
+    catalog_items = await definition_service.list_catalog()
+    data = [
+        ProjectDefinitionCatalogItemSchema(
+            id=str(definition.id),
+            name=definition.name,
+            status=definition.status,
+            version_number=version.version_number if version else None,
+            problem=version.problem if version else "",
+            proposed_solution=version.proposed_solution if version else "",
+            complexity=version.complexity if version else "INTERMEDIATE",
+            description=version.description if version else "",
+            duration=version.duration if version else "",
+            constraints=version.constraints if version else "",
+            assumptions=version.assumptions if version else "",
+            technology_snapshot=version.technology_snapshot if (version and version.technology_snapshot) else [],
+            created_at=definition.created_at,
+            updated_at=definition.updated_at,
+        ).model_dump()
+        for definition, version in catalog_items
+    ]
+    return success_response(message="Mentor project catalog retrieved.", data=data)
+
+
+@router.get(
+    "/catalog/{definition_id}",
+    summary="Get Student Mentor Project Catalog Item Detail",
+    response_model=ProjectDefinitionCatalogItemSchema,
+    status_code=status.HTTP_200_OK,
+)
+async def get_student_catalog_item(
+    definition_id: UUID,
+    current_user: RequireStudent,
+    definition_service: ProjectDefinitionServiceDep,
+) -> JSONResponse:
+    definition, version = await definition_service.get_catalog_item(definition_id)
+    data = ProjectDefinitionCatalogItemSchema(
+        id=str(definition.id),
+        name=definition.name,
+        status=definition.status,
+        version_number=version.version_number,
+        problem=version.problem,
+        proposed_solution=version.proposed_solution,
+        complexity=version.complexity,
+        description=version.description,
+        duration=version.duration,
+        constraints=version.constraints,
+        assumptions=version.assumptions,
+        technology_snapshot=version.technology_snapshot if version.technology_snapshot else [],
+        created_at=definition.created_at,
+        updated_at=definition.updated_at,
+    ).model_dump()
+    return success_response(message="Mentor project definition detail retrieved.", data=data)
+
+
+@router.post(
+    "/catalog/{definition_id}/select",
+    summary="Student Select Mentor Project Definition",
+    response_model=ProjectResponseSchema,
+    status_code=status.HTTP_201_CREATED,
+)
+async def select_student_project_definition(
+    definition_id: UUID,
+    current_user: RequireStudent,
+    definition_service: ProjectDefinitionServiceDep,
+    correlation_id: CorrelationIdDep,
+) -> JSONResponse:
+    instance = await definition_service.select_definition(
+        definition_id=definition_id,
+        student_id=current_user.user_id,
+        correlation_id=correlation_id,
+    )
+    data = ProjectResponseSchema(
+        id=str(instance.id),
+        student_id=str(instance.student_id),
+        group_id=str(instance.group_id) if instance.group_id else None,
+        project_definition_id=str(instance.project_definition_id)
+        if instance.project_definition_id
+        else None,
+        source_definition_version_id=str(instance.source_definition_version_id)
+        if instance.source_definition_version_id
+        else None,
+        name=instance.name,
+        problem=instance.problem,
+        proposed_solution=instance.proposed_solution,
+        complexity=instance.complexity,
+        current_phase=instance.current_phase,
+        health=instance.health,
+        progress_percentage=instance.progress_percentage,
+        status=instance.status,
+        deadline=instance.deadline,
+        started_at=instance.started_at,
+        completed_at=instance.completed_at,
+        created_at=instance.created_at,
+        updated_at=instance.updated_at,
+    ).model_dump()
+    return success_response(
+        message="Mentor project selected successfully.",
+        data=data,
+        status_code=status.HTTP_201_CREATED,
+    )
 
 
 @router.get(

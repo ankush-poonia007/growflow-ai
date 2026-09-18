@@ -19,6 +19,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
+import uuid
 
 from backend.app.domain.project.models import (
     ProjectComplexity,
@@ -33,6 +34,14 @@ from backend.app.shared.exceptions import (
     BusinessRuleException,
     NotFoundException,
 )
+from backend.app.api.schemas.mentor_supervision import (
+    MentorProjectInstanceDetailSchema,
+    MentorProjectInstanceSummarySchema,
+)
+from backend.app.application.services.authorization_helpers import (
+    is_mentor_supervising_project,
+)
+from backend.app.shared.logging import get_logger
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -43,11 +52,15 @@ if TYPE_CHECKING:
     from backend.app.infrastructure.database.models.project import (
         ProjectInstanceModel,
     )
+    from backend.app.infrastructure.repositories.assessment_repository import AssessmentRepository
+    from backend.app.infrastructure.repositories.blueprint_repository import BlueprintRepository
     from backend.app.infrastructure.repositories.group_repository import GroupRepository
     from backend.app.infrastructure.repositories.project_repository import ProjectRepository
     from backend.app.infrastructure.repositories.technology_repository import (
         TechnologyRepository,
     )
+
+logger = get_logger("growflow.application.project_service")
 
 
 class ProjectService:
@@ -59,11 +72,15 @@ class ProjectService:
         group_repo: GroupRepository,
         technology_repo: TechnologyRepository,
         outbox_service: OutboxService,
+        assessment_repo: AssessmentRepository | None = None,
+        blueprint_repo: BlueprintRepository | None = None,
     ) -> None:
         self._project_repo = project_repo
         self._group_repo = group_repo
         self._technology_repo = technology_repo
         self._outbox_service = outbox_service
+        self._assessment_repo = assessment_repo
+        self._blueprint_repo = blueprint_repo
 
     async def create_project(
         self,
@@ -146,10 +163,10 @@ class ProjectService:
         if current_user.is_student and str(project.student_id) == str(current_user.user_id):
             return project
 
-        if current_user.is_mentor and project.group_id:
-            group = await self._group_repo.get_by_id(project.group_id)
-            if group and str(group.mentor_id) == str(current_user.user_id):
-                return project
+        if current_user.is_mentor and await is_mentor_supervising_project(
+            self._group_repo, project, current_user.user_id
+        ):
+            return project
 
         raise AuthorizationException(
             "Access to this project is denied.", code="AUTH_FORBIDDEN_RESOURCE"
@@ -173,6 +190,37 @@ class ProjectService:
 
         return []
 
+    async def list_group_projects(
+        self,
+        group_id: uuid.UUID,
+        current_user: CurrentUser,
+    ) -> Sequence[ProjectInstanceModel]:
+        """List all projects associated with a specific group with permission verification."""
+        group = await self._group_repo.get_by_id(group_id)
+        if not group:
+            raise NotFoundException(f"Group {group_id} not found.", code="GROUP_NOT_FOUND")
+
+        if current_user.is_mentor and str(group.mentor_id) != str(current_user.user_id):
+            raise AuthorizationException(
+                "You do not supervise this group.",
+                code="AUTH_FORBIDDEN_RESOURCE",
+            )
+        if current_user.is_student:
+            membership = await self._group_repo.get_active_membership_for_student(
+                current_user.user_id, group_id
+            )
+            if not membership:
+                raise AuthorizationException(
+                    "You are not an active member of this group.",
+                    code="AUTH_FORBIDDEN_RESOURCE",
+                )
+
+        all_projects = await self._project_repo.list_by_group(group_id)
+        if current_user.is_student:
+            return [p for p in all_projects if str(p.student_id) == str(current_user.user_id)]
+        return all_projects
+
+
     async def update_project(
         self,
         project_id: uuid.UUID,
@@ -194,13 +242,26 @@ class ProjectService:
             )
 
         if name is not None:
-            project.name = name.strip()
+            clean_name = name.strip()
+            if not clean_name:
+                raise BusinessRuleException(
+                    "Project name cannot be empty.",
+                    code="PROJECT_INVALID_NAME",
+                )
+            project.name = clean_name
         if problem is not None:
             project.problem = problem.strip()
         if proposed_solution is not None:
             project.proposed_solution = proposed_solution.strip()
         if complexity is not None:
-            project.complexity = complexity
+            try:
+                target_complexity_enum = ProjectComplexity(complexity)
+            except ValueError as exc:
+                raise BusinessRuleException(
+                    f"Unknown complexity value: {complexity}.",
+                    code="PROJECT_INVALID_COMPLEXITY",
+                ) from exc
+            project.complexity = target_complexity_enum.value
         if deadline is not None:
             project.deadline = deadline
 
@@ -338,6 +399,61 @@ class ProjectService:
             delta = project.deadline - datetime.now(UTC)
             days_remaining = max(0, delta.days)
 
+        # Assessment summary synthesis
+        assessment_summary: dict[str, Any] | None = None
+        if self._assessment_repo:
+            try:
+                assessment = await self._assessment_repo.get_by_project_id(project.id)
+                if assessment:
+                    result = await self._assessment_repo.get_result_by_project_id(project.id)
+                    assessment_summary = {
+                        "status": assessment.status,
+                        "overall_score": result.overall_score if result else None,
+                        "readiness_tier": result.readiness_tier if result else None,
+                        "dimension_scores": result.dimension_scores if result else None,
+                        "technical_gaps_count": len(result.technical_gaps) if (result and result.technical_gaps) else 0,
+                        "recommendations_count": len(result.recommendations) if (result and result.recommendations) else 0,
+                        "completed_at": assessment.completed_at.isoformat() if assessment.completed_at else None,
+                    }
+                else:
+                    assessment_summary = {
+                        "status": "NOT_STARTED",
+                        "overall_score": None,
+                        "readiness_tier": None,
+                        "dimension_scores": None,
+                        "technical_gaps_count": 0,
+                        "recommendations_count": 0,
+                        "completed_at": None,
+                    }
+            except Exception as exc:
+                logger.warning("Failed to retrieve assessment summary for project overview", error=str(exc))
+
+        # Blueprint summary synthesis
+        blueprint_summary: dict[str, Any] | None = None
+        if self._blueprint_repo:
+            try:
+                blueprint = await self._blueprint_repo.get_by_project_id(project.id)
+                if blueprint:
+                    blueprint_summary = {
+                        "id": str(blueprint.id),
+                        "status": blueprint.status,
+                        "qa_status": blueprint.qa_status,
+                        "qa_score": blueprint.qa_score,
+                        "approved_at": blueprint.approved_at.isoformat() if blueprint.approved_at else None,
+                        "total_sections": len(blueprint.content) if blueprint.content else 0,
+                    }
+                else:
+                    blueprint_summary = {
+                        "id": None,
+                        "status": "NOT_STARTED",
+                        "qa_status": "PENDING",
+                        "qa_score": None,
+                        "approved_at": None,
+                        "total_sections": 0,
+                    }
+            except Exception as exc:
+                logger.warning("Failed to retrieve blueprint summary for project overview", error=str(exc))
+
         return {
             "id": str(project.id),
             "student_id": str(project.student_id),
@@ -345,6 +461,10 @@ class ProjectService:
             "project_definition_id": str(project.project_definition_id)
             if project.project_definition_id
             else None,
+            "source_definition_version_id": str(project.source_definition_version_id)
+            if project.source_definition_version_id
+            else None,
+            "is_mentor_project": bool(project.project_definition_id),
             "name": project.name,
             "problem": project.problem,
             "proposed_solution": project.proposed_solution,
@@ -355,6 +475,8 @@ class ProjectService:
             "status": project.status,
             "deadline": project.deadline.isoformat() if project.deadline else None,
             "days_remaining": days_remaining,
+            "assessment_summary": assessment_summary,
+            "blueprint_summary": blueprint_summary,
             "profile": {
                 "objective": profile.objective if profile else "",
                 "target_users": profile.target_users if profile else "",
@@ -398,3 +520,196 @@ class ProjectService:
                 else None,
             },
         }
+
+    async def list_supervised_projects(
+        self,
+        mentor_id: uuid.UUID | str,
+        *,
+        group_id: uuid.UUID | str | None = None,
+        phase: str | None = None,
+        health: str | None = None,
+        status: str | None = None,
+        search: str | None = None,
+    ) -> list[MentorProjectInstanceSummarySchema]:
+        """List all project instances across groups supervised by the mentor."""
+        mentor_groups = await self._group_repo.list_by_mentor(mentor_id)
+        if not mentor_groups:
+            return []
+
+        group_ids = [g.id for g in mentor_groups]
+        records = await self._project_repo.list_supervised_projects(
+            group_ids=group_ids,
+            group_id=group_id,
+            phase=phase,
+            health=health,
+            status=status,
+            search=search,
+        )
+
+        return [
+            MentorProjectInstanceSummarySchema(
+                id=str(proj.id),
+                name=proj.name,
+                student_id=str(student.id),
+                student_name=student.full_name or student.email,
+                student_email=student.email,
+                group_id=str(grp.id) if grp else None,
+                group_name=grp.name if grp else None,
+                current_phase=proj.current_phase,
+                health=proj.health,
+                progress_percentage=proj.progress_percentage,
+                status=proj.status,
+                deadline=proj.deadline,
+                source_definition_id=str(defn.id) if defn else None,
+                source_definition_name=defn.name if defn else None,
+                source_definition_version_number=ver.version_number if ver else None,
+                created_at=proj.created_at,
+                updated_at=proj.updated_at,
+            )
+            for proj, student, grp, defn, ver in records
+        ]
+
+    async def get_supervised_project_detail(
+        self,
+        project_id: uuid.UUID | str,
+        mentor_id: uuid.UUID | str,
+    ) -> MentorProjectInstanceDetailSchema:
+        """Fetch project instance detail with student, group, and pinned definition snapshot context."""
+        record = await self._project_repo.get_supervised_project_detail(project_id)
+        if not record:
+            raise NotFoundException(f"Project {project_id} not found.", code="PROJECT_NOT_FOUND")
+
+        proj, student, grp, defn, ver, profile = record
+
+        is_supervised = await self.is_project_supervised_by_mentor(proj, mentor_id)
+        if not is_supervised:
+            raise AuthorizationException(
+                "You do not supervise this project instance.",
+                code="AUTH_FORBIDDEN_RESOURCE",
+            )
+
+        return MentorProjectInstanceDetailSchema(
+            id=str(proj.id),
+            name=proj.name,
+            problem=proj.problem,
+            proposed_solution=proj.proposed_solution,
+            complexity=proj.complexity,
+            current_phase=proj.current_phase,
+            health=proj.health,
+            progress_percentage=proj.progress_percentage,
+            status=proj.status,
+            deadline=proj.deadline,
+            started_at=proj.started_at,
+            completed_at=proj.completed_at,
+            student_id=str(student.id),
+            student_name=student.full_name or student.email,
+            student_email=student.email,
+            group_id=str(grp.id) if grp else None,
+            group_name=grp.name if grp else None,
+            source_definition_id=str(defn.id) if defn else None,
+            source_definition_name=defn.name if defn else None,
+            source_definition_version_number=ver.version_number if ver else None,
+            objective=profile.objective if profile else None,
+            scope=profile.scope if profile else None,
+            expected_outcome=profile.expected_outcome if profile else None,
+            created_at=proj.created_at,
+            updated_at=proj.updated_at,
+        )
+
+    async def list_at_risk_projects(
+        self,
+        mentor_id: uuid.UUID | str,
+        *,
+        group_id: uuid.UUID | str | None = None,
+        health: str | None = None,
+    ) -> list[MentorProjectInstanceSummarySchema]:
+        """List all at-risk (WARNING and CRITICAL) project instances across mentor cohorts."""
+        mentor_groups = await self._group_repo.list_by_mentor(mentor_id)
+        if not mentor_groups:
+            return []
+
+        group_ids = [g.id for g in mentor_groups]
+        records = await self._project_repo.list_at_risk_projects(
+            group_ids=group_ids,
+            group_id=group_id,
+            health=health,
+        )
+
+        return [
+            MentorProjectInstanceSummarySchema(
+                id=str(proj.id),
+                name=proj.name,
+                student_id=str(student.id),
+                student_name=student.full_name or student.email,
+                student_email=student.email,
+                group_id=str(grp.id) if grp else None,
+                group_name=grp.name if grp else None,
+                current_phase=proj.current_phase,
+                health=proj.health,
+                progress_percentage=proj.progress_percentage,
+                status=proj.status,
+                deadline=proj.deadline,
+                source_definition_id=str(defn.id) if defn else None,
+                source_definition_name=defn.name if defn else None,
+                source_definition_version_number=ver.version_number if ver else None,
+                created_at=proj.created_at,
+                updated_at=proj.updated_at,
+            )
+            for proj, student, grp, defn, ver in records
+        ]
+
+    async def get_at_risk_project_detail(
+        self,
+        project_id: uuid.UUID | str,
+        mentor_id: uuid.UUID | str,
+    ) -> MentorProjectInstanceDetailSchema:
+        """Fetch read-only detail of an at-risk project instance."""
+        detail = await self.get_supervised_project_detail(project_id, mentor_id)
+        if detail.health not in (ProjectHealth.WARNING.value, ProjectHealth.CRITICAL.value):
+            raise NotFoundException(
+                "Project is not currently at risk.",
+                code="PROJECT_NOT_AT_RISK",
+            )
+        return detail
+
+    async def is_project_supervised_by_mentor(
+        self,
+        project: ProjectInstanceModel | uuid.UUID | str,
+        mentor_id: uuid.UUID | str,
+    ) -> bool:
+        """Check whether a project instance falls under the mentor's supervision scope.
+
+        Supervision holds if either:
+        1. The project has a group_id directly matching one of the mentor's supervised groups.
+        2. The student owning the project is an active member in any active group supervised by the mentor.
+        """
+        proj_model = project
+        if not hasattr(proj_model, "student_id"):
+            proj_model = await self._project_repo.get_by_id(project)
+            if not proj_model:
+                return False
+
+        return await is_mentor_supervising_project(self._group_repo, proj_model, mentor_id)
+
+    async def assert_mentor_supervises_project(
+        self,
+        project_id: uuid.UUID | str,
+        mentor_id: uuid.UUID | str,
+    ) -> ProjectInstanceModel:
+        """Assert that the mentor supervises the project instance.
+
+        Returns the project instance model if supervised, raises NotFoundException (404) if project
+        doesn't exist, or AuthorizationException (403) if the project is not supervised by the mentor.
+        """
+        project = await self._project_repo.get_by_id(project_id)
+        if not project:
+            raise NotFoundException(f"Project {project_id} not found.", code="PROJECT_NOT_FOUND")
+
+        is_supervised = await self.is_project_supervised_by_mentor(project, mentor_id)
+        if not is_supervised:
+            raise AuthorizationException(
+                "You do not supervise this project instance.",
+                code="AUTH_FORBIDDEN_RESOURCE",
+            )
+        return project
+

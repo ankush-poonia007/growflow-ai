@@ -38,14 +38,63 @@ class ProjectDefinitionRepository(BaseRepository[ProjectDefinitionModel]):
 
     async def list_by_mentor(
         self, mentor_id: uuid.UUID | str, status: str | None = None
-    ) -> Sequence[ProjectDefinitionModel]:
-        stmt = select(ProjectDefinitionModel).where(
-            ProjectDefinitionModel.owner_mentor_id == str(mentor_id)
+    ) -> Sequence[tuple[ProjectDefinitionModel, ProjectDefinitionVersionModel | None]]:
+        stmt = (
+            select(ProjectDefinitionModel, ProjectDefinitionVersionModel)
+            .outerjoin(
+                ProjectDefinitionVersionModel,
+                ProjectDefinitionModel.current_version_id == ProjectDefinitionVersionModel.id,
+            )
+            .where(ProjectDefinitionModel.owner_mentor_id == str(mentor_id))
+            .order_by(
+                ProjectDefinitionModel.updated_at.desc(),
+                ProjectDefinitionModel.name.asc(),
+            )
         )
         if status:
             stmt = stmt.where(ProjectDefinitionModel.status == status)
         result = await self._session.execute(stmt)
-        return result.scalars().all()
+        return [(row[0], row[1]) for row in result.all()]
+
+    async def list_active_catalog(
+        self,
+    ) -> Sequence[tuple[ProjectDefinitionModel, ProjectDefinitionVersionModel | None]]:
+        """Retrieve all ACTIVE project definitions efficiently outer-joined with their current version snapshot."""
+        stmt = (
+            select(ProjectDefinitionModel, ProjectDefinitionVersionModel)
+            .outerjoin(
+                ProjectDefinitionVersionModel,
+                ProjectDefinitionModel.current_version_id == ProjectDefinitionVersionModel.id,
+            )
+            .where(ProjectDefinitionModel.status == ProjectDefinitionStatus.ACTIVE.value)
+            .order_by(
+                ProjectDefinitionModel.created_at.desc(),
+                ProjectDefinitionModel.name.asc(),
+            )
+        )
+        result = await self._session.execute(stmt)
+        return [(row[0], row[1]) for row in result.all()]
+
+    async def get_active_catalog_item(
+        self, definition_id: uuid.UUID | str
+    ) -> tuple[ProjectDefinitionModel, ProjectDefinitionVersionModel | None] | None:
+        """Retrieve an ACTIVE project definition outer-joined with its current version snapshot."""
+        stmt = (
+            select(ProjectDefinitionModel, ProjectDefinitionVersionModel)
+            .outerjoin(
+                ProjectDefinitionVersionModel,
+                ProjectDefinitionModel.current_version_id == ProjectDefinitionVersionModel.id,
+            )
+            .where(
+                ProjectDefinitionModel.id == str(definition_id),
+                ProjectDefinitionModel.status == ProjectDefinitionStatus.ACTIVE.value,
+            )
+        )
+        result = await self._session.execute(stmt)
+        row = result.first()
+        if not row:
+            return None
+        return (row[0], row[1])
 
     async def create_definition(
         self,

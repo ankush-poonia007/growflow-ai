@@ -57,20 +57,26 @@ async def get_current_user(
         AuthorizationException: If the user's account is suspended or inactive (HTTP 403).
     """
     auth_header = request.headers.get("Authorization")
-    if not auth_header:
-        raise AuthenticationException(
-            message="Authorization header is missing.",
-            code="AUTH_MISSING_TOKEN",
-        )
-
-    parts = auth_header.split()
-    if len(parts) != 2 or parts[0].lower() != "bearer":
-        raise AuthenticationException(
-            message="Authorization header must follow 'Bearer <token>' format.",
-            code="AUTH_INVALID_TOKEN_FORMAT",
-        )
-
-    raw_token = parts[1]
+    raw_token: str | None = None
+    if auth_header:
+        parts = auth_header.split()
+        if len(parts) != 2 or parts[0].lower() != "bearer":
+            raise AuthenticationException(
+                message="Authorization header must follow 'Bearer <token>' format.",
+                code="AUTH_INVALID_TOKEN_FORMAT",
+            )
+        raw_token = parts[1]
+    else:
+        query_token = request.query_params.get("token")
+        # Restrict query parameter token extraction strictly to SSE streaming endpoints
+        # where native browser EventSource is unable to send HTTP Authorization headers.
+        if query_token and request.url.path.endswith("/events"):
+            raw_token = query_token
+        else:
+            raise AuthenticationException(
+                message="Authorization header is missing.",
+                code="AUTH_MISSING_TOKEN",
+            )
 
     # 1. Cryptographic JWT verification (PyJWT HS256)
     verifier = SupabaseJWTVerifier(settings=settings)

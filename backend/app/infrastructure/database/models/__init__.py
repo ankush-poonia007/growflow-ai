@@ -4,6 +4,24 @@ GrowFlow — Database ORM Models Package.
 Registers all SQLAlchemy ORM models with Base.metadata.
 """
 
+from backend.app.infrastructure.database.models.assessment import (
+    AssessmentAnswerModel,
+    AssessmentModel,
+    AssessmentResultModel,
+)
+from backend.app.infrastructure.database.models.blueprint import (
+    BlueprintJobModel,
+    BlueprintModel,
+)
+from backend.app.infrastructure.database.models.execution import (
+    ProjectDocumentModel,
+    ProjectMilestoneModel,
+    ProjectRiskModel,
+    ProjectTaskModel,
+)
+from backend.app.infrastructure.database.models.notification import (
+    NotificationModel,
+)
 from backend.app.infrastructure.database.models.organization import (
     GroupMembershipModel,
     GroupModel,
@@ -26,18 +44,44 @@ from backend.app.infrastructure.database.models.project import (
     ProjectTechnologyModel,
 )
 from backend.app.infrastructure.database.models.user import UserModel
+from backend.app.infrastructure.database.models.workspace_extensions import (
+    AIMentorConversationModel,
+    AIMentorMessageModel,
+    ProjectBlueprintVersionModel,
+    ProjectChangeRequestModel,
+    ProjectGitHubIntegrationModel,
+    ProjectHelpRequestModel,
+    ProjectMentorNoteModel,
+)
 
 __all__ = [
+    "AIMentorConversationModel",
+    "AIMentorMessageModel",
+    "AssessmentAnswerModel",
+    "AssessmentModel",
+    "AssessmentResultModel",
+    "BlueprintJobModel",
+    "BlueprintModel",
     "DomainEventModel",
     "GroupMembershipModel",
     "GroupModel",
     "MentorProfileModel",
+    "NotificationModel",
+    "ProjectBlueprintVersionModel",
+    "ProjectChangeRequestModel",
     "ProjectDefinitionModel",
     "ProjectDefinitionVersionModel",
+    "ProjectDocumentModel",
+    "ProjectGitHubIntegrationModel",
     "ProjectHealthHistoryModel",
+    "ProjectHelpRequestModel",
     "ProjectInstanceModel",
+    "ProjectMentorNoteModel",
+    "ProjectMilestoneModel",
     "ProjectPhaseHistoryModel",
     "ProjectProfileModel",
+    "ProjectRiskModel",
+    "ProjectTaskModel",
     "ProjectTechnologyModel",
     "StudentProfileModel",
     "StudentTechnologyModel",
@@ -45,3 +89,4 @@ __all__ = [
     "UserModel",
     "UserPreferenceModel",
 ]
+

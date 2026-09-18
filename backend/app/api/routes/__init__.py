@@ -1,7 +1,9 @@
 """GrowFlow API routes package."""
 
 from backend.app.api.routes import (
+    assessment,
     auth,
+    blueprint,
     groups,
     health,
     mentors,
@@ -12,7 +14,9 @@ from backend.app.api.routes import (
 )
 
 __all__ = [
+    "assessment",
     "auth",
+    "blueprint",
     "groups",
     "health",
     "mentors",
@@ -21,3 +25,4 @@ __all__ = [
     "students",
     "users",
 ]
+

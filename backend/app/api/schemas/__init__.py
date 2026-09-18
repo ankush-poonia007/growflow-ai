@@ -4,6 +4,13 @@ GrowFlow — API Schemas Package.
 Exports all request and response Pydantic models.
 """
 
+from backend.app.api.schemas.blueprint import (
+    BlueprintApproveResponse,
+    BlueprintContentResponse,
+    BlueprintGeneratePayload,
+    BlueprintRetryPayload,
+    BlueprintStatusResponse,
+)
 from backend.app.api.schemas.group import (
     GroupCreateSchema,
     GroupJoinSchema,
@@ -33,6 +40,7 @@ from backend.app.api.schemas.project import (
 )
 from backend.app.api.schemas.project_definition import (
     ProjectDefinitionAssignSchema,
+    ProjectDefinitionCatalogItemSchema,
     ProjectDefinitionCreateSchema,
     ProjectDefinitionResponseSchema,
     ProjectDefinitionUpdateSchema,
@@ -40,6 +48,11 @@ from backend.app.api.schemas.project_definition import (
 )
 
 __all__ = [
+    "BlueprintApproveResponse",
+    "BlueprintContentResponse",
+    "BlueprintGeneratePayload",
+    "BlueprintRetryPayload",
+    "BlueprintStatusResponse",
     "GroupCreateSchema",
     "GroupJoinSchema",
     "GroupMembershipResponseSchema",
@@ -50,6 +63,7 @@ __all__ = [
     "MentorProfileUpdateSchema",
     "ProjectCreateSchema",
     "ProjectDefinitionAssignSchema",
+    "ProjectDefinitionCatalogItemSchema",
     "ProjectDefinitionCreateSchema",
     "ProjectDefinitionResponseSchema",
     "ProjectDefinitionUpdateSchema",
