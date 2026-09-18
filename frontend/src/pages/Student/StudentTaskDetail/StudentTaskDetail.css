@@ -1,0 +1,149 @@
+/* StudentTaskDetail.css */
+
+.gf-task-detail-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.gf-task-detail-container {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 var(--gf-space-8, 2rem) var(--gf-space-12, 3rem) var(--gf-space-8, 2rem);
+}
+
+.gf-task-detail-header-card {
+  background: var(--gf-surface, #ffffff);
+  border: 1px solid var(--gf-border-subtle, rgba(0, 0, 0, 0.08));
+  border-radius: var(--gf-radius-lg, 12px);
+  padding: var(--gf-space-6, 1.5rem);
+  margin-bottom: var(--gf-space-6, 1.5rem);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--gf-space-4, 1rem);
+  flex-wrap: wrap;
+}
+
+.gf-task-detail-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-2, 0.5rem);
+}
+
+.gf-task-detail-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--gf-font-size-sm, 0.875rem);
+  color: var(--gf-text-secondary, #64748b);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.15s ease;
+}
+
+.gf-task-detail-back-link:hover {
+  color: var(--gf-text-primary, #0f172a);
+}
+
+.gf-task-detail-code-badge {
+  font-family: monospace;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #475569;
+  background: #f1f5f9;
+  padding: 3px 8px;
+  border-radius: 6px;
+  align-self: flex-start;
+}
+
+.gf-task-detail-title {
+  font-size: var(--gf-font-size-2xl, 1.75rem);
+  font-weight: 700;
+  color: var(--gf-text-primary, #0f172a);
+  margin: 0;
+}
+
+.gf-task-detail-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--gf-space-6, 1.5rem);
+  align-items: flex-start;
+}
+
+.gf-task-detail-card {
+  background: var(--gf-surface, #ffffff);
+  border: 1px solid var(--gf-border-subtle, rgba(0, 0, 0, 0.08));
+  border-radius: var(--gf-radius-lg, 12px);
+  padding: var(--gf-space-6, 1.5rem);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-5, 1.25rem);
+}
+
+.gf-task-detail-card h3 {
+  font-size: var(--gf-font-size-md, 1rem);
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+  padding-bottom: var(--gf-space-3, 0.75rem);
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.gf-checklist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-2, 0.5rem);
+}
+
+.gf-checklist-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: var(--gf-space-2, 0.5rem) var(--gf-space-3, 0.75rem);
+  font-size: var(--gf-font-size-sm, 0.875rem);
+}
+
+.gf-checklist-remove-btn {
+  background: transparent;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  font-size: 0.875rem;
+  padding: 2px 6px;
+}
+
+.gf-checklist-add {
+  display: flex;
+  gap: var(--gf-space-2, 0.5rem);
+  margin-top: var(--gf-space-2, 0.5rem);
+}
+
+.gf-task-detail-meta-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-3, 0.75rem);
+  font-size: var(--gf-font-size-xs, 0.75rem);
+  color: #64748b;
+  padding-top: var(--gf-space-3, 0.75rem);
+  border-top: 1px solid #f1f5f9;
+}
+
+.gf-task-detail-actions-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-3, 0.75rem);
+}
+
+@media (max-width: 860px) {
+  .gf-task-detail-grid {
+    grid-template-columns: 1fr;
+  }
+}

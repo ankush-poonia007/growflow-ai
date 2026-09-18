@@ -1,0 +1,59 @@
+/* StudentMilestoneDetail.css */
+
+.gf-milestone-detail-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.gf-milestone-detail-container {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 var(--gf-space-8, 2rem) var(--gf-space-12, 3rem) var(--gf-space-8, 2rem);
+}
+
+.gf-milestone-detail-header-card {
+  background: var(--gf-surface, #ffffff);
+  border: 1px solid var(--gf-border-subtle, rgba(0, 0, 0, 0.08));
+  border-radius: var(--gf-radius-lg, 12px);
+  padding: var(--gf-space-6, 1.5rem);
+  margin-bottom: var(--gf-space-6, 1.5rem);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--gf-space-4, 1rem);
+  flex-wrap: wrap;
+}
+
+.gf-milestone-detail-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--gf-space-6, 1.5rem);
+  align-items: flex-start;
+}
+
+.gf-milestone-detail-card {
+  background: var(--gf-surface, #ffffff);
+  border: 1px solid var(--gf-border-subtle, rgba(0, 0, 0, 0.08));
+  border-radius: var(--gf-radius-lg, 12px);
+  padding: var(--gf-space-6, 1.5rem);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-4, 1rem);
+}
+
+.gf-milestone-detail-card h3 {
+  font-size: var(--gf-font-size-md, 1rem);
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+  padding-bottom: var(--gf-space-3, 0.75rem);
+  border-bottom: 1px solid #f1f5f9;
+}
+
+@media (max-width: 860px) {
+  .gf-milestone-detail-grid {
+    grid-template-columns: 1fr;
+  }
+}

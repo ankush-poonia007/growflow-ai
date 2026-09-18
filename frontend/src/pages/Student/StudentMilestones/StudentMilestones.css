@@ -1,0 +1,183 @@
+/* StudentMilestones.css */
+
+.gf-milestones-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.gf-milestones-container {
+  max-width: 1440px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 var(--gf-space-8, 2rem) var(--gf-space-12, 3rem) var(--gf-space-8, 2rem);
+}
+
+.gf-milestones-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--gf-space-6, 1.5rem);
+  flex-wrap: wrap;
+  gap: var(--gf-space-4, 1rem);
+}
+
+.gf-milestones-title-group h2 {
+  font-size: var(--gf-font-size-xl, 1.25rem);
+  font-weight: 700;
+  color: var(--gf-text-primary, #0f172a);
+  margin: 0 0 0.25rem 0;
+}
+
+.gf-milestones-title-group p {
+  font-size: var(--gf-font-size-sm, 0.875rem);
+  color: var(--gf-text-secondary, #64748b);
+  margin: 0;
+}
+
+/* Timeline Layout */
+.gf-milestones-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-5, 1.25rem);
+  position: relative;
+}
+
+.gf-milestone-card {
+  background: var(--gf-surface, #ffffff);
+  border: 1px solid var(--gf-border-subtle, rgba(0, 0, 0, 0.08));
+  border-radius: var(--gf-radius-xl, 16px);
+  padding: var(--gf-space-6, 1.5rem);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-4, 1rem);
+  text-decoration: none;
+  color: inherit;
+}
+
+.gf-milestone-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  border-color: var(--gf-accent, #0284c7);
+}
+
+.gf-milestone-card__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--gf-space-3, 0.75rem);
+}
+
+.gf-milestone-card__gate-title {
+  display: flex;
+  align-items: center;
+  gap: var(--gf-space-3, 0.75rem);
+}
+
+.gf-milestone-gate-badge {
+  font-family: monospace;
+  font-size: 0.875rem;
+  font-weight: 800;
+  background: #0284c7;
+  color: #ffffff;
+  padding: 4px 10px;
+  border-radius: 8px;
+  letter-spacing: 0.05em;
+}
+
+.gf-milestone-card__heading {
+  font-size: var(--gf-font-size-lg, 1.125rem);
+  font-weight: 700;
+  color: var(--gf-text-primary, #0f172a);
+  margin: 0;
+}
+
+.gf-milestone-card__desc {
+  font-size: var(--gf-font-size-sm, 0.875rem);
+  color: var(--gf-text-secondary, #475569);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Progress Section */
+.gf-milestone-progress-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-2, 0.5rem);
+}
+
+.gf-milestone-progress-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--gf-font-size-xs, 0.75rem);
+  font-weight: 600;
+  color: #64748b;
+}
+
+.gf-milestone-progress-track {
+  width: 100%;
+  height: 8px;
+  background: #f1f5f9;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.gf-milestone-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #0284c7, #10b981);
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+/* Deliverables Section */
+.gf-milestone-deliverables-title {
+  font-size: var(--gf-font-size-xs, 0.75rem);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  margin-bottom: 0.25rem;
+}
+
+.gf-milestone-deliverables-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gf-space-2, 0.5rem);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gf-milestone-deliverable-item {
+  font-size: var(--gf-font-size-xs, 0.75rem);
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 4px 8px;
+  border-radius: 6px;
+  color: #334155;
+}
+
+/* Footer Meta */
+.gf-milestone-card__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--gf-space-3, 0.75rem);
+  border-top: 1px solid #f1f5f9;
+  font-size: var(--gf-font-size-xs, 0.75rem);
+  color: #64748b;
+}
+
+@media (max-width: 640px) {
+  .gf-milestones-container {
+    padding: 0 var(--gf-space-4, 1rem) var(--gf-space-8, 2rem) var(--gf-space-4, 1rem);
+  }
+
+  .gf-milestones-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

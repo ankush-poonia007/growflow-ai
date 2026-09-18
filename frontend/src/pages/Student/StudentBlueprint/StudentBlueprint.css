@@ -1,0 +1,860 @@
+/* ==========================================================================
+   GrowFlow — Stage 3 Student Blueprint Workflow Styles
+   Tokens: Soft Intelligence (#F7F7F4, #FFFFFF, #1C1C1A, #6F7F63)
+   ========================================================================== */
+
+.gf-blueprint-container {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: var(--gf-space-6) var(--gf-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-6);
+  min-height: calc(100vh - var(--gf-nav-height-auth));
+}
+
+@media (min-width: 768px) {
+  .gf-blueprint-container {
+    padding: var(--gf-space-8) var(--gf-space-6);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Blueprint Header
+   -------------------------------------------------------------------------- */
+.gf-blueprint-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-3);
+}
+
+.gf-blueprint-header__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--gf-space-2);
+}
+
+.gf-blueprint-header__back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gf-space-2);
+  font-size: var(--gf-text-caption-size);
+  color: var(--gf-color-text-secondary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color var(--gf-duration-fast), transform var(--gf-duration-fast);
+}
+
+.gf-blueprint-header__back:hover {
+  color: var(--gf-color-text-primary);
+  transform: translateX(-2px);
+}
+
+.gf-blueprint-header__eyebrow {
+  font-size: var(--gf-text-metadata-size);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gf-color-accent);
+}
+
+.gf-blueprint-header__title {
+  margin: var(--gf-space-1) 0;
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  font-weight: 700;
+  color: var(--gf-color-text-primary);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.gf-blueprint-header__subtitle {
+  margin: 0;
+  font-size: var(--gf-text-body-size);
+  color: var(--gf-color-text-secondary);
+  max-width: 720px;
+  line-height: 1.55;
+}
+
+/* --------------------------------------------------------------------------
+   Card Foundations
+   -------------------------------------------------------------------------- */
+.gf-blueprint-card {
+  background-color: var(--gf-color-surface);
+  border: 1px solid var(--gf-color-border-standard);
+  border-radius: var(--gf-radius-lg);
+  padding: var(--gf-space-6);
+  box-shadow: 0 4px 12px -2px rgba(28, 28, 26, 0.04);
+}
+
+@media (min-width: 768px) {
+  .gf-blueprint-card {
+    padding: var(--gf-space-8);
+  }
+}
+
+.gf-blueprint-card__title {
+  margin: var(--gf-space-1) 0 var(--gf-space-2);
+  font-size: var(--gf-text-h4-size);
+  font-weight: 700;
+  color: var(--gf-color-text-primary);
+  letter-spacing: -0.015em;
+}
+
+.gf-blueprint-card__desc {
+  margin: 0;
+  font-size: var(--gf-text-body-size);
+  color: var(--gf-color-text-secondary);
+  line-height: 1.6;
+  max-width: 800px;
+}
+
+.gf-blueprint-badge-subtle {
+  display: inline-block;
+  font-size: var(--gf-text-metadata-size);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gf-color-accent);
+  background-color: var(--gf-color-accent-soft);
+  padding: 3px 8px;
+  border-radius: var(--gf-radius-sm);
+  margin-bottom: var(--gf-space-1);
+}
+
+.gf-blueprint-badge-error {
+  display: inline-block;
+  font-size: var(--gf-text-metadata-size);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gf-color-error);
+  background-color: rgba(220, 38, 38, 0.08);
+  padding: 3px 8px;
+  border-radius: var(--gf-radius-sm);
+  margin-bottom: var(--gf-space-1);
+}
+
+.gf-blueprint-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--gf-space-4);
+  flex-wrap: wrap;
+  margin-top: var(--gf-space-6);
+}
+
+/* --------------------------------------------------------------------------
+   Prerequisite Card
+   -------------------------------------------------------------------------- */
+.gf-blueprint-prereq-card {
+  display: flex;
+  gap: var(--gf-space-5);
+  align-items: flex-start;
+}
+
+.gf-blueprint-prereq__icon-wrap {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--gf-radius-md);
+  background-color: var(--gf-color-secondary);
+  color: var(--gf-color-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.gf-blueprint-prereq__content {
+  flex: 1;
+}
+
+.gf-blueprint-prereq__actions {
+  display: flex;
+  gap: var(--gf-space-3);
+  margin-top: var(--gf-space-6);
+  flex-wrap: wrap;
+}
+
+/* --------------------------------------------------------------------------
+   S12 Initial State / Hero Card
+   -------------------------------------------------------------------------- */
+.gf-blueprint-hero-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--gf-space-4);
+  flex-wrap: wrap;
+}
+
+.gf-blueprint-hero-card__badge-score {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  background-color: var(--gf-color-secondary);
+  padding: var(--gf-space-2) var(--gf-space-4);
+  border-radius: var(--gf-radius-md);
+}
+
+.gf-blueprint-score-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gf-color-text-tertiary);
+  font-weight: 600;
+}
+
+.gf-blueprint-score-num {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--gf-color-accent);
+}
+
+.gf-blueprint-sections-preview {
+  margin-top: var(--gf-space-6);
+}
+
+.gf-blueprint-subheading {
+  margin: 0 0 var(--gf-space-3);
+  font-size: var(--gf-text-caption-size);
+  font-weight: 600;
+  color: var(--gf-color-text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.gf-blueprint-sections-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--gf-space-3);
+}
+
+.gf-blueprint-section-preview-item {
+  display: flex;
+  align-items: center;
+  gap: var(--gf-space-3);
+  padding: var(--gf-space-3) var(--gf-space-4);
+  background-color: var(--gf-color-secondary);
+  border: 1px solid var(--gf-color-border-subtle);
+  border-radius: var(--gf-radius-md);
+  transition: transform var(--gf-duration-fast), border-color var(--gf-duration-fast);
+}
+
+.gf-blueprint-section-preview-item:hover {
+  border-color: var(--gf-color-border-standard);
+  transform: translateY(var(--gf-interaction-translate-y-subtle));
+}
+
+.gf-blueprint-section-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: var(--gf-color-surface);
+  color: var(--gf-color-accent);
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.gf-blueprint-section-name {
+  font-size: var(--gf-text-caption-size);
+  font-weight: 500;
+  color: var(--gf-color-text-primary);
+}
+
+.gf-blueprint-engine-notice {
+  font-size: var(--gf-text-metadata-size);
+  color: var(--gf-color-text-tertiary);
+}
+
+/* --------------------------------------------------------------------------
+   S12 Generating Progress
+   -------------------------------------------------------------------------- */
+.gf-blueprint-progress-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--gf-space-4);
+  flex-wrap: wrap;
+}
+
+.gf-blueprint-progress-circle-wrap {
+  flex-shrink: 0;
+}
+
+.gf-blueprint-progress-circle {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  border: 4px solid var(--gf-color-border-subtle);
+  border-top-color: var(--gf-color-accent);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--gf-color-surface);
+  animation: gf-spin-border 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes gf-spin-border {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.gf-blueprint-progress-percent {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--gf-color-text-primary);
+  line-height: 1;
+  transform: rotate(0);
+}
+
+.gf-blueprint-progress-count {
+  font-size: 10px;
+  color: var(--gf-color-text-tertiary);
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.gf-blueprint-progress-bar-wrap {
+  width: 100%;
+  height: 6px;
+  background-color: var(--gf-color-secondary);
+  border-radius: 999px;
+  overflow: hidden;
+  margin: var(--gf-space-6) 0;
+}
+
+.gf-blueprint-progress-bar-fill {
+  height: 100%;
+  background-color: var(--gf-color-accent);
+  border-radius: 999px;
+  transition: width 0.35s ease-out;
+}
+
+.gf-blueprint-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-2);
+}
+
+.gf-blueprint-checklist-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--gf-space-3) var(--gf-space-4);
+  border-radius: var(--gf-radius-md);
+  border: 1px solid var(--gf-color-border-subtle);
+  background-color: var(--gf-color-surface);
+  transition: all var(--gf-duration-fast);
+}
+
+.gf-blueprint-checklist-item__left {
+  display: flex;
+  align-items: center;
+  gap: var(--gf-space-3);
+}
+
+.gf-blueprint-checklist-num {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gf-color-text-tertiary);
+  width: 16px;
+}
+
+.gf-blueprint-checklist-item__icon-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+}
+
+.gf-blueprint-check-icon {
+  color: var(--gf-color-accent);
+}
+
+.gf-blueprint-spinner-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--gf-color-border-subtle);
+  border-top-color: var(--gf-color-accent);
+  animation: gf-spin 0.8s linear infinite;
+}
+
+@keyframes gf-spin {
+  to { transform: rotate(360deg); }
+}
+
+.gf-blueprint-pending-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--gf-color-border-standard);
+}
+
+.gf-blueprint-checklist-label {
+  font-size: var(--gf-text-caption-size);
+  font-weight: 500;
+  color: var(--gf-color-text-primary);
+}
+
+.gf-checklist-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--gf-radius-sm);
+}
+
+.gf-checklist-badge--success {
+  background-color: var(--gf-color-accent-soft);
+  color: var(--gf-color-accent);
+}
+
+.gf-checklist-badge--active {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #2563eb;
+}
+
+.gf-checklist-badge--error {
+  background-color: rgba(220, 38, 38, 0.1);
+  color: var(--gf-color-error);
+}
+
+.gf-checklist-badge--muted {
+  background-color: var(--gf-color-secondary);
+  color: var(--gf-color-text-tertiary);
+}
+
+/* --------------------------------------------------------------------------
+   S13 Failure & Recovery
+   -------------------------------------------------------------------------- */
+.gf-blueprint-failure__top {
+  display: flex;
+  gap: var(--gf-space-4);
+  align-items: flex-start;
+}
+
+.gf-blueprint-failure__icon-wrap {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--gf-radius-md);
+  background-color: rgba(220, 38, 38, 0.08);
+  color: var(--gf-color-error);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.gf-blueprint-failure__message {
+  margin: var(--gf-space-1) 0 0;
+  font-size: var(--gf-text-body-size);
+  color: var(--gf-color-text-secondary);
+  line-height: 1.5;
+}
+
+.gf-blueprint-preservation-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--gf-space-3);
+  padding: var(--gf-space-3) var(--gf-space-4);
+  background-color: var(--gf-color-accent-soft);
+  border: 1px solid rgba(111, 127, 99, 0.2);
+  border-radius: var(--gf-radius-md);
+  margin-top: var(--gf-space-5);
+  font-size: var(--gf-text-caption-size);
+  color: var(--gf-color-text-primary);
+}
+
+.gf-blueprint-preservation-icon {
+  color: var(--gf-color-accent);
+  display: flex;
+  align-items: center;
+}
+
+.gf-blueprint-affected-sections {
+  margin-top: var(--gf-space-5);
+}
+
+.gf-blueprint-failed-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gf-space-2);
+  margin-top: var(--gf-space-2);
+}
+
+.gf-blueprint-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gf-space-2);
+  padding: 4px 10px;
+  border-radius: var(--gf-radius-sm);
+  font-size: var(--gf-text-caption-size);
+  font-weight: 500;
+}
+
+.gf-blueprint-chip--error {
+  background-color: rgba(220, 38, 38, 0.08);
+  color: var(--gf-color-error);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
+/* --------------------------------------------------------------------------
+   S14 QA Scorecard & Document Preview
+   -------------------------------------------------------------------------- */
+.gf-blueprint-qa-card {
+  border-left: 4px solid var(--gf-color-accent);
+}
+
+.gf-blueprint-qa__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--gf-space-4);
+  flex-wrap: wrap;
+}
+
+.gf-blueprint-qa__score-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gf-space-2);
+}
+
+.gf-blueprint-qa__score-circle {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background-color: var(--gf-color-secondary);
+  border: 2px solid var(--gf-color-border-standard);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.gf-blueprint-qa__score-num {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--gf-color-text-primary);
+  line-height: 1;
+}
+
+.gf-blueprint-qa__score-denom {
+  font-size: 10px;
+  color: var(--gf-color-text-tertiary);
+  font-weight: 600;
+}
+
+.gf-blueprint-rubric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--gf-space-4);
+  margin-top: var(--gf-space-6);
+  padding-top: var(--gf-space-6);
+  border-top: 1px solid var(--gf-color-border-subtle);
+}
+
+.gf-blueprint-rubric-top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  margin-bottom: var(--gf-space-1);
+}
+
+.gf-blueprint-rubric-label {
+  color: var(--gf-color-text-secondary);
+  font-weight: 500;
+}
+
+.gf-blueprint-rubric-score {
+  font-weight: 700;
+  color: var(--gf-color-text-primary);
+}
+
+.gf-blueprint-rubric-track {
+  height: 5px;
+  background-color: var(--gf-color-secondary);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.gf-blueprint-rubric-fill {
+  height: 100%;
+  border-radius: 999px;
+}
+
+.gf-blueprint-feedback-columns {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--gf-space-4);
+  margin-top: var(--gf-space-6);
+  padding-top: var(--gf-space-6);
+  border-top: 1px solid var(--gf-color-border-subtle);
+}
+
+@media (min-width: 768px) {
+  .gf-blueprint-feedback-columns {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.gf-blueprint-feedback-title {
+  display: flex;
+  align-items: center;
+  gap: var(--gf-space-2);
+  margin: 0 0 var(--gf-space-2);
+  font-size: var(--gf-text-caption-size);
+  font-weight: 600;
+  color: var(--gf-color-text-primary);
+}
+
+.gf-blueprint-feedback-list {
+  margin: 0;
+  padding-left: var(--gf-space-4);
+  font-size: var(--gf-text-caption-size);
+  color: var(--gf-color-text-secondary);
+  line-height: 1.55;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-1);
+}
+
+/* --------------------------------------------------------------------------
+   10-Section Document Preview Tabs
+   -------------------------------------------------------------------------- */
+.gf-blueprint-tabs {
+  display: flex;
+  gap: var(--gf-space-2);
+  overflow-x: auto;
+  padding: var(--gf-space-2) 0;
+  margin: var(--gf-space-4) 0;
+  border-bottom: 1px solid var(--gf-color-border-subtle);
+}
+
+.gf-blueprint-tab {
+  padding: var(--gf-space-2) var(--gf-space-3);
+  border: 1px solid transparent;
+  border-radius: var(--gf-radius-md);
+  background: transparent;
+  font-family: inherit;
+  font-size: var(--gf-text-caption-size);
+  font-weight: 500;
+  color: var(--gf-color-text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--gf-duration-fast);
+}
+
+.gf-blueprint-tab:hover {
+  background-color: var(--gf-color-secondary);
+  color: var(--gf-color-text-primary);
+}
+
+.gf-blueprint-tab--active {
+  background-color: var(--gf-color-accent-soft);
+  color: var(--gf-color-accent);
+  font-weight: 600;
+  border-color: rgba(111, 127, 99, 0.2);
+}
+
+.gf-blueprint-tab-content {
+  background-color: var(--gf-color-secondary);
+  border: 1px solid var(--gf-color-border-subtle);
+  border-radius: var(--gf-radius-md);
+  padding: var(--gf-space-5);
+  margin-top: var(--gf-space-2);
+}
+
+.gf-blueprint-tab-content__title {
+  margin: 0 0 var(--gf-space-4);
+  font-size: var(--gf-text-caption-size);
+  font-weight: 700;
+  color: var(--gf-color-text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.gf-blueprint-text-content {
+  font-family: monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--gf-color-text-primary);
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0;
+}
+
+.gf-blueprint-structured-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-4);
+}
+
+.gf-blueprint-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-1);
+}
+
+.gf-blueprint-field-label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gf-color-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.gf-blueprint-field-val {
+  margin: 0;
+  font-size: var(--gf-text-caption-size);
+  color: var(--gf-color-text-primary);
+  line-height: 1.5;
+}
+
+.gf-blueprint-field-list {
+  margin: 0;
+  padding-left: var(--gf-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-1);
+  font-size: var(--gf-text-caption-size);
+  color: var(--gf-color-text-primary);
+}
+
+.gf-blueprint-json-preview {
+  margin: 0;
+  padding: var(--gf-space-3);
+  background-color: var(--gf-color-surface);
+  border: 1px solid var(--gf-color-border-subtle);
+  border-radius: var(--gf-radius-sm);
+  font-family: monospace;
+  font-size: 12px;
+  overflow-x: auto;
+  color: var(--gf-color-text-primary);
+}
+
+.gf-blueprint-empty-section {
+  font-size: var(--gf-text-caption-size);
+  color: var(--gf-color-text-tertiary);
+  font-style: italic;
+  padding: var(--gf-space-4) 0;
+}
+
+/* --------------------------------------------------------------------------
+   Authoritative Approval Banner
+   -------------------------------------------------------------------------- */
+.gf-blueprint-approval-card {
+  background-color: var(--gf-color-surface);
+  border-top: 2px solid var(--gf-color-accent);
+}
+
+.gf-blueprint-approval__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gf-space-6);
+  flex-wrap: wrap;
+}
+
+.gf-blueprint-approval__text {
+  flex: 1;
+  min-width: 280px;
+}
+
+.gf-blueprint-approval__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--gf-space-3);
+  flex-wrap: wrap;
+}
+
+/* --------------------------------------------------------------------------
+   Approved State Hero
+   -------------------------------------------------------------------------- */
+.gf-blueprint-approved-hero {
+  border-top: 4px solid var(--gf-color-accent);
+}
+
+.gf-blueprint-approved__header {
+  display: flex;
+  gap: var(--gf-space-4);
+  align-items: flex-start;
+}
+
+.gf-blueprint-approved__icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: var(--gf-color-accent-soft);
+  color: var(--gf-color-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.gf-blueprint-approved__tags {
+  display: flex;
+  align-items: center;
+  gap: var(--gf-space-3);
+  margin-bottom: var(--gf-space-1);
+}
+
+.gf-blueprint-approved-date {
+  font-size: var(--gf-text-metadata-size);
+  color: var(--gf-color-text-tertiary);
+}
+
+.gf-blueprint-approved__meta-bar {
+  display: flex;
+  gap: var(--gf-space-6);
+  padding: var(--gf-space-4) 0;
+  margin-top: var(--gf-space-4);
+  border-top: 1px solid var(--gf-color-border-subtle);
+  border-bottom: 1px solid var(--gf-color-border-subtle);
+  flex-wrap: wrap;
+}
+
+.gf-blueprint-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gf-blueprint-meta-item__label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gf-color-text-tertiary);
+  font-weight: 600;
+}
+
+.gf-blueprint-meta-item__val {
+  font-size: var(--gf-text-caption-size);
+  font-weight: 700;
+  color: var(--gf-color-text-primary);
+}
+
+/* --------------------------------------------------------------------------
+   Accessibility & Reduced Motion
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .gf-blueprint-progress-circle,
+  .gf-blueprint-spinner-dot {
+    animation: none !important;
+  }
+  .gf-blueprint-header__back,
+  .gf-blueprint-section-preview-item,
+  .gf-blueprint-tab {
+    transition: none !important;
+    transform: none !important;
+  }
+}

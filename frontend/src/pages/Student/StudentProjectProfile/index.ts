@@ -1,0 +1,1 @@
+export { StudentProjectProfile } from './StudentProjectProfile';
