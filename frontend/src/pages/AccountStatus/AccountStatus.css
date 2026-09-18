@@ -1,0 +1,92 @@
+.gf-account-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: var(--gf-space-12) var(--gf-space-4);
+  text-align: center;
+  max-width: 580px;
+  margin: 0 auto;
+}
+
+.gf-account-status__card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.gf-account-status__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 14px;
+  border-radius: var(--gf-radius-full);
+  font-size: var(--gf-text-label-sm-size);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--gf-space-4);
+}
+
+.gf-account-status__badge--suspended {
+  background: var(--gf-color-danger-soft, #fdf0ee);
+  color: var(--gf-color-danger, #c53030);
+  border: 1px solid var(--gf-color-danger, #c53030);
+}
+
+.gf-account-status__badge--inactive {
+  background: var(--gf-color-warning-soft, #fffaf0);
+  color: var(--gf-color-warning, #c05621);
+  border: 1px solid var(--gf-color-warning, #c05621);
+}
+
+.gf-account-status__graphic {
+  margin-bottom: var(--gf-space-4);
+}
+
+.gf-account-status__graphic--suspended {
+  color: var(--gf-color-danger, #c53030);
+}
+
+.gf-account-status__graphic--inactive {
+  color: var(--gf-color-warning, #c05621);
+}
+
+.gf-account-status__ring {
+  stroke: var(--gf-color-border-subtle);
+}
+
+.gf-account-status__title {
+  font-size: var(--gf-text-h2-size);
+  font-weight: 700;
+  color: var(--gf-color-text-primary);
+  margin-bottom: var(--gf-space-3);
+  letter-spacing: -0.015em;
+}
+
+.gf-account-status__message {
+  font-size: var(--gf-text-body-md-size);
+  color: var(--gf-color-text-primary);
+  line-height: var(--gf-leading-relaxed);
+  margin-bottom: var(--gf-space-3);
+  font-weight: 500;
+}
+
+.gf-account-status__help {
+  font-size: var(--gf-text-body-sm-size);
+  color: var(--gf-color-text-secondary);
+  line-height: var(--gf-leading-relaxed);
+  margin-bottom: var(--gf-space-6);
+  background: var(--gf-color-secondary);
+  padding: var(--gf-space-3) var(--gf-space-4);
+  border-radius: var(--gf-radius-md);
+  border: 1px solid var(--gf-color-border-subtle);
+}
+
+.gf-account-status__actions {
+  display: flex;
+  gap: var(--gf-space-3);
+  flex-wrap: wrap;
+  justify-content: center;
+}
