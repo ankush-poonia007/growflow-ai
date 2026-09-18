@@ -88,6 +88,10 @@ class ProjectOverviewResponseSchema(BaseModel):
     health: str
     progress_percentage: int
     status: str
+    is_mentor_project: bool = False
+    source_definition_version_id: str | None = None
+    assessment_summary: dict[str, Any] | None = None
+    blueprint_summary: dict[str, Any] | None = None
     deadline: str | None = None
     days_remaining: int | None = None
     profile: dict[str, Any] | None = None
