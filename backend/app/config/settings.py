@@ -12,7 +12,7 @@ from enum import StrEnum
 from functools import lru_cache
 from typing import Any
 
-from pydantic import Field, field_validator
+from pydantic import AliasChoices, Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -40,7 +40,7 @@ class AppSettings(BaseSettings):
     PORT: int = Field(default=8000, alias="APP_PORT")
     LOG_LEVEL: str = Field(default="INFO", alias="APP_LOG_LEVEL")
     CORS_ORIGINS: list[str] | str = Field(
-        default=["http://localhost:3000"],
+        default=["http://localhost:3000", "http://localhost:5173"],
         alias="APP_CORS_ORIGINS",
     )
     SECRET_KEY: str = Field(alias="APP_SECRET_KEY")
@@ -79,6 +79,7 @@ class SupabaseAuthSettings(BaseSettings):
     JWT_ISSUER: str | None = Field(default=None, alias="SUPABASE_JWT_ISSUER")
     JWT_AUDIENCE: str = Field(default="authenticated", alias="SUPABASE_JWT_AUDIENCE")
     JWT_SECRET: str | None = Field(default=None, alias="SUPABASE_JWT_SECRET")
+    JWT_JWKS_URL: str | None = Field(default=None, alias="SUPABASE_JWT_JWKS_URL")
     STORAGE_BUCKET: str = Field(default="growflow-documents", alias="SUPABASE_STORAGE_BUCKET")
 
     model_config = _SHARED_ENV_CONFIG
@@ -172,11 +173,38 @@ class GitHubSettings(BaseSettings):
 
 
 class EmailSettings(BaseSettings):
-    """Email provider settings (deferred integration)."""
+    """Email provider settings (Gmail OAuth 2.0 & outbound dispatch)."""
 
-    PROVIDER: str | None = Field(default=None, alias="EMAIL_PROVIDER")
-    FROM_ADDRESS: str = Field(default="noreply@example.com", alias="EMAIL_FROM")
+    PROVIDER: str = Field(default="gmail_oauth", alias="EMAIL_PROVIDER")
+    FROM_ADDRESS: str = Field(
+        default="neurachat.support@gmail.com",
+        validation_alias=AliasChoices("EMAIL_FROM", "GMAIL_FROM_ADDRESS"),
+    )
     API_KEY: str | None = Field(default=None, alias="EMAIL_API_KEY")
+
+    # Gmail OAuth 2.0 credentials (server-side only)
+    GMAIL_CLIENT_ID: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices(
+            "GMAIL_OAUTH_CLIENT_ID", "GOOGLE_CLIENT_ID", "GMAIL_CLIENT_ID"
+        ),
+    )
+    GMAIL_CLIENT_SECRET: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices(
+            "GMAIL_OAUTH_CLIENT_SECRET", "GOOGLE_CLIENT_SECRET", "GMAIL_CLIENT_SECRET"
+        ),
+    )
+    GMAIL_REFRESH_TOKEN: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices(
+            "GMAIL_OAUTH_REFRESH_TOKEN", "GOOGLE_REFRESH_TOKEN", "GMAIL_REFRESH_TOKEN"
+        ),
+    )
+    CONTACT_MAILBOX: str = Field(
+        default="neurachat.support@gmail.com",
+        validation_alias=AliasChoices("CONTACT_MAILBOX", "GMAIL_CONTACT_MAILBOX"),
+    )
 
     model_config = _SHARED_ENV_CONFIG
 
@@ -295,7 +323,7 @@ class Settings(BaseSettings):
             "auth": {
                 "jwt_audience": self.auth.JWT_AUDIENCE,
                 "storage_bucket": self.auth.STORAGE_BUCKET,
-                "configured": bool(self.auth.JWT_SECRET),
+                "configured": bool(self.auth.JWT_SECRET or self.auth.JWT_JWKS_URL),
             },
             "ai": {
                 "base_url": self.ai.OPENROUTER_BASE_URL,
@@ -314,6 +342,16 @@ class Settings(BaseSettings):
             "rate_limit": {
                 "enabled": self.rate_limit.ENABLED,
                 "requests_per_minute": self.rate_limit.REQUESTS_PER_MINUTE,
+            },
+            "email": {
+                "provider": self.email.PROVIDER,
+                "from_address": self.email.FROM_ADDRESS,
+                "contact_mailbox": self.email.CONTACT_MAILBOX,
+                "oauth_configured": bool(
+                    self.email.GMAIL_CLIENT_ID
+                    and self.email.GMAIL_CLIENT_SECRET
+                    and self.email.GMAIL_REFRESH_TOKEN
+                ),
             },
             "security": {
                 "secure_cookies": self.security.SECURE_COOKIES,

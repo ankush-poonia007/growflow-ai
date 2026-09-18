@@ -2,11 +2,14 @@
 GrowFlow — Backend Application Entrypoint.
 
 Thin ASGI application module per Phase 6A/6C frozen architecture.
-Use `uvicorn backend.app.main:app --reload` to start the development server.
+Use `python -m backend.app.main` to start the development server.
 """
 
 from __future__ import annotations
 
+import asyncio
+import selectors
+import sys
 import uvicorn
 
 from backend.app.config.settings import get_settings
@@ -16,9 +19,17 @@ app = create_app()
 
 if __name__ == "__main__":
     settings = get_settings()
-    uvicorn.run(
-        "backend.app.main:app",
+    config = uvicorn.Config(
+        app,
         host=settings.app.HOST,
         port=settings.app.PORT,
-        reload=settings.app.DEBUG,
+        log_level="info",
     )
+    server = uvicorn.Server(config)
+    if sys.platform == "win32":
+        asyncio.run(
+            server.serve(),
+            loop_factory=lambda: asyncio.SelectorEventLoop(selectors.SelectSelector()),
+        )
+    else:
+        server.run()

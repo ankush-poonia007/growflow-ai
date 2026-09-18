@@ -14,7 +14,7 @@ from fastapi import FastAPI
 
 from backend.app.api.middleware import register_middleware
 from backend.app.api.responses.handlers import register_exception_handlers
-from backend.app.api.router import api_v1_router
+from backend.app.api.router import api_router, api_v1_router
 from backend.app.api.routes import health
 from backend.app.config.settings import Environment, Settings, get_settings
 from backend.app.infrastructure.database import lifecycle as db_lifecycle
@@ -48,6 +48,30 @@ async def app_lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
     # continues — this allows tests without a live database to still boot.
     try:
         await db_lifecycle.startup(settings.database)
+        # Gate 14 / Batch 4: Recover orphaned RUNNING blueprint jobs on startup
+        session_factory = db_lifecycle.get_session_factory()
+        if session_factory:
+            try:
+                async with session_factory() as session:
+                    from backend.app.infrastructure.repositories.blueprint_repository import (
+                        BlueprintRepository,
+                    )
+
+                    repo = BlueprintRepository(session)
+                    recovered = await repo.recover_orphaned_jobs(
+                        error_message="Execution interrupted by server restart"
+                    )
+                    await session.commit()
+                    if recovered > 0:
+                        logger.warning(
+                            "Recovered orphaned blueprint generation jobs on startup",
+                            recovered_count=recovered,
+                        )
+            except Exception as rec_exc:
+                logger.error(
+                    "Failed to recover orphaned blueprint jobs during startup",
+                    error=str(rec_exc),
+                )
     except Exception as exc:
         logger.error(
             "Database startup failed — application will start without DB connectivity",
@@ -88,8 +112,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     # 2. Register runtime middleware (security, timing, correlation, CORS)
     register_middleware(app, app_settings)
 
-    # 3. Mount API v1 router (/api/v1/...)
+    # 3. Mount API v1 router (/api/v1/...) and /api router
     app.include_router(api_v1_router)
+    app.include_router(api_router)
 
     # 4. Mount convenience top-level health probe (/health/...)
     app.include_router(health.router)
