@@ -1,0 +1,144 @@
+/* GrowFlow — MentorInstanceNotes.css */
+
+.gf-mentor-notes-page {
+  padding: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.gf-mentor-notes-content {
+  margin-top: 1.5rem;
+}
+
+.gf-mentor-notes-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.gf-mentor-notes-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text-primary, #0f172a);
+  margin: 0 0 0.375rem 0;
+}
+
+.gf-mentor-notes-subtitle {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary, #64748b);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.gf-mentor-notes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.gf-mentor-note-card {
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: var(--radius-lg, 12px);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-sm, 0 1px 2px 0 rgba(0, 0, 0, 0.05));
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.gf-mentor-note-card:hover {
+  border-color: var(--color-border-hover, #cbd5e1);
+  box-shadow: var(--shadow-md, 0 4px 6px -1px rgba(0, 0, 0, 0.1));
+}
+
+.gf-mentor-note-card--internal {
+  background: var(--color-surface-hover, #f8fafc);
+  border-left: 4px solid var(--color-neutral-dark, #475569);
+}
+
+.gf-mentor-note-card__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.gf-mentor-note-card__badges {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.gf-mentor-note-card__resource {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-tertiary, #94a3b8);
+  background: var(--color-surface-hover, #f1f5f9);
+  padding: 0.125rem 0.375rem;
+  border-radius: var(--radius-sm, 4px);
+}
+
+.gf-mentor-note-card__date {
+  font-size: 0.8125rem;
+  color: var(--color-text-tertiary, #94a3b8);
+}
+
+.gf-mentor-note-card__title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-text-primary, #0f172a);
+  margin: 0 0 0.5rem 0;
+  line-height: 1.35;
+}
+
+.gf-mentor-note-card__message {
+  font-size: 0.9375rem;
+  color: var(--color-text-secondary, #334155);
+  margin: 0 0 0.75rem 0;
+  line-height: 1.5;
+  white-space: pre-line;
+}
+
+.gf-mentor-note-card__internal-tag {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary, #64748b);
+  background: rgba(100, 116, 139, 0.08);
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm, 4px);
+  margin-top: 0.5rem;
+}
+
+.gf-mentor-notes-page__alert {
+  background: var(--color-danger-subtle, rgba(239, 68, 68, 0.1));
+  border: 1px solid var(--color-danger-border, rgba(239, 68, 68, 0.2));
+  color: var(--color-danger, #ef4444);
+  padding: 1.5rem;
+  border-radius: var(--radius-lg, 12px);
+  margin-top: 2rem;
+}
+
+.gf-mentor-notes-page__alert h3 {
+  margin: 0 0 0.5rem 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .gf-mentor-notes-page {
+    padding: 1rem;
+  }
+  .gf-mentor-notes-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 390px) {
+  .gf-mentor-notes-page {
+    padding: 0.75rem;
+  }
+  .gf-mentor-note-card {
+    padding: 1rem;
+  }
+}

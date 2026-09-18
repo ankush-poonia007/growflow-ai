@@ -1,0 +1,115 @@
+.gf-group-students {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-6);
+  width: 100%;
+}
+
+.gf-group-students__error {
+  background-color: var(--color-danger-50, #fef2f2);
+  border: 1px solid var(--color-danger-200, #fecaca);
+  color: var(--color-danger-800, #991b1b);
+  padding: var(--gf-space-3) var(--gf-space-4);
+  border-radius: var(--gf-radius-md);
+}
+
+.gf-group-students__controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gf-space-4);
+  flex-wrap: wrap;
+}
+
+.gf-group-students__search {
+  max-width: 440px;
+  width: 100%;
+}
+
+.gf-group-students__count {
+  font-size: var(--gf-text-body-sm-size);
+  color: var(--gf-color-text-secondary);
+  font-weight: 500;
+}
+
+.gf-group-students__loading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-3);
+}
+
+.gf-group-students__table-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.gf-group-students__table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.gf-group-students__table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.gf-group-students__table th {
+  padding: var(--gf-space-3) var(--gf-space-5);
+  font-size: var(--gf-text-metadata-size);
+  font-weight: 600;
+  color: var(--gf-color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--gf-color-border-subtle);
+  background-color: var(--gf-color-secondary);
+}
+
+.gf-group-students__table td {
+  padding: var(--gf-space-4) var(--gf-space-5);
+  border-bottom: 1px solid var(--gf-color-border-subtle);
+  font-size: var(--gf-text-body-sm-size);
+}
+
+.gf-group-students__table tr:last-child td {
+  border-bottom: none;
+}
+
+.gf-group-students__table tr:hover td {
+  background-color: var(--gf-color-secondary);
+}
+
+.gf-group-students__cell-student {
+  display: flex;
+  align-items: center;
+  gap: var(--gf-space-3);
+}
+
+.gf-group-students__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--gf-radius-full);
+  background-color: var(--gf-color-accent-soft);
+  color: var(--gf-color-accent);
+  font-size: var(--gf-text-caption-size);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.gf-group-students__name {
+  font-weight: 500;
+  color: var(--gf-color-text-primary);
+}
+
+.gf-group-students__cell-email {
+  color: var(--gf-color-text-secondary);
+  font-family: var(--font-family-mono, monospace);
+  font-size: var(--gf-text-caption-size);
+}
+
+.gf-group-students__cell-date {
+  color: var(--gf-color-text-tertiary);
+}

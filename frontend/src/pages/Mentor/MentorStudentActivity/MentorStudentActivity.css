@@ -1,0 +1,301 @@
+/* GrowFlow Phase 7 Batch 6 — M13 Student Activity Styles */
+
+.gf-mentor-student-activity {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem 2rem;
+  min-height: calc(100vh - 4rem);
+}
+
+.gf-mentor-student-activity__nav {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--gf-color-text-secondary, #6B7280);
+}
+
+.gf-mentor-student-activity__nav a {
+  color: var(--gf-color-primary, #059669);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.gf-mentor-student-activity__nav a:hover {
+  text-decoration: underline;
+}
+
+.gf-mentor-student-activity__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.gf-mentor-student-activity__error-card {
+  background: var(--gf-color-surface, #FFFFFF);
+  border: 1px solid var(--gf-color-danger-border, #FECACA);
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.gf-mentor-student-activity__error-card h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--gf-color-danger-text, #DC2626);
+  margin: 0;
+}
+
+.gf-mentor-student-activity__error-card p {
+  color: var(--gf-color-text-secondary, #6B7280);
+  max-width: 500px;
+  margin: 0;
+  font-size: 0.9375rem;
+}
+
+.gf-mentor-student-activity__student-card {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  background: var(--gf-color-surface, #FFFFFF);
+  border: 1px solid var(--gf-color-border-subtle, #E5E5DF);
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.gf-mentor-student-activity__avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--gf-color-surface-hover, #F3F4F6);
+  border: 1px solid var(--gf-color-border-subtle, #E5E5DF);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--gf-color-primary, #059669);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.gf-mentor-student-activity__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.gf-mentor-student-activity__student-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.gf-mentor-student-activity__student-name {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--gf-color-text-primary, #111827);
+  margin: 0;
+}
+
+.gf-mentor-student-activity__student-email {
+  font-size: 0.8125rem;
+  color: var(--gf-color-text-secondary, #6B7280);
+}
+
+.gf-mentor-student-activity__groups-list {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.25rem;
+}
+
+.gf-mentor-student-activity__group-tag {
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: var(--gf-color-surface-hover, #F3F4F6);
+  border: 1px solid var(--gf-color-border-subtle, #E5E5DF);
+  border-radius: 4px;
+  padding: 0.125rem 0.5rem;
+  color: var(--gf-color-text-secondary, #374151);
+}
+
+.gf-mentor-student-activity__timeline-card {
+  background: var(--gf-color-surface, #FFFFFF);
+  border: 1px solid var(--gf-color-border-subtle, #E5E5DF);
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.gf-mentor-student-activity__timeline-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--gf-color-border-subtle, #E5E5DF);
+}
+
+.gf-mentor-student-activity__eyebrow {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.075em;
+  color: var(--gf-color-primary, #059669);
+  text-transform: uppercase;
+  margin-bottom: 0.25rem;
+}
+
+.gf-mentor-student-activity__timeline-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--gf-color-text-primary, #111827);
+  margin: 0;
+}
+
+.gf-mentor-student-activity__event-count {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--gf-color-text-tertiary, #9CA3AF);
+  background: var(--gf-color-surface-hover, #F3F4F6);
+  border: 1px solid var(--gf-color-border-subtle, #E5E5DF);
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+}
+
+.gf-mentor-student-activity__empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--gf-color-text-secondary, #6B7280);
+  font-size: 0.9375rem;
+  background: var(--gf-color-surface-hover, #FAFAF9);
+  border-radius: 10px;
+  border: 1px dashed var(--gf-color-border-subtle, #E5E5DF);
+}
+
+.gf-mentor-student-activity__timeline {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.gf-mentor-student-activity__timeline::before {
+  content: '';
+  position: absolute;
+  top: 1rem;
+  bottom: 1rem;
+  left: 11px;
+  width: 2px;
+  background: var(--gf-color-border-subtle, #E5E5DF);
+  z-index: 0;
+}
+
+.gf-student-activity-item {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+  z-index: 1;
+}
+
+.gf-student-activity-item__dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--gf-color-surface, #FFFFFF);
+  border: 3px solid var(--gf-color-primary, #059669);
+  flex-shrink: 0;
+  margin-top: 0.25rem;
+  box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.1);
+}
+
+.gf-student-activity-item__content {
+  flex: 1;
+  background: var(--gf-color-surface-hover, #FAFAF9);
+  border: 1px solid var(--gf-color-border-subtle, #E5E5DF);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  transition: all 0.2s ease;
+}
+
+.gf-student-activity-item__content:hover {
+  border-color: var(--gf-color-border-hover, #D1D5DB);
+  background: var(--gf-color-surface, #FFFFFF);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.gf-student-activity-item__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 0.375rem;
+}
+
+.gf-student-activity-item__title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  flex-wrap: wrap;
+}
+
+.gf-student-activity-item__title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--gf-color-text-primary, #111827);
+  margin: 0;
+}
+
+.gf-student-activity-item__event-type {
+  font-size: 0.75rem;
+  font-family: monospace;
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--gf-color-text-secondary, #6B7280);
+  padding: 0.125rem 0.375rem;
+  border-radius: 4px;
+}
+
+.gf-student-activity-item__meta {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  flex-shrink: 0;
+}
+
+.gf-student-activity-item__time {
+  font-size: 0.8125rem;
+  color: var(--gf-color-text-tertiary, #9CA3AF);
+  white-space: nowrap;
+}
+
+.gf-student-activity-item__desc {
+  font-size: 0.875rem;
+  color: var(--gf-color-text-secondary, #4B5563);
+  margin: 0;
+  line-height: 1.4;
+}
+
+@media (max-width: 768px) {
+  .gf-mentor-student-activity {
+    padding: 1rem;
+  }
+
+  .gf-mentor-student-activity__timeline-card {
+    padding: 1.25rem;
+  }
+
+  .gf-student-activity-item__top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

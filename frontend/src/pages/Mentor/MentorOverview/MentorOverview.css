@@ -1,0 +1,191 @@
+.gf-mentor-overview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-8);
+  width: 100%;
+}
+
+.gf-mentor-overview__alert {
+  background-color: var(--color-danger-50, #fef2f2);
+  border: 1px solid var(--color-danger-200, #fecaca);
+  color: var(--color-danger-800, #991b1b);
+  padding: var(--gf-space-3) var(--gf-space-4);
+  border-radius: var(--gf-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.gf-mentor-overview__stats {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: var(--gf-space-4);
+}
+
+@media (min-width: 640px) {
+  .gf-mentor-overview__stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .gf-mentor-overview__stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.gf-mentor-overview__groups-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-5);
+}
+
+.gf-mentor-overview__section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--gf-space-4);
+  flex-wrap: wrap;
+}
+
+.gf-mentor-overview__section-title {
+  margin: 0;
+  font-size: var(--gf-text-h3-size);
+  font-weight: 600;
+  color: var(--gf-color-text-primary);
+  letter-spacing: -0.02em;
+}
+
+.gf-mentor-overview__section-desc {
+  margin: var(--gf-space-1) 0 0;
+  font-size: var(--gf-text-body-sm-size);
+  color: var(--gf-color-text-secondary);
+}
+
+.gf-mentor-overview__grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: var(--gf-space-5);
+}
+
+@media (min-width: 768px) {
+  .gf-mentor-overview__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1200px) {
+  .gf-mentor-overview__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.gf-mentor-overview__group-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--gf-space-4);
+  padding: var(--gf-space-5);
+  transition: transform var(--gf-duration-fast) var(--gf-ease-default), box-shadow var(--gf-duration-fast) var(--gf-ease-default);
+}
+
+.gf-mentor-overview__group-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--gf-shadow-md);
+}
+
+.gf-mentor-overview__card-top {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-2);
+}
+
+.gf-mentor-overview__card-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gf-space-2);
+}
+
+.gf-mentor-overview__group-name {
+  margin: 0;
+  font-size: var(--gf-text-body-lg-size);
+  font-weight: 600;
+  color: var(--gf-color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gf-mentor-overview__join-code-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gf-space-1);
+  background-color: var(--gf-color-secondary);
+  border: 1px solid var(--gf-color-border-subtle);
+  border-radius: var(--gf-radius-sm);
+  padding: 2px 8px;
+  width: fit-content;
+}
+
+.gf-mentor-overview__join-code-label {
+  font-size: 10px;
+  font-family: var(--font-family-mono, monospace);
+  font-weight: 600;
+  color: var(--gf-color-text-tertiary);
+}
+
+.gf-mentor-overview__join-code-val {
+  font-family: var(--font-family-mono, monospace);
+  font-size: var(--gf-text-metadata-size);
+  font-weight: 700;
+  color: var(--gf-color-accent);
+  letter-spacing: 0.05em;
+}
+
+.gf-mentor-overview__card-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--gf-space-2);
+  background: var(--gf-color-secondary);
+  padding: var(--gf-space-3);
+  border-radius: var(--gf-radius-md);
+  text-align: center;
+}
+
+.gf-mentor-overview__metric-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gf-mentor-overview__metric-num {
+  font-size: var(--gf-text-body-lg-size);
+  font-weight: 700;
+  color: var(--gf-color-text-primary);
+}
+
+.gf-mentor-overview__metric-num--risk {
+  color: #b45309;
+}
+
+.gf-mentor-overview__metric-lbl {
+  font-size: var(--gf-text-metadata-size);
+  color: var(--gf-color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.gf-mentor-overview__card-footer {
+  margin-top: var(--gf-space-2);
+}
+
+.gf-mentor-overview__card-btn {
+  width: 100%;
+}
+
+.gf-mentor-overview__loading-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--gf-space-4);
+}
