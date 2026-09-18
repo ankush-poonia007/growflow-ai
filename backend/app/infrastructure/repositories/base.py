@@ -110,6 +110,17 @@ class BaseRepository[ModelT: Base]:
         await self._session.refresh(entity)
         return entity
 
+    async def save(self, entity: ModelT) -> ModelT:
+        """
+        Save/flush updates to an entity in the session.
+        """
+        self._session.add(entity)
+        await self._session.flush()
+        await self._session.refresh(entity)
+        return entity
+
+    update = save
+
     async def delete(self, entity: ModelT) -> None:
         """
         Mark an entity for deletion in the current session.

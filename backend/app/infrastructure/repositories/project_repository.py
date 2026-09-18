@@ -30,13 +30,17 @@ from backend.app.domain.project.models import (
     ProjectPhase,
     ProjectStatus,
 )
+from backend.app.infrastructure.database.models.organization import GroupModel
 from backend.app.infrastructure.database.models.project import (
+    ProjectDefinitionModel,
+    ProjectDefinitionVersionModel,
     ProjectHealthHistoryModel,
     ProjectInstanceModel,
     ProjectPhaseHistoryModel,
     ProjectProfileModel,
     ProjectTechnologyModel,
 )
+from backend.app.infrastructure.database.models.user import UserModel
 from backend.app.infrastructure.repositories.base import BaseRepository
 
 if TYPE_CHECKING:
@@ -72,6 +76,25 @@ class ProjectRepository(BaseRepository[ProjectInstanceModel]):
         result = await self._session.execute(stmt)
         return result.scalars().all()
 
+    async def get_active_by_student_and_definition(
+        self,
+        student_id: uuid.UUID | str,
+        project_definition_id: uuid.UUID | str,
+    ) -> ProjectInstanceModel | None:
+        """Retrieve an active project instance linked to the given student and project definition."""
+        stmt = select(ProjectInstanceModel).where(
+            ProjectInstanceModel.student_id == str(student_id),
+            ProjectInstanceModel.project_definition_id == str(project_definition_id),
+            ProjectInstanceModel.status == ProjectStatus.ACTIVE.value,
+        )
+        result = await self._session.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def lock_student_for_update(self, student_id: uuid.UUID | str) -> None:
+        """Acquire a row-level lock on the student user record to serialize concurrent selections."""
+        stmt = select(UserModel.id).where(UserModel.id == str(student_id)).with_for_update()
+        await self._session.execute(stmt)
+
     async def create_project_instance(
         self,
         student_id: uuid.UUID | str,
@@ -89,7 +112,7 @@ class ProjectRepository(BaseRepository[ProjectInstanceModel]):
         status: str = ProjectStatus.ACTIVE.value,
     ) -> ProjectInstanceModel:
         project = ProjectInstanceModel(
-            id=uuid.uuid4(),
+            id=str(uuid.uuid4()),
             student_id=str(student_id),
             group_id=str(group_id) if group_id else None,
             project_definition_id=str(project_definition_id) if project_definition_id else None,
@@ -134,7 +157,7 @@ class ProjectRepository(BaseRepository[ProjectInstanceModel]):
         profile = await self.get_profile(project_instance_id)
         if profile is None:
             profile = ProjectProfileModel(
-                id=uuid.uuid4(),
+                id=str(uuid.uuid4()),
                 project_instance_id=str(project_instance_id),
                 objective=objective or "",
                 target_users=target_users or "",
@@ -296,3 +319,164 @@ class ProjectRepository(BaseRepository[ProjectInstanceModel]):
             .order_by(ProjectHealthHistoryModel.changed_at.desc())
         )
         return result.scalars().all()
+
+    async def list_supervised_projects(
+        self,
+        group_ids: Sequence[uuid.UUID | str],
+        *,
+        group_id: uuid.UUID | str | None = None,
+        phase: str | None = None,
+        health: str | None = None,
+        status: str | None = None,
+        search: str | None = None,
+    ) -> Sequence[
+        tuple[
+            ProjectInstanceModel,
+            UserModel,
+            GroupModel | None,
+            ProjectDefinitionModel | None,
+            ProjectDefinitionVersionModel | None,
+        ]
+    ]:
+        """List projects belonging to supervised groups with eager-joined student, group, and definition snapshot metadata."""
+        if not group_ids:
+            return []
+
+        stmt = (
+            select(
+                ProjectInstanceModel,
+                UserModel,
+                GroupModel,
+                ProjectDefinitionModel,
+                ProjectDefinitionVersionModel,
+            )
+            .join(UserModel, UserModel.id == ProjectInstanceModel.student_id)
+            .outerjoin(GroupModel, GroupModel.id == ProjectInstanceModel.group_id)
+            .outerjoin(
+                ProjectDefinitionModel,
+                ProjectDefinitionModel.id == ProjectInstanceModel.project_definition_id,
+            )
+            .outerjoin(
+                ProjectDefinitionVersionModel,
+                ProjectDefinitionVersionModel.id == ProjectInstanceModel.source_definition_version_id,
+            )
+            .where(ProjectInstanceModel.group_id.in_([str(g) for g in group_ids]))
+        )
+        if group_id:
+            stmt = stmt.where(ProjectInstanceModel.group_id == str(group_id))
+        if phase:
+            stmt = stmt.where(ProjectInstanceModel.current_phase == phase)
+        if health:
+            stmt = stmt.where(ProjectInstanceModel.health == health)
+        if status:
+            stmt = stmt.where(ProjectInstanceModel.status == status)
+        if search and search.strip():
+            term = f"%{search.strip()}%"
+            stmt = stmt.where(
+                ProjectInstanceModel.name.ilike(term)
+                | UserModel.full_name.ilike(term)
+                | UserModel.email.ilike(term)
+            )
+        stmt = stmt.order_by(ProjectInstanceModel.updated_at.desc())
+        result = await self._session.execute(stmt)
+        return result.all()  # type: ignore[return-value]
+
+    async def get_supervised_project_detail(
+        self,
+        project_id: uuid.UUID | str,
+    ) -> tuple[
+        ProjectInstanceModel,
+        UserModel,
+        GroupModel | None,
+        ProjectDefinitionModel | None,
+        ProjectDefinitionVersionModel | None,
+        ProjectProfileModel | None,
+    ] | None:
+        """Fetch project instance detail with student, group, definition, version snapshot, and profile."""
+        stmt = (
+            select(
+                ProjectInstanceModel,
+                UserModel,
+                GroupModel,
+                ProjectDefinitionModel,
+                ProjectDefinitionVersionModel,
+                ProjectProfileModel,
+            )
+            .join(UserModel, UserModel.id == ProjectInstanceModel.student_id)
+            .outerjoin(GroupModel, GroupModel.id == ProjectInstanceModel.group_id)
+            .outerjoin(
+                ProjectDefinitionModel,
+                ProjectDefinitionModel.id == ProjectInstanceModel.project_definition_id,
+            )
+            .outerjoin(
+                ProjectDefinitionVersionModel,
+                ProjectDefinitionVersionModel.id == ProjectInstanceModel.source_definition_version_id,
+            )
+            .outerjoin(
+                ProjectProfileModel,
+                ProjectProfileModel.project_instance_id == ProjectInstanceModel.id,
+            )
+            .where(ProjectInstanceModel.id == str(project_id))
+        )
+        result = await self._session.execute(stmt)
+        return result.first()  # type: ignore[return-value]
+
+    async def list_at_risk_projects(
+        self,
+        group_ids: Sequence[uuid.UUID | str],
+        *,
+        group_id: uuid.UUID | str | None = None,
+        health: str | None = None,
+    ) -> Sequence[
+        tuple[
+            ProjectInstanceModel,
+            UserModel,
+            GroupModel | None,
+            ProjectDefinitionModel | None,
+            ProjectDefinitionVersionModel | None,
+        ]
+    ]:
+        """List at-risk (WARNING and CRITICAL only) projects across supervised groups."""
+        if not group_ids:
+            return []
+
+        target_health = [ProjectHealth.WARNING.value, ProjectHealth.CRITICAL.value]
+        if health:
+            if health in target_health:
+                target_health = [health]
+            else:
+                return []
+
+        stmt = (
+            select(
+                ProjectInstanceModel,
+                UserModel,
+                GroupModel,
+                ProjectDefinitionModel,
+                ProjectDefinitionVersionModel,
+            )
+            .join(UserModel, UserModel.id == ProjectInstanceModel.student_id)
+            .outerjoin(GroupModel, GroupModel.id == ProjectInstanceModel.group_id)
+            .outerjoin(
+                ProjectDefinitionModel,
+                ProjectDefinitionModel.id == ProjectInstanceModel.project_definition_id,
+            )
+            .outerjoin(
+                ProjectDefinitionVersionModel,
+                ProjectDefinitionVersionModel.id == ProjectInstanceModel.source_definition_version_id,
+            )
+            .where(
+                ProjectInstanceModel.group_id.in_([str(g) for g in group_ids]),
+                ProjectInstanceModel.health.in_(target_health),
+            )
+        )
+        if group_id:
+            stmt = stmt.where(ProjectInstanceModel.group_id == str(group_id))
+
+        stmt = stmt.order_by(
+            (ProjectInstanceModel.health == ProjectHealth.CRITICAL.value).desc(),
+            ProjectInstanceModel.updated_at.desc(),
+        )
+        result = await self._session.execute(stmt)
+        return result.all()  # type: ignore[return-value]
+

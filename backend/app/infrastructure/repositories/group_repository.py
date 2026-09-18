@@ -101,6 +101,22 @@ class GroupRepository(BaseRepository[GroupModel]):
         result = await self._session.execute(stmt)
         return result.scalars().all()
 
+    async def list_groups_with_mentors_for_student(
+        self, student_id: uuid.UUID | str, status: str = GroupMembershipStatus.ACTIVE.value
+    ) -> Sequence[tuple[GroupModel, UserModel]]:
+        stmt = (
+            select(GroupModel, UserModel)
+            .join(GroupMembershipModel, GroupMembershipModel.group_id == GroupModel.id)
+            .join(UserModel, UserModel.id == GroupModel.mentor_id)
+            .where(
+                GroupMembershipModel.student_id == str(student_id),
+                GroupMembershipModel.status == status,
+            )
+            .order_by(GroupModel.created_at.desc())
+        )
+        result = await self._session.execute(stmt)
+        return result.all()  # type: ignore[return-value]
+
     async def list_group_members(
         self, group_id: uuid.UUID | str, status: str | None = None
     ) -> Sequence[tuple[GroupMembershipModel, UserModel]]:
@@ -137,3 +153,53 @@ class GroupRepository(BaseRepository[GroupModel]):
         await self._session.flush()
         await self._session.refresh(new_membership)
         return new_membership
+
+    async def list_supervised_students(
+        self,
+        mentor_id: uuid.UUID | str,
+        *,
+        group_id: uuid.UUID | str | None = None,
+        search: str | None = None,
+    ) -> Sequence[tuple[UserModel, GroupMembershipModel, GroupModel]]:
+        """List students across groups supervised by the mentor with optional group and search filters."""
+        stmt = (
+            select(UserModel, GroupMembershipModel, GroupModel)
+            .join(GroupMembershipModel, GroupMembershipModel.student_id == UserModel.id)
+            .join(GroupModel, GroupModel.id == GroupMembershipModel.group_id)
+            .where(
+                GroupModel.mentor_id == str(mentor_id),
+                GroupModel.status == GroupStatus.ACTIVE.value,
+                GroupMembershipModel.status == GroupMembershipStatus.ACTIVE.value,
+            )
+        )
+        if group_id:
+            stmt = stmt.where(GroupModel.id == str(group_id))
+        if search and search.strip():
+            term = f"%{search.strip()}%"
+            stmt = stmt.where(
+                UserModel.full_name.ilike(term) | UserModel.email.ilike(term)
+            )
+        stmt = stmt.order_by(UserModel.full_name.asc())
+        result = await self._session.execute(stmt)
+        return result.all()  # type: ignore[return-value]
+
+    async def is_student_supervised_by_mentor(
+        self,
+        student_id: uuid.UUID | str,
+        mentor_id: uuid.UUID | str,
+    ) -> bool:
+        """Check if a student is an active member in any active group supervised by the mentor."""
+        stmt = (
+            select(GroupMembershipModel.id)
+            .join(GroupModel, GroupModel.id == GroupMembershipModel.group_id)
+            .where(
+                GroupMembershipModel.student_id == str(student_id),
+                GroupMembershipModel.status == GroupMembershipStatus.ACTIVE.value,
+                GroupModel.mentor_id == str(mentor_id),
+                GroupModel.status == GroupStatus.ACTIVE.value,
+            )
+            .limit(1)
+        )
+        result = await self._session.execute(stmt)
+        return result.scalar_one_or_none() is not None
+
