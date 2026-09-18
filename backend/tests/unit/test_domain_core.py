@@ -12,6 +12,7 @@ Tests domain invariants without external dependencies:
 
 from __future__ import annotations
 
+import asyncio
 from unittest.mock import AsyncMock
 import uuid
 
@@ -62,6 +63,7 @@ from backend.app.shared.events.domain_event import DomainEventType
 from backend.app.shared.exceptions import (
     AuthorizationException,
     BusinessRuleException,
+    ConflictException,
     NotFoundException,
 )
 
@@ -479,6 +481,46 @@ async def test_project_definition_unauthorized_update():
         )
 
 
+@pytest.mark.asyncio
+async def test_project_definition_service_list_catalog():
+    """Service list_catalog method delegates cleanly to repository list_active_catalog."""
+    def_repo = AsyncMock()
+    proj_repo = AsyncMock()
+    outbox_svc = AsyncMock(spec=OutboxService)
+
+    mock_catalog_data = [
+        (
+            ProjectDefinitionModel(
+                id=uuid.uuid4(),
+                owner_mentor_id=str(uuid.uuid4()),
+                name="Catalog Project",
+                status=ProjectDefinitionStatus.ACTIVE.value,
+            ),
+            ProjectDefinitionVersionModel(
+                id=uuid.uuid4(),
+                version_number=1,
+                name="Catalog Project",
+                problem="Problem",
+                proposed_solution="Solution",
+                created_by=str(uuid.uuid4()),
+                complexity=ProjectComplexity.INTERMEDIATE.value,
+            ),
+        )
+    ]
+    def_repo.list_active_catalog.return_value = mock_catalog_data
+
+    service = ProjectDefinitionService(
+        definition_repo=def_repo,
+        project_repo=proj_repo,
+        outbox_service=outbox_svc,
+    )
+
+    items = await service.list_catalog()
+    assert len(items) == 1
+    assert items[0][0].name == "Catalog Project"
+    def_repo.list_active_catalog.assert_called_once()
+
+
 # ============================================================================
 # 6. PROJECT SERVICE TESTS & DETERMINISTIC LIFECYCLE
 # ============================================================================
@@ -666,3 +708,502 @@ async def test_project_mentor_cannot_transition_phase():
             current_user=mentor_user,
             target_phase=ProjectPhase.ASSESSMENT.value,
         )
+
+
+# ============================================================================
+# 8. S05 MENTOR PROJECT DETAIL & SELECTION UNIT TESTS
+# ============================================================================
+
+
+@pytest.mark.asyncio
+async def test_get_catalog_item_success():
+    def_repo = AsyncMock()
+    proj_repo = AsyncMock()
+    outbox_svc = AsyncMock(spec=OutboxService)
+
+    service = ProjectDefinitionService(
+        definition_repo=def_repo,
+        project_repo=proj_repo,
+        outbox_service=outbox_svc,
+    )
+
+    def_id = uuid.uuid4()
+    ver_id = uuid.uuid4()
+    mentor_id = uuid.uuid4()
+
+    definition = ProjectDefinitionModel(
+        id=def_id,
+        owner_mentor_id=str(mentor_id),
+        name="Active Definition",
+        status=ProjectDefinitionStatus.ACTIVE.value,
+        current_version_id=str(ver_id),
+    )
+    version = ProjectDefinitionVersionModel(
+        id=ver_id,
+        project_definition_id=str(def_id),
+        version_number=1,
+        name="Active Definition",
+        problem="Bottlenecks",
+        proposed_solution="Solution",
+        complexity=ProjectComplexity.INTERMEDIATE.value,
+        description="Desc",
+        created_by=str(mentor_id),
+    )
+    def_repo.get_active_catalog_item.return_value = (definition, version)
+
+    d, v = await service.get_catalog_item(def_id)
+    assert d.id == def_id
+    assert v.id == ver_id
+    def_repo.get_active_catalog_item.assert_awaited_once_with(def_id)
+
+
+@pytest.mark.asyncio
+async def test_get_catalog_item_not_found_or_inactive():
+    def_repo = AsyncMock()
+    proj_repo = AsyncMock()
+    outbox_svc = AsyncMock(spec=OutboxService)
+
+    service = ProjectDefinitionService(
+        definition_repo=def_repo,
+        project_repo=proj_repo,
+        outbox_service=outbox_svc,
+    )
+
+    def_repo.get_active_catalog_item.return_value = None
+
+    with pytest.raises(NotFoundException) as exc_info:
+        await service.get_catalog_item(uuid.uuid4())
+    assert exc_info.value.code == "PROJECT_DEFINITION_NOT_FOUND"
+
+
+@pytest.mark.asyncio
+async def test_get_catalog_item_missing_version():
+    def_repo = AsyncMock()
+    proj_repo = AsyncMock()
+    outbox_svc = AsyncMock(spec=OutboxService)
+
+    service = ProjectDefinitionService(
+        definition_repo=def_repo,
+        project_repo=proj_repo,
+        outbox_service=outbox_svc,
+    )
+
+    def_id = uuid.uuid4()
+    definition = ProjectDefinitionModel(
+        id=def_id,
+        owner_mentor_id=str(uuid.uuid4()),
+        name="Active Without Version",
+        status=ProjectDefinitionStatus.ACTIVE.value,
+        current_version_id=None,
+    )
+    def_repo.get_active_catalog_item.return_value = (definition, None)
+
+    with pytest.raises(NotFoundException) as exc_info:
+        await service.get_catalog_item(def_id)
+    assert exc_info.value.code == "PROJECT_DEFINITION_NO_VERSION"
+
+
+@pytest.mark.asyncio
+async def test_select_definition_success_and_version_pinning():
+    def_repo = AsyncMock()
+    proj_repo = AsyncMock()
+    outbox_svc = AsyncMock(spec=OutboxService)
+
+    service = ProjectDefinitionService(
+        definition_repo=def_repo,
+        project_repo=proj_repo,
+        outbox_service=outbox_svc,
+    )
+
+    student_id = uuid.uuid4()
+    def_id = uuid.uuid4()
+    ver_id = uuid.uuid4()
+    mentor_id = uuid.uuid4()
+
+    definition = ProjectDefinitionModel(
+        id=def_id,
+        owner_mentor_id=str(mentor_id),
+        name="AI Pipeline",
+        status=ProjectDefinitionStatus.ACTIVE.value,
+        current_version_id=str(ver_id),
+    )
+    version = ProjectDefinitionVersionModel(
+        id=ver_id,
+        project_definition_id=str(def_id),
+        version_number=1,
+        name="AI Pipeline v1",
+        problem="Model training latency",
+        proposed_solution="Distributed training",
+        complexity=ProjectComplexity.ADVANCED.value,
+        description="Build distributed training",
+        constraints="GPU required",
+        assumptions="PyTorch",
+        created_by=str(mentor_id),
+    )
+
+    def_repo.get_active_catalog_item.return_value = (definition, version)
+    proj_repo.get_active_by_student_and_definition.return_value = None
+
+    async def fake_create_instance(**kwargs):
+        return ProjectInstanceModel(
+            id=uuid.uuid4(),
+            student_id=str(kwargs["student_id"]),
+            project_definition_id=str(kwargs["project_definition_id"]),
+            source_definition_version_id=str(kwargs["source_definition_version_id"]),
+            name=kwargs["name"],
+            problem=kwargs["problem"],
+            proposed_solution=kwargs["proposed_solution"],
+            complexity=kwargs["complexity"],
+            current_phase=kwargs["current_phase"],
+            health=kwargs["health"],
+            progress_percentage=0,
+            status=kwargs["status"],
+        )
+
+    proj_repo.create_project_instance.side_effect = fake_create_instance
+
+    # Execute selection
+    instance = await service.select_definition(
+        definition_id=def_id,
+        student_id=student_id,
+        correlation_id="corr-123",
+    )
+
+    # Verify lock on student was acquired
+    proj_repo.lock_student_for_update.assert_awaited_once_with(student_id)
+
+    # Verify duplicate active check was performed
+    proj_repo.get_active_by_student_and_definition.assert_awaited_once_with(
+        student_id=student_id,
+        project_definition_id=def_id,
+    )
+
+    # Verify instance values
+    assert instance.student_id == str(student_id)
+    assert instance.project_definition_id == str(def_id)
+    assert instance.source_definition_version_id == str(ver_id)
+    assert instance.current_phase == ProjectPhase.IDEA.value
+    assert instance.health == ProjectHealth.HEALTHY.value
+    assert instance.status == ProjectStatus.ACTIVE.value
+    assert instance.progress_percentage == 0
+
+    # Verify profile creation called with version snapshot content
+    proj_repo.create_or_update_profile.assert_awaited_once_with(
+        project_instance_id=instance.id,
+        objective="Build distributed training",
+        constraints="GPU required",
+        assumptions="PyTorch",
+        scope="Model training latency",
+        expected_outcome="Distributed training",
+    )
+
+    # Verify outbox event emitted
+    outbox_svc.emit.assert_awaited_once_with(
+        event_type=DomainEventType.PROJECT_CREATED.value,
+        actor_role="STUDENT",
+        resource_type="project_instance",
+        resource_id=str(instance.id),
+        actor_id=student_id,
+        project_instance_id=instance.id,
+        metadata={
+            "project_name": "AI Pipeline v1",
+            "selected_from_definition": True,
+            "project_definition_id": str(def_id),
+            "version_number": 1,
+        },
+        correlation_id="corr-123",
+    )
+
+    # Definition and version must remain completely unmutated
+    assert definition.status == ProjectDefinitionStatus.ACTIVE.value
+    assert definition.current_version_id == str(ver_id)
+    assert definition.owner_mentor_id == str(mentor_id)
+
+
+@pytest.mark.asyncio
+async def test_select_definition_duplicate_active_rejected():
+    def_repo = AsyncMock()
+    proj_repo = AsyncMock()
+    outbox_svc = AsyncMock(spec=OutboxService)
+
+    service = ProjectDefinitionService(
+        definition_repo=def_repo,
+        project_repo=proj_repo,
+        outbox_service=outbox_svc,
+    )
+
+    student_id = uuid.uuid4()
+    def_id = uuid.uuid4()
+    ver_id = uuid.uuid4()
+
+    definition = ProjectDefinitionModel(
+        id=def_id,
+        owner_mentor_id=str(uuid.uuid4()),
+        name="AI Pipeline",
+        status=ProjectDefinitionStatus.ACTIVE.value,
+        current_version_id=str(ver_id),
+    )
+    version = ProjectDefinitionVersionModel(
+        id=ver_id,
+        project_definition_id=str(def_id),
+        version_number=1,
+        name="AI Pipeline",
+        problem="P",
+        proposed_solution="S",
+        created_by=str(uuid.uuid4()),
+    )
+
+    def_repo.get_active_catalog_item.return_value = (definition, version)
+
+    existing_instance = ProjectInstanceModel(
+        id=uuid.uuid4(),
+        student_id=str(student_id),
+        project_definition_id=str(def_id),
+        status=ProjectStatus.ACTIVE.value,
+    )
+    proj_repo.get_active_by_student_and_definition.return_value = existing_instance
+
+    with pytest.raises(ConflictException) as exc_info:
+        await service.select_definition(
+            definition_id=def_id,
+            student_id=student_id,
+        )
+    assert exc_info.value.code == "PROJECT_ALREADY_SELECTED"
+
+    # Must NOT create a new instance or emit events
+    proj_repo.create_project_instance.assert_not_called()
+    outbox_svc.emit.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_select_definition_version_pinning_remains_intact_when_definition_updates():
+    def_repo = AsyncMock()
+    proj_repo = AsyncMock()
+    outbox_svc = AsyncMock(spec=OutboxService)
+
+    service = ProjectDefinitionService(
+        definition_repo=def_repo,
+        project_repo=proj_repo,
+        outbox_service=outbox_svc,
+    )
+
+    student_id = uuid.uuid4()
+    def_id = uuid.uuid4()
+    ver1_id = uuid.uuid4()
+    ver2_id = uuid.uuid4()
+    mentor_id = uuid.uuid4()
+
+    definition = ProjectDefinitionModel(
+        id=def_id,
+        owner_mentor_id=str(mentor_id),
+        name="Edge Computing",
+        status=ProjectDefinitionStatus.ACTIVE.value,
+        current_version_id=str(ver1_id),
+    )
+    version_1 = ProjectDefinitionVersionModel(
+        id=ver1_id,
+        project_definition_id=str(def_id),
+        version_number=1,
+        name="Edge Computing v1",
+        problem="Bandwidth constraints",
+        proposed_solution="Local inference",
+        created_by=str(mentor_id),
+    )
+
+    # Step 1: Student selects version 1
+    def_repo.get_active_catalog_item.return_value = (definition, version_1)
+    proj_repo.get_active_by_student_and_definition.return_value = None
+
+    async def fake_create_instance(**kwargs):
+        return ProjectInstanceModel(
+            id=uuid.uuid4(),
+            student_id=str(kwargs["student_id"]),
+            project_definition_id=str(kwargs["project_definition_id"]),
+            source_definition_version_id=str(kwargs["source_definition_version_id"]),
+            name=kwargs["name"],
+            problem=kwargs["problem"],
+            proposed_solution=kwargs["proposed_solution"],
+            complexity=kwargs["complexity"],
+            current_phase=kwargs["current_phase"],
+            health=kwargs["health"],
+            progress_percentage=0,
+            status=kwargs["status"],
+        )
+
+    proj_repo.create_project_instance.side_effect = fake_create_instance
+
+    student_instance = await service.select_definition(
+        definition_id=def_id,
+        student_id=student_id,
+    )
+    assert student_instance.source_definition_version_id == str(ver1_id)
+
+    # Step 2: Mentor updates definition to Version 2
+    definition.current_version_id = str(ver2_id)
+    version_2 = ProjectDefinitionVersionModel(
+        id=ver2_id,
+        project_definition_id=str(def_id),
+        version_number=2,
+        name="Edge Computing v2",
+        problem="Bandwidth constraints",
+        proposed_solution="Local inference with Quantization",
+        created_by=str(mentor_id),
+    )
+    def_repo.get_active_catalog_item.return_value = (definition, version_2)
+
+    # Step 3: Verify the student's instance is STILL pinned to version 1
+    assert student_instance.source_definition_version_id == str(ver1_id)
+    assert student_instance.source_definition_version_id != str(ver2_id)
+
+
+@pytest.mark.asyncio
+async def test_concurrent_selection_serializes_and_allows_only_one_success():
+    """Concurrent repeated selection requests by the same student result in at most one success and one conflict."""
+    def_repo = AsyncMock()
+    proj_repo = AsyncMock()
+    outbox_svc = AsyncMock(spec=OutboxService)
+
+    service = ProjectDefinitionService(
+        definition_repo=def_repo,
+        project_repo=proj_repo,
+        outbox_service=outbox_svc,
+    )
+
+    student_id = uuid.uuid4()
+    def_id = uuid.uuid4()
+    ver_id = uuid.uuid4()
+
+    definition = ProjectDefinitionModel(
+        id=def_id,
+        owner_mentor_id=str(uuid.uuid4()),
+        name="Concurrent Project",
+        status=ProjectDefinitionStatus.ACTIVE.value,
+        current_version_id=str(ver_id),
+    )
+    version = ProjectDefinitionVersionModel(
+        id=ver_id,
+        project_definition_id=str(def_id),
+        version_number=1,
+        name="Concurrent Project v1",
+        problem="Problem",
+        proposed_solution="Solution",
+        created_by=str(uuid.uuid4()),
+    )
+    def_repo.get_active_catalog_item.return_value = (definition, version)
+
+    # Simulated DB state shared between calls:
+    active_instances: dict[str, ProjectInstanceModel] = {}
+    lock = asyncio.Lock()
+
+    async def fake_lock(student_id):
+        # Row lock serialization on the student
+        await lock.acquire()
+
+    async def fake_get_active(student_id, project_definition_id):
+        key = f"{student_id}:{project_definition_id}"
+        return active_instances.get(key)
+
+    async def fake_create_instance(**kwargs):
+        inst = ProjectInstanceModel(
+            id=uuid.uuid4(),
+            student_id=str(kwargs["student_id"]),
+            project_definition_id=str(kwargs["project_definition_id"]),
+            source_definition_version_id=str(kwargs["source_definition_version_id"]),
+            name=kwargs["name"],
+            problem=kwargs["problem"],
+            proposed_solution=kwargs["proposed_solution"],
+            complexity=kwargs["complexity"],
+            current_phase=kwargs["current_phase"],
+            health=kwargs["health"],
+            progress_percentage=0,
+            status=kwargs["status"],
+        )
+        active_instances[f"{kwargs['student_id']}:{kwargs['project_definition_id']}"] = inst
+        return inst
+
+    proj_repo.lock_student_for_update.side_effect = fake_lock
+    proj_repo.get_active_by_student_and_definition.side_effect = fake_get_active
+    proj_repo.create_project_instance.side_effect = fake_create_instance
+
+    async def select_and_release():
+        try:
+            return await service.select_definition(
+                definition_id=def_id,
+                student_id=student_id,
+            )
+        finally:
+            if lock.locked():
+                lock.release()
+
+    # Launch two concurrent selection calls
+    results = await asyncio.gather(
+        select_and_release(),
+        select_and_release(),
+        return_exceptions=True,
+    )
+
+    successes = [r for r in results if isinstance(r, ProjectInstanceModel)]
+    conflicts = [r for r in results if isinstance(r, ConflictException)]
+
+    assert len(successes) == 1, "Exactly one selection request must succeed"
+    assert len(conflicts) == 1, "Competing selection request must receive ConflictException"
+    assert conflicts[0].code == "PROJECT_ALREADY_SELECTED"
+
+
+@pytest.mark.asyncio
+async def test_select_definition_transaction_rollback_on_downstream_failure():
+    """If downstream outbox emission or profile persistence fails, exception propagates to trigger rollback."""
+    def_repo = AsyncMock()
+    proj_repo = AsyncMock()
+    outbox_svc = AsyncMock(spec=OutboxService)
+
+    service = ProjectDefinitionService(
+        definition_repo=def_repo,
+        project_repo=proj_repo,
+        outbox_service=outbox_svc,
+    )
+
+    student_id = uuid.uuid4()
+    def_id = uuid.uuid4()
+    ver_id = uuid.uuid4()
+
+    definition = ProjectDefinitionModel(
+        id=def_id,
+        owner_mentor_id=str(uuid.uuid4()),
+        name="Failure Test",
+        status=ProjectDefinitionStatus.ACTIVE.value,
+        current_version_id=str(ver_id),
+    )
+    version = ProjectDefinitionVersionModel(
+        id=ver_id,
+        project_definition_id=str(def_id),
+        version_number=1,
+        name="Failure Test v1",
+        problem="P",
+        proposed_solution="S",
+        created_by=str(uuid.uuid4()),
+    )
+    def_repo.get_active_catalog_item.return_value = (definition, version)
+    proj_repo.get_active_by_student_and_definition.return_value = None
+
+    proj_repo.create_project_instance.return_value = ProjectInstanceModel(
+        id=uuid.uuid4(),
+        student_id=str(student_id),
+        project_definition_id=str(def_id),
+        source_definition_version_id=str(ver_id),
+        name="Failure Test v1",
+        current_phase=ProjectPhase.IDEA.value,
+        health=ProjectHealth.HEALTHY.value,
+        status=ProjectStatus.ACTIVE.value,
+    )
+
+    # Downstream outbox emission fails
+    outbox_svc.emit.side_effect = RuntimeError("Outbox commit failure")
+
+    with pytest.raises(RuntimeError, match="Outbox commit failure"):
+        await service.select_definition(
+            definition_id=def_id,
+            student_id=student_id,
+        )
+
+
