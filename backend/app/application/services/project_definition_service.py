@@ -27,6 +27,7 @@ from backend.app.shared.events.domain_event import DomainEventType
 from backend.app.shared.exceptions import (
     AuthorizationException,
     BusinessRuleException,
+    ConflictException,
     NotFoundException,
 )
 
@@ -42,6 +43,7 @@ if TYPE_CHECKING:
         ProjectDefinitionVersionModel,
         ProjectInstanceModel,
     )
+    from backend.app.infrastructure.repositories.group_repository import GroupRepository
     from backend.app.infrastructure.repositories.project_definition_repository import (
         ProjectDefinitionRepository,
     )
@@ -56,10 +58,12 @@ class ProjectDefinitionService:
         definition_repo: ProjectDefinitionRepository,
         project_repo: ProjectRepository,
         outbox_service: OutboxService,
+        group_repo: GroupRepository | None = None,
     ) -> None:
         self._definition_repo = definition_repo
         self._project_repo = project_repo
         self._outbox_service = outbox_service
+        self._group_repo = group_repo
 
     async def create_definition(
         self,
@@ -119,8 +123,31 @@ class ProjectDefinitionService:
         self,
         mentor_id: uuid.UUID,
         status: str | None = None,
-    ) -> Sequence[ProjectDefinitionModel]:
+    ) -> Sequence[tuple[ProjectDefinitionModel, ProjectDefinitionVersionModel | None]]:
         return await self._definition_repo.list_by_mentor(mentor_id, status=status)
+
+    async def list_catalog(
+        self,
+    ) -> Sequence[tuple[ProjectDefinitionModel, ProjectDefinitionVersionModel | None]]:
+        """List all active mentor project definitions with current version snapshots for student catalog discovery."""
+        return await self._definition_repo.list_active_catalog()
+
+    async def get_catalog_item(
+        self,
+        definition_id: uuid.UUID,
+    ) -> tuple[ProjectDefinitionModel, ProjectDefinitionVersionModel]:
+        """Retrieve an active project definition and its current version snapshot for student catalog detail."""
+        item = await self._definition_repo.get_active_catalog_item(definition_id)
+        if item is None:
+            raise NotFoundException(
+                "Project definition not found.", code="PROJECT_DEFINITION_NOT_FOUND"
+            )
+        definition, version = item
+        if version is None:
+            raise NotFoundException(
+                "Project definition version not found.", code="PROJECT_DEFINITION_NO_VERSION"
+            )
+        return definition, version
 
     async def get_definition(
         self,
@@ -283,6 +310,35 @@ class ProjectDefinitionService:
                 code="PROJECT_DEFINITION_NO_VERSION",
             )
 
+        # Verify group supervision scope if group_id is supplied
+        if group_id is not None and self._group_repo is not None:
+            group = await self._group_repo.get_by_id(group_id)
+            if group is None:
+                raise NotFoundException("Supervised group not found.", code="GROUP_NOT_FOUND")
+            if not mentor_user.is_admin and str(group.mentor_id) != str(mentor_user.user_id):
+                raise AuthorizationException(
+                    "Access to this group is denied.", code="AUTH_FORBIDDEN_RESOURCE"
+                )
+            membership = await self._group_repo.get_active_membership_for_student(
+                student_id=student_id, group_id=group_id
+            )
+            if membership is None:
+                raise BusinessRuleException(
+                    "Student is not an active member of the specified group.",
+                    code="STUDENT_NOT_IN_GROUP",
+                )
+
+        # Concurrency & idempotency guard: prevent duplicate active assignment for same student & definition
+        existing_active = await self._project_repo.get_active_by_student_and_definition(
+            student_id=student_id,
+            project_definition_id=definition.id,
+        )
+        if existing_active is not None:
+            raise ConflictException(
+                "Student already has an active instance of this project definition.",
+                code="PROJECT_ALREADY_ASSIGNED",
+            )
+
         # Create independent student project instance
         project_instance = await self._project_repo.create_project_instance(
             student_id=student_id,
@@ -342,3 +398,85 @@ class ProjectDefinitionService:
         )
 
         return project_instance
+
+    async def select_definition(
+        self,
+        definition_id: uuid.UUID,
+        student_id: uuid.UUID,
+        *,
+        correlation_id: str = "",
+    ) -> ProjectInstanceModel:
+        """
+        Student selects an active mentor project definition to instantiate a linked student project.
+
+        Atomically:
+        1. Validates definition exists and is ACTIVE with a valid current version.
+        2. Acquires row lock on the student to serialize concurrent selections by the same student.
+        3. Validates no ACTIVE instance of this definition already exists for the student.
+        4. Creates ProjectInstanceModel pinned to the exact version snapshot.
+        5. Initializes ProjectProfileModel using definition-assignment semantics.
+        6. Emits canonical PROJECT_CREATED domain event in the same transaction.
+        7. Returns the created project instance.
+        """
+        # 1. Resolve and validate active definition & version snapshot
+        definition, current_ver = await self.get_catalog_item(definition_id)
+
+        # 2. Concurrency guard: lock student user record within current transaction
+        await self._project_repo.lock_student_for_update(student_id)
+
+        # 3. Duplicate check: verify no active instance already exists for (student_id, definition_id)
+        existing_active = await self._project_repo.get_active_by_student_and_definition(
+            student_id=student_id,
+            project_definition_id=definition.id,
+        )
+        if existing_active is not None:
+            raise ConflictException(
+                "Student already has an active instance of this project definition.",
+                code="PROJECT_ALREADY_SELECTED",
+            )
+
+        # 4. Create linked student project instance pinned to version snapshot
+        project_instance = await self._project_repo.create_project_instance(
+            student_id=student_id,
+            name=current_ver.name,
+            problem=current_ver.problem,
+            proposed_solution=current_ver.proposed_solution,
+            complexity=current_ver.complexity,
+            group_id=None,
+            project_definition_id=definition.id,
+            source_definition_version_id=current_ver.id,
+            deadline=None,
+            current_phase=ProjectPhase.IDEA.value,
+            health=ProjectHealth.HEALTHY.value,
+            status=ProjectStatus.ACTIVE.value,
+        )
+
+        # 5. Initialize project profile according to canonical definition-assignment semantics
+        await self._project_repo.create_or_update_profile(
+            project_instance_id=project_instance.id,
+            objective=current_ver.description,
+            constraints=current_ver.constraints,
+            assumptions=current_ver.assumptions,
+            scope=current_ver.problem,
+            expected_outcome=current_ver.proposed_solution,
+        )
+
+        # 6. Emit canonical domain event into transactional outbox
+        await self._outbox_service.emit(
+            event_type=DomainEventType.PROJECT_CREATED.value,
+            actor_role="STUDENT",
+            resource_type="project_instance",
+            resource_id=str(project_instance.id),
+            actor_id=student_id,
+            project_instance_id=project_instance.id,
+            metadata={
+                "project_name": project_instance.name,
+                "selected_from_definition": True,
+                "project_definition_id": str(definition.id),
+                "version_number": current_ver.version_number,
+            },
+            correlation_id=correlation_id,
+        )
+
+        return project_instance
+
