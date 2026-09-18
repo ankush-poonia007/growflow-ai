@@ -1,0 +1,2931 @@
+# GrowFlow — Phase 03: Frontend Application Architecture
+
+**Status:** Proposed / Ready for Freeze  
+**Phase:** 03  
+**Project:** GrowFlow  
+**Scope:** Frontend Application Architecture  
+**Depends On:** Phase 01 — Complete Frontend Page & Screen Inventory; Phase 02 — Information Architecture & Navigation Map
+
+---
+
+## 1. Phase Objective
+
+Phase 02 answered:
+
+> **Where does everything live?**
+
+Phase 03 answers:
+
+> **How is the frontend engineered so all identified pages, workflows, roles, states, and real-time systems operate as one scalable application?**
+
+GrowFlow is not merely a collection of pages. It contains a large set of shared and role-specific capabilities spanning:
+
+- Public website
+- Authentication and onboarding
+- Student / BUILD
+- Mentor / SUPERVISE
+- Admin / GOVERN
+- Project workspaces
+- Tasks, milestones, risks, documents, GitHub and activity
+- AI workflows
+- Notifications and search
+- Real-time execution state
+- RAG and document processing
+- Observability, analytics and audit surfaces
+
+The frontend therefore requires explicit architectural boundaries, ownership rules, state separation, reliable long-running workflow handling, and a clear dependency model.
+
+---
+
+# 2. Architecture Review and Corrections
+
+This phase intentionally reviews earlier architectural assumptions instead of blindly carrying them forward.
+
+## 2.1 Correction — Page-Centric → Domain-Centric
+
+### Problem
+
+A frontend organized primarily around pages can become heavily duplicated:
+
+```text
+pages/
+├── student/
+├── mentor/
+├── admin/
+├── settings/
+└── auth/
+```
+
+GrowFlow has many shared domain concepts represented differently across roles:
+
+- Projects
+- Project Definitions
+- Project Instances
+- Tasks
+- Milestones
+- Risks
+- Documents
+- Activity
+- AI executions
+- Notifications
+- Users
+- Groups
+
+### Correct Architecture
+
+GrowFlow should be **domain-oriented first and route-oriented second**.
+
+Routes determine **what the user sees**.
+
+Domains determine **how the underlying frontend capability is structured**.
+
+```text
+Application
+│
+├── Core Infrastructure
+├── Shared UI
+├── Shared Domain Features
+├── Student / BUILD
+├── Mentor / SUPERVISE
+├── Admin / GOVERN
+└── Public Website
+```
+
+---
+
+## 2.2 Correction — Frontend Authorization Is Not Security
+
+### Problem
+
+A frontend route guard, hidden button, disabled control, or local role value cannot be treated as a security mechanism.
+
+### Correct Architecture
+
+Frontend authorization exists primarily for UX:
+
+```text
+Frontend permission check
+        ↓
+UX behavior
+```
+
+Actual security remains backend-authoritative:
+
+```text
+Backend authorization
+        ↓
+Actual access/security
+```
+
+---
+
+## 2.3 Correction — SSE Is Delivery, Not Canonical State
+
+### Problem
+
+If frontend state becomes dependent on receiving every SSE event, a disconnect can produce stale or inconsistent state.
+
+### Correct Architecture
+
+```text
+Persistent backend state/event
+        ↓
+SSE delivery
+        ↓
+Frontend receives event
+        ↓
+Frontend updates/refetches representation
+        ↓
+Backend remains canonical
+```
+
+---
+
+## 2.4 Correction — AI Execution Is Not Tied to Component Lifetime
+
+### Problem
+
+A long-running AI operation must not appear to disappear merely because the user navigates away or refreshes the browser.
+
+### Correct Architecture
+
+```text
+User starts generation
+        ↓
+Backend creates persistent execution
+        ↓
+Frontend receives execution ID
+        ↓
+User may leave page
+        ↓
+Backend continues execution
+        ↓
+Completion/failure event
+        ↓
+Notification
+        ↓
+User returns to canonical workflow/resource
+```
+
+---
+
+## 2.5 Correction — One Giant Global State → Three State Categories
+
+### Problem
+
+Putting server data, UI state and streaming execution state into one giant global state system creates unnecessary coupling.
+
+### Correct Architecture
+
+GrowFlow explicitly separates:
+
+1. **Server State**
+2. **UI State**
+3. **Streaming State**
+
+---
+
+## 2.6 Correction — Generic API File → Domain API Boundaries
+
+### Problem
+
+A single `api.ts` or equivalent eventually becomes a large, difficult-to-maintain API dumping ground.
+
+### Correct Architecture
+
+Domain-specific API boundaries should be used:
+
+```text
+projects.api
+tasks.api
+milestones.api
+risks.api
+documents.api
+ai.api
+notifications.api
+```
+
+---
+
+## 2.7 Correction — Separate Role Applications → One Application + Experiences
+
+### Problem
+
+Three independent frontend applications would duplicate:
+
+- shell
+- design system
+- authentication
+- infrastructure
+- routing
+- shared UI
+
+### Correct Architecture
+
+```text
+One GrowFlow frontend
+        ↓
+BUILD / SUPERVISE / GOVERN experiences
+```
+
+---
+
+## 2.8 Correction — Independent Project Pages → Project Workspace Boundary
+
+### Problem
+
+If every project page independently reconstructs:
+
+- project identity
+- status
+- mentor
+- permissions
+- project header
+- project navigation
+
+the application will duplicate logic and data handling.
+
+### Correct Architecture
+
+```text
+Project Data
+     ↓
+Project Workspace
+     ↓
+Child Routes
+```
+
+The workspace establishes project context without forcing every child page to rebuild it.
+
+This does **not** mean loading the entire project into one giant object.
+
+---
+
+## 2.9 Correction — Frontend Analytics as Truth → Backend Analytics as Truth
+
+### Problem
+
+Frontend-derived analytics may be incomplete, stale, or manipulated.
+
+### Correct Architecture
+
+```text
+Canonical backend data
+        ↓
+Events / metrics
+        ↓
+Analytics backend
+        ↓
+Frontend visualization
+```
+
+---
+
+## 2.10 Correction — Shared as a Dumping Ground → Controlled Shared Ownership
+
+### Problem
+
+If everything is placed under `shared/`, shared becomes another uncontrolled collection.
+
+### Correct Architecture
+
+A component belongs in shared only when its semantics are genuinely reusable across experiences/domains.
+
+---
+
+# 3. Core Architectural Principles
+
+## Principle 01 — Frontend Is Not Canonical State
+
+The frontend never becomes the authoritative owner of:
+
+- project state
+- task state
+- milestone state
+- risk state
+- assessment results
+- blueprint state
+- AI execution state
+- authorization
+- permissions
+
+The backend/database owns canonical state.
+
+The frontend displays and interacts with it.
+
+---
+
+## Principle 02 — Domain Ownership
+
+Every meaningful capability must have an identifiable owner.
+
+Examples:
+
+```text
+Task functionality          → Task domain
+Project functionality       → Project domain
+Notification functionality  → Notification domain
+Authentication              → Auth domain
+AI execution presentation   → AI domain
+```
+
+Avoid generic business-logic dumping grounds such as:
+
+```text
+misc/
+helpers/
+stuff/
+common-business-logic/
+```
+
+---
+
+## Principle 03 — Shared Means Truly Shared
+
+A component becomes shared only when it is genuinely reusable.
+
+Do not prematurely move everything into `shared/`.
+
+---
+
+## Principle 04 — Role-Specific Behavior Remains Role-Specific
+
+```text
+Student functionality
+≠
+Mentor functionality
+≠
+Admin functionality
+```
+
+The roles may consume common domain primitives, but their experiences remain distinct.
+
+---
+
+## Principle 05 — Backend Remains Authoritative
+
+```text
+Frontend permission check
+        ↓
+UX
+
+Backend authorization
+        ↓
+Security
+```
+
+---
+
+# 4. High-Level Frontend Architecture
+
+```text
+┌───────────────────────────────────────────────┐
+│                 GrowFlow UI                   │
+├───────────────────────────────────────────────┤
+│               Application Layer               │
+│ Routing / Providers / Shell / Auth Bootstrap  │
+├───────────────────────────────────────────────┤
+│              Experience Layer                 │
+│ Student / Mentor / Admin / Public Experiences │
+├───────────────────────────────────────────────┤
+│                Domain Layer                   │
+│ Projects / Tasks / AI / Groups / Documents   │
+├───────────────────────────────────────────────┤
+│              Shared UI Layer                  │
+│ Buttons / Tables / Forms / Modals / Charts   │
+├───────────────────────────────────────────────┤
+│             Infrastructure Layer              │
+│ API / SSE / Auth / Storage / Logging         │
+└───────────────────────────────────────────────┘
+```
+
+The architecture is defined by responsibility and dependency direction, not merely by folders.
+
+---
+
+# 5. Dependency Direction
+
+The primary dependency model is:
+
+```text
+Application
+    ↓
+Experience
+    ↓
+Domain
+    ↓
+Shared UI / Infrastructure
+```
+
+Infrastructure handles technical communication and mechanisms. It must not contain GrowFlow business decisions.
+
+For example:
+
+- An API client knows how to make a request.
+- An SSE client knows how to receive events.
+- Neither should decide the canonical meaning of project health, risk, or lifecycle state.
+
+---
+
+# 6. Frontend Architectural Layers
+
+## 6.1 Application Layer
+
+Responsible for application bootstrapping:
+
+- routing
+- providers
+- authentication initialization
+- authorization initialization
+- application shell
+- global error boundaries
+- global configuration
+- application-level event handling
+
+It should not contain domain business logic.
+
+---
+
+## 6.2 Experience Layer
+
+Represents user experiences:
+
+```text
+Public
+Auth
+Student
+Mentor
+Admin
+```
+
+The experience layer composes domain functionality.
+
+It should not duplicate domain logic.
+
+---
+
+## 6.3 Domain Layer
+
+The domain layer owns meaningful frontend capabilities.
+
+Potential domain modules:
+
+```text
+auth
+users
+projects
+project-definitions
+project-instances
+assessment
+blueprint
+tasks
+milestones
+risks
+roadmap
+documents
+github
+activity
+groups
+help-requests
+mentor-feedback
+notifications
+search
+ai
+rag
+analytics
+system-health
+audit
+sharing
+```
+
+Not every domain requires an identical internal directory structure. Structure follows responsibility.
+
+---
+
+## 6.4 Shared UI Layer
+
+Shared UI contains presentation primitives such as:
+
+```text
+Button
+Input
+Select
+Dialog
+Drawer
+Tabs
+Table
+Card
+Badge
+Tooltip
+Dropdown
+Pagination
+Skeleton
+EmptyState
+ErrorState
+LoadingState
+DatePicker
+CommandPalette
+```
+
+Shared components should be:
+
+- role-neutral
+- domain-neutral where possible
+- accessible
+- reusable
+- visually consistent
+
+---
+
+## 6.5 Infrastructure Layer
+
+Infrastructure handles technical communication and mechanisms:
+
+```text
+REST client
+SSE client
+authentication adapter
+storage adapter
+logging
+telemetry
+configuration
+request handling
+error normalization
+```
+
+Infrastructure must not become a business-logic layer.
+
+---
+
+# 7. Application Shell Architecture
+
+GrowFlow uses one common shell architecture.
+
+```text
+App
+│
+├── Global Top Navigation
+├── Authentication-aware context
+├── Workplace Selector
+├── Sidebar / Navigation Drawer
+└── Main Content Area
+```
+
+The shell is shared, while the navigation/content within the shell varies according to the current experience.
+
+---
+
+# 8. Global Top Navigation
+
+Phase 02 established one unified top navigation across the entire website.
+
+The architecture therefore uses one global top-nav system rather than separate Student, Mentor and Admin navbars.
+
+Conceptually:
+
+```text
+<GlobalTopNav>
+    <GrowFlowLogo />
+    <PublicNavigation />
+    <WorkplaceSelector />
+    <GlobalSearch />
+    <Notifications />
+    <Profile />
+    <AuthActions />
+</GlobalTopNav>
+```
+
+Visibility is derived from application state.
+
+The global navigation remains consistent across public and authenticated surfaces.
+
+---
+
+# 9. Workplace Selector Architecture
+
+The Workplace selector is a first-class application component.
+
+It represents:
+
+```text
+BUILD
+SUPERVISE
+GOVERN
+```
+
+The selector must not independently decide authorization.
+
+Instead:
+
+```text
+Authoritative authorization context
+        ↓
+Available workplaces
+        ↓
+Workplace UI
+```
+
+The backend remains authoritative for actual access.
+
+Logged-in users see workplaces they are authorized to access.
+
+Logged-out users can be presented with the workplace choices defined by Phase 02, with each choice leading to the corresponding authentication/protected entry.
+
+---
+
+# 10. Authentication Architecture
+
+Authentication is centralized.
+
+Conceptually:
+
+```text
+AuthProvider
+    │
+    ├── session
+    ├── user
+    ├── authentication status
+    └── authentication lifecycle
+```
+
+The frontend should not unnecessarily maintain independent:
+
+```text
+StudentAuthProvider
+MentorAuthProvider
+AdminAuthProvider
+```
+
+Authentication establishes identity.
+
+Authorization determines access.
+
+---
+
+# 11. Authentication vs Authorization
+
+Authentication answers:
+
+> Who are you?
+
+Authorization answers:
+
+> What are you allowed to access and do?
+
+GrowFlow follows:
+
+```text
+Supabase Auth
+      ↓
+Authenticated identity
+      ↓
+GrowFlow authorization
+      ↓
+Role/workplace permissions
+      ↓
+Route + UI access
+```
+
+---
+
+# 12. Route Protection
+
+Route protection has multiple conceptual levels.
+
+## Level 1 — Authentication
+
+```text
+Is the user authenticated?
+```
+
+If not, redirect to the appropriate authentication flow.
+
+## Level 2 — Workplace Authorization
+
+```text
+Can this identity access BUILD / SUPERVISE / GOVERN?
+```
+
+## Level 3 — Resource Authorization
+
+```text
+Can this user access this specific project/group/student/resource?
+```
+
+## Level 4 — Action Authorization
+
+```text
+Can this user perform this specific action?
+```
+
+The backend enforces the actual authorization boundary at every relevant level.
+
+---
+
+# 13. Frontend Permission Model
+
+Frontend authorization should be normalized around concepts such as:
+
+```text
+authorization
+├── workplaces
+├── roles
+├── permissions
+└── resource capabilities
+```
+
+Example permissions:
+
+```text
+project.read
+project.update
+task.create
+task.update
+mentor-note.create
+investigation.inspect
+```
+
+These permissions primarily control:
+
+- button visibility
+- navigation
+- disabled states
+- UX messaging
+
+They are not security boundaries.
+
+---
+
+# 14. Routing Architecture
+
+Routing maps directly to the Phase 02 route hierarchy.
+
+The router is responsible for:
+
+- route resolution
+- nested layouts
+- authentication guards
+- authorization guards
+- resource context
+- route-level loading
+- route-level error handling
+- deep links
+
+Routes remain:
+
+- lowercase
+- kebab-case
+- resource-oriented
+- nested where context is meaningful
+
+---
+
+# 15. Nested Layout Architecture
+
+Pages within the same contextual workspace should inherit their parent layout.
+
+Conceptually:
+
+```text
+GlobalShell
+    ↓
+StudentShell
+    ↓
+ProjectWorkspace
+    ↓
+CurrentProjectView
+```
+
+This prevents every page from rebuilding the shell, project header, and contextual navigation.
+
+---
+
+# 16. Project Workspace Architecture
+
+The Student project workspace is a dedicated architectural boundary.
+
+```text
+ProjectWorkspace
+│
+├── Project Header
+├── Project Status
+├── Project Context Navigation
+└── Project Content
+```
+
+It hosts the Phase 02 project views:
+
+```text
+overview
+assessment
+blueprint
+tasks
+milestones
+risks
+roadmap
+documents
+github
+activity
+ai-mentor
+help-requests
+mentor-feedback
+changes
+```
+
+The same contextual project model can support the corresponding Mentor project-instance experience.
+
+---
+
+# 17. Server State, UI State and Streaming State
+
+GrowFlow explicitly separates three state categories.
+
+## 17.1 Server State
+
+Data originating from the backend:
+
+- projects
+- tasks
+- milestones
+- risks
+- users
+- notifications
+- AI executions
+- documents
+- groups
+
+## 17.2 UI State
+
+Local frontend interaction state:
+
+- modal open/closed
+- sidebar collapsed/expanded
+- selected tab
+- filter panel
+- temporary interaction state
+
+## 17.3 Streaming State
+
+State associated with active delivery/execution streams:
+
+- AI generation progress
+- execution events
+- job status updates
+- document processing updates
+
+These categories must not be casually merged into one global state object.
+
+---
+
+# 18. Server State Architecture
+
+Server state should be handled through a dedicated data-fetching/cache mechanism.
+
+Conceptually:
+
+```text
+Component
+    ↓
+Domain Query
+    ↓
+API Layer
+    ↓
+FastAPI
+```
+
+Avoid arbitrary raw requests scattered throughout UI components.
+
+Prefer domain-owned abstractions equivalent to:
+
+```text
+useProject(projectId)
+useTasks(projectId)
+useNotifications()
+```
+
+The exact library is intentionally deferred to later technical decisions.
+
+---
+
+# 19. Cache Ownership
+
+Server-state caches should have explicit ownership.
+
+Examples:
+
+```text
+Project Query
+Task Query
+Milestone Query
+Risk Query
+Notification Query
+```
+
+Avoid a giant state object such as:
+
+```text
+globalProjectStateEverything
+```
+
+Granular ownership makes invalidation and refresh more predictable.
+
+---
+
+# 20. Cache Invalidation
+
+When a task changes:
+
+```text
+Task mutation
+      ↓
+Backend confirms
+      ↓
+Task state updates/invalidation
+      ↓
+Affected project representations refresh
+```
+
+The frontend should not assume that every related representation is automatically correct merely because one local mutation succeeded.
+
+Backend responses remain authoritative.
+
+---
+
+# 21. Optimistic Updates
+
+Optimistic updates should be selective.
+
+Good candidates:
+
+- simple UI preferences
+- low-risk interaction toggles
+- non-critical presentation changes
+
+Use caution with:
+
+- project lifecycle transitions
+- task completion
+- milestone transitions
+- risk status
+- blueprint approval
+- AI operations
+- permissions
+- destructive actions
+
+For important domain mutations:
+
+```text
+User action
+   ↓
+Backend
+   ↓
+Confirmed result
+   ↓
+Frontend state update
+```
+
+---
+
+# 22. REST Architecture
+
+Frontend/backend communication remains:
+
+```text
+Frontend
+   ↓
+REST
+   ↓
+FastAPI
+```
+
+The frontend should use a centralized HTTP/API abstraction responsible for:
+
+- base URL
+- authentication
+- headers
+- request serialization
+- response parsing
+- error normalization
+- cancellation
+- appropriate retry behavior
+
+---
+
+# 23. Domain API Clients
+
+Avoid a single enormous API module.
+
+Prefer domain boundaries such as:
+
+```text
+projects.api
+project-definitions.api
+project-instances.api
+tasks.api
+milestones.api
+risks.api
+documents.api
+github.api
+notifications.api
+ai.api
+```
+
+Each domain owns its API interactions.
+
+---
+
+# 24. SSE Architecture
+
+SSE is a transport/delivery mechanism.
+
+It is not canonical application state.
+
+Correct flow:
+
+```text
+Persistent backend event/state
+          ↓
+SSE
+          ↓
+Frontend receives event
+          ↓
+Update/refetch relevant representation
+          ↓
+Backend remains authoritative
+```
+
+The frontend must be able to recover if events are missed.
+
+---
+
+# 25. Long-Running AI Execution Architecture
+
+AI execution must survive page navigation.
+
+```text
+User starts AI operation
+        ↓
+Persistent backend execution
+        ↓
+Execution ID
+        ↓
+Frontend displays status
+        ↓
+User can navigate away
+        ↓
+Backend continues
+        ↓
+Event / notification
+        ↓
+User returns to execution/resource
+```
+
+The component lifecycle must never determine whether the backend job exists.
+
+---
+
+# 26. AI Execution State
+
+AI executions should expose explicit backend-defined states.
+
+Example:
+
+```text
+QUEUED
+RUNNING
+VALIDATING
+QA
+COMPLETED
+FAILED
+CANCELLED
+```
+
+The frontend renders these states rather than inventing its own canonical state machine.
+
+---
+
+# 27. AI UI Architecture
+
+AI functionality is treated as a domain.
+
+Conceptually:
+
+```text
+AI
+├── execution
+├── status
+├── progress
+├── messages
+├── artifacts
+├── errors
+└── quality
+```
+
+This supports:
+
+- Student AI Mentor
+- Blueprint Generation
+- Project Changes
+- Mentor AI
+- Admin AI Observatory
+
+---
+
+# 28. Agent Visibility Rule
+
+The frontend must not hardcode internal LangGraph/agent implementation details throughout the UI.
+
+Avoid widespread assumptions such as:
+
+```text
+if agent === "technology_agent"
+```
+
+Instead, backend execution data should expose structured information such as:
+
+```text
+agent label
+status
+duration
+output
+error
+```
+
+The frontend renders the supplied structured representation.
+
+This keeps the internal agent architecture evolvable.
+
+---
+
+# 29. Notifications Architecture
+
+Notifications are a shared domain.
+
+```text
+Notification API
+      ↓
+Notification Query
+      ↓
+Notification Center
+```
+
+Real-time notification flow:
+
+```text
+Backend event
+      ↓
+SSE
+      ↓
+Notification state update
+      ↓
+Top-nav indicator
+      ↓
+Notification Center
+```
+
+Notifications can deep-link to canonical resources/routes.
+
+---
+
+# 30. Search Architecture
+
+Global Search is a shared domain.
+
+```text
+Global Search
+      ↓
+Search API
+      ↓
+Authorization-aware results
+```
+
+The frontend should not treat arbitrary locally cached data as the authoritative global search index.
+
+---
+
+# 31. Forms Architecture
+
+Forms follow:
+
+```text
+UI Form
+   ↓
+Client Validation
+   ↓
+API Submission
+   ↓
+Server Validation
+```
+
+Client validation improves user experience.
+
+Server validation remains authoritative.
+
+---
+
+# 32. Form State Ownership
+
+Temporary form state should normally be locally owned.
+
+Example:
+
+```text
+Create Project
+```
+
+owns its draft fields until submission.
+
+Only persisted data becomes server state after successful backend confirmation.
+
+Avoid placing every form field into global application state.
+
+---
+
+# 33. Loading-State Architecture
+
+Loading is a first-class UI concern.
+
+Different situations require different states.
+
+### Initial page loading
+
+Skeleton or page-level loading state.
+
+### Partial loading
+
+Section-level skeleton.
+
+### Background refresh
+
+Subtle refresh indicator.
+
+### AI execution
+
+Execution-specific progress UI.
+
+### Navigation loading
+
+Route transition/loading state.
+
+A single generic spinner should not be the universal loading strategy.
+
+---
+
+# 34. Empty-State Architecture
+
+Every major collection should define an intentional empty state.
+
+Examples:
+
+```text
+No projects yet
+No tasks
+No milestones
+No risks
+No notifications
+No help requests
+No students
+No groups
+```
+
+An empty state should explain:
+
+1. What is empty
+2. Why it may be empty
+3. What the user can do next
+
+---
+
+# 35. Error Architecture
+
+Errors should be categorized.
+
+```text
+Authentication Error
+Authorization Error
+Validation Error
+Not Found
+Conflict
+Network Error
+Server Error
+AI Error
+Processing Error
+Unknown Error
+```
+
+Avoid reducing every failure to:
+
+> Something went wrong.
+
+Instead, normalize backend/client failures into a predictable frontend error model.
+
+---
+
+# 36. Error Boundaries
+
+Use layered failure containment:
+
+```text
+Application Error Boundary
+        ↓
+Route Error Boundary
+        ↓
+Feature Error Boundary
+        ↓
+Component-level handling
+```
+
+A failure in one feature, such as an AI panel, should not unnecessarily crash the entire application.
+
+---
+
+# 37. 401 / 403 / 404
+
+These remain distinct:
+
+```text
+401 → Authentication required
+403 → Authenticated but unauthorized
+404 → Resource/route not found
+```
+
+This directly preserves the Phase 02 architecture.
+
+---
+
+# 38. Responsive Architecture
+
+GrowFlow should support:
+
+```text
+Desktop
+Tablet
+Mobile
+```
+
+using one responsive application rather than separate frontend applications.
+
+Desktop is expected to support the highest information density, particularly for:
+
+- Mentor
+- Admin
+- complex Student project work
+
+Mobile prioritizes navigation accessibility and focused workflows.
+
+---
+
+# 39. Mobile Navigation
+
+Desktop:
+
+```text
+Top Navigation
+Sidebar
+Content
+```
+
+Mobile:
+
+```text
+Top Navigation
+      ↓
+Navigation Drawer
+      ↓
+Content
+```
+
+The navigation model remains consistent; presentation changes by viewport.
+
+---
+
+# 40. Component Architecture
+
+Components should have clear ownership levels.
+
+## Primitive
+
+```text
+Button
+Input
+Badge
+```
+
+## Composite
+
+```text
+SearchBar
+DataTable
+ProjectCard
+NotificationItem
+```
+
+## Domain Component
+
+```text
+TaskCard
+RiskCard
+BlueprintStatus
+AIExecutionPanel
+```
+
+## Experience Component
+
+```text
+StudentDashboard
+MentorOverview
+AdminObservatory
+```
+
+---
+
+# 41. God Component Prevention
+
+Avoid components that simultaneously own:
+
+- fetching
+- routing
+- task rendering
+- milestone rendering
+- AI logic
+- modal logic
+- permissions
+- API calls
+- SSE handling
+- formatting
+
+For example, avoid turning `ProjectWorkspace.tsx` into the entire application.
+
+Prefer:
+
+```text
+ProjectWorkspace
+├── ProjectHeader
+├── ProjectNavigation
+├── ProjectStatus
+├── ProjectContent
+└── ProjectActions
+```
+
+with domain logic owned by the appropriate domain/data layers.
+
+---
+
+# 42. Proposed Frontend Folder Architecture
+
+The conceptual structure is:
+
+```text
+src/
+│
+├── app/
+│   ├── router/
+│   ├── providers/
+│   ├── layouts/
+│   ├── guards/
+│   └── bootstrap/
+│
+├── experiences/
+│   ├── public/
+│   ├── auth/
+│   ├── student/
+│   ├── mentor/
+│   └── admin/
+│
+├── domains/
+│   ├── auth/
+│   ├── projects/
+│   ├── project-definitions/
+│   ├── project-instances/
+│   ├── assessment/
+│   ├── blueprint/
+│   ├── tasks/
+│   ├── milestones/
+│   ├── risks/
+│   ├── documents/
+│   ├── github/
+│   ├── activity/
+│   ├── groups/
+│   ├── notifications/
+│   ├── search/
+│   ├── ai/
+│   ├── rag/
+│   ├── analytics/
+│   ├── audit/
+│   └── system-health/
+│
+├── shared/
+│   ├── ui/
+│   ├── layouts/
+│   ├── forms/
+│   ├── feedback/
+│   └── utilities/
+│
+└── infrastructure/
+    ├── api/
+    ├── auth/
+    ├── sse/
+    ├── telemetry/
+    ├── storage/
+    └── config/
+```
+
+This is an architectural model, not yet an implementation-level directory contract. Exact framework-specific conventions are intentionally deferred.
+
+---
+
+# 43. Domain Module Structure
+
+A domain may internally contain:
+
+```text
+domains/tasks/
+
+├── api/
+├── components/
+├── hooks/
+├── queries/
+├── mutations/
+├── types/
+├── utils/
+└── index.ts
+```
+
+However, directories should only be created when the domain actually needs them.
+
+**Structure follows responsibility, not ceremony.**
+
+---
+
+# 44. Public Website Architecture
+
+The public website is a distinct experience:
+
+```text
+experiences/public/
+```
+
+but uses the same:
+
+- design system
+- shared primitives
+- global top navigation
+- application infrastructure
+- routing infrastructure
+
+This creates:
+
+```text
+one application
+one design language
+multiple experiences
+```
+
+rather than disconnected frontend applications.
+
+---
+
+# 45. Student / BUILD Architecture
+
+Student experience composes:
+
+```text
+Student
+├── Dashboard
+├── Project Catalog
+├── Project Creation
+└── Project Workspace
+```
+
+The project workspace consumes:
+
+```text
+projects
+assessment
+blueprint
+tasks
+milestones
+risks
+documents
+github
+activity
+ai
+help requests
+mentor feedback
+changes
+```
+
+---
+
+# 46. Mentor / SUPERVISE Architecture
+
+Mentor experience composes:
+
+```text
+Mentor
+├── Overview
+├── Groups
+├── Students
+├── Projects
+├── Definitions
+├── Instances
+├── At Risk
+├── Help Requests
+├── Activity
+└── AI
+```
+
+The frontend must preserve the fundamental distinction between:
+
+- Project Definition
+- Student Project Instance
+
+A mentor editing a definition must not be modeled as directly mutating an existing student instance.
+
+That canonical domain rule remains owned by the backend.
+
+---
+
+# 47. Admin / GOVERN Architecture
+
+Admin is primarily a governance and observability experience.
+
+```text
+Admin
+├── Users
+├── Groups
+├── Projects
+├── AI Observatory
+├── Cost & Usage
+├── System Health
+├── Documents / RAG
+├── Security / Audit
+└── Analytics
+```
+
+Admin surfaces emphasize:
+
+- tables
+- filters
+- metrics
+- traces
+- audit records
+- system status
+- investigation workflows
+
+They should not simply duplicate Student or Mentor UX.
+
+---
+
+# 48. Shared Design System
+
+GrowFlow should establish a design-system boundary containing:
+
+```text
+tokens
+typography
+spacing
+radius
+elevation
+icons
+colors
+motion
+responsive primitives
+accessibility rules
+```
+
+Then:
+
+```text
+Shared UI
+    ↓
+Student
+Mentor
+Admin
+Public
+```
+
+all consume the same design language.
+
+---
+
+# 49. Accessibility Architecture
+
+Accessibility is a foundational architectural concern.
+
+Shared primitives should establish:
+
+- keyboard interaction
+- focus management
+- screen-reader semantics
+- labels
+- accessible error states
+- dialog focus trapping
+- appropriate ARIA usage
+- contrast requirements
+
+Correct shared primitives allow all higher-level experiences to inherit consistent accessibility behavior.
+
+---
+
+# 50. Motion Architecture
+
+Motion should differ by experience.
+
+## Public Website
+
+More expressive and visually engaging.
+
+## Authenticated Application
+
+More restrained:
+
+- subtle
+- functional
+- fast
+- purposeful
+
+Motion should communicate:
+
+- transition
+- progress
+- status
+- hierarchy
+
+rather than becoming decoration everywhere.
+
+---
+
+# 51. Frontend Security Architecture
+
+The browser must be treated as an untrusted environment.
+
+Never trust:
+
+```text
+hidden buttons
+disabled buttons
+frontend role values
+route guards
+local state
+```
+
+for actual authorization.
+
+Never expose:
+
+- secret API keys
+- service-role credentials
+- privileged backend credentials
+- internal secrets
+
+to browser code.
+
+---
+
+# 52. AI Provider Security Boundary
+
+The frontend communicates with:
+
+```text
+GrowFlow backend
+```
+
+and not directly with:
+
+```text
+OpenAI
+Anthropic
+Google
+other AI providers
+```
+
+The backend's AI Provider Gateway remains the central abstraction.
+
+This preserves the previously established architecture:
+
+```text
+Frontend
+  ↓
+FastAPI
+  ↓
+Application / Generation Service
+  ↓
+LangGraph
+  ↓
+Agents / Tools
+  ↓
+AI Provider Gateway
+  ↓
+Provider
+```
+
+---
+
+# 53. Observability Hooks
+
+Frontend observability should capture useful technical signals such as:
+
+```text
+route transitions
+API failures
+SSE failures
+AI execution UI failures
+performance metrics
+uncaught exceptions
+```
+
+Frontend telemetry must not become canonical platform analytics.
+
+Instead:
+
+```text
+Frontend telemetry
+      ↓
+Backend observability pipeline
+```
+
+---
+
+# 54. Performance Architecture
+
+Performance should be designed around:
+
+### Route-level code splitting
+
+Load large experiences only when needed.
+
+### Component lazy loading
+
+Useful for:
+
+- heavy charts
+- observability views
+- document viewers
+- complex editors
+
+### Data pagination
+
+Large collections should not load everything.
+
+### Virtualization
+
+Useful for:
+
+- large tables
+- activity feeds
+- traces
+- logs
+
+### Cache reuse
+
+Avoid unnecessary duplicate server requests.
+
+---
+
+# 55. Large Dataset Architecture
+
+Admin and operational surfaces may eventually contain very large collections:
+
+```text
+Audit Logs
+AI Executions
+Traces
+Students
+Projects
+Activity
+```
+
+Therefore:
+
+```text
+Frontend filtering
+```
+
+must not be relied upon as a replacement for:
+
+```text
+Backend query
+Backend filtering
+Backend pagination
+```
+
+for large datasets.
+
+---
+
+# 56. State Ownership Rules
+
+| State | Owner |
+|---|---|
+| Project canonical data | Backend |
+| Task canonical data | Backend |
+| Milestone canonical data | Backend |
+| Risk canonical data | Backend |
+| User identity | Auth/backend |
+| Permissions | Backend-derived |
+| API cache | Frontend |
+| Modal state | Component/UI |
+| Sidebar state | UI |
+| Form draft | Form |
+| SSE connection | Infrastructure |
+| AI execution truth | Backend |
+| AI execution display | Frontend |
+| Notification truth | Backend |
+| Notification display | Frontend |
+
+---
+
+# 57. Component-to-API Rule
+
+A component should not directly understand low-level HTTP mechanics.
+
+Avoid:
+
+```text
+Button
+  ↓
+fetch()
+```
+
+Prefer:
+
+```text
+Button
+ ↓
+Mutation Hook
+ ↓
+Domain API
+ ↓
+Infrastructure API Client
+ ↓
+FastAPI
+```
+
+This improves:
+
+- testability
+- maintainability
+- error handling
+- contract consistency
+
+---
+
+# 58. Component-to-State Rule
+
+Components should consume domain abstractions.
+
+Prefer:
+
+```text
+Component
+ ↓
+Domain query/hook
+ ↓
+Server-state layer
+```
+
+Avoid:
+
+```text
+Component
+ ↓
+Global giant state
+```
+
+---
+
+# 59. Domain Boundary Rule
+
+A task component may use:
+
+- Task domain
+- approved Project domain primitives
+- Shared UI
+
+It should not directly reach into:
+
+- Admin implementation internals
+- Mentor-specific component internals
+- unrelated domain implementation details
+
+This prevents cross-role coupling.
+
+---
+
+# 60. Cross-Domain Communication
+
+Domains should communicate through defined contracts.
+
+Example:
+
+```text
+Task
+ ↓
+Project
+```
+
+rather than:
+
+```text
+Task component
+ ↓
+directly mutates Project internals
+```
+
+Data changes can trigger appropriate invalidation or refresh through defined data-layer contracts.
+
+---
+
+# 61. Global State Rules
+
+Global state should remain intentionally limited.
+
+Good candidates:
+
+```text
+authenticated session
+authorization context
+global UI preferences
+global notification state
+application configuration
+```
+
+Bad candidates:
+
+```text
+every form
+every modal
+every page's local state
+every table filter
+```
+
+---
+
+# 62. URL State Rules
+
+State that should survive refresh, browser history, or sharing should often live in the URL.
+
+Examples:
+
+```text
+filters
+search query
+pagination
+sorting
+selected view
+```
+
+Temporary interaction state should remain local.
+
+---
+
+# 63. Route vs Query Parameter
+
+Use routes for resource identity:
+
+```text
+/projects/123
+```
+
+Use query parameters for view/filter state:
+
+```text
+/projects?status=active
+```
+
+This preserves:
+
+- deep linking
+- browser history
+- refresh persistence
+- shareable state
+
+---
+
+# 64. Testing Architecture
+
+Testing exists at multiple levels.
+
+## Unit Tests
+
+For:
+
+- utilities
+- pure transformations
+- domain helpers
+
+## Component Tests
+
+For:
+
+- shared components
+- domain components
+- interaction behavior
+
+## Integration Tests
+
+For:
+
+- API + domain state
+- forms
+- workflows
+- permissions
+
+## End-to-End Tests
+
+For critical journeys:
+
+```text
+Student registration
+Student project creation
+Assessment
+Blueprint generation
+Task workflow
+Mentor supervision
+Admin investigation
+```
+
+---
+
+# 65. AI Workflow Testing
+
+AI workflows require explicit testing of:
+
+```text
+QUEUED
+RUNNING
+COMPLETED
+FAILED
+```
+
+and lifecycle events such as:
+
+```text
+browser disconnect
+page navigation
+refresh
+reconnection
+notification
+late completion
+```
+
+The UI must recover correctly from these situations.
+
+---
+
+# 66. SSE Failure Recovery
+
+SSE may disconnect.
+
+The frontend must support:
+
+```text
+Connected
+    ↓
+Disconnected
+    ↓
+Reconnect / retry
+    ↓
+Reconcile current server state
+```
+
+Do not assume that every missed event can be reconstructed purely from local state.
+
+After reconnection, the frontend should be able to reconcile against backend state.
+
+---
+
+# 67. Browser Refresh Resilience
+
+Refreshing the browser must not destroy workflow progress.
+
+Example:
+
+```text
+Blueprint generation
+        ↓
+Browser refresh
+        ↓
+Frontend reconnects
+        ↓
+Fetch execution state
+        ↓
+Determine current status
+        ↓
+Resume correct UI
+```
+
+---
+
+# 68. Network Failure Architecture
+
+The frontend should distinguish:
+
+```text
+backend unavailable
+network unavailable
+request timeout
+SSE disconnected
+```
+
+Not every failure means the user's workflow or canonical data has been lost.
+
+---
+
+# 69. Notification + Long-Running Work Integration
+
+The previously established persistent job model connects directly to notifications:
+
+```text
+AI Job
+  ↓
+Persistent execution
+  ↓
+Event
+  ↓
+Notification
+  ↓
+Canonical resource/workflow URL
+```
+
+The frontend can therefore remain resilient even when the user leaves the current screen.
+
+---
+
+# 70. Document Viewer Architecture
+
+Documents should distinguish:
+
+```text
+document metadata
+document content
+document generation state
+document preview
+```
+
+This is important for:
+
+- blueprint documents
+- README documents
+- generated project documentation
+- RAG-related documents
+
+Large document content should not automatically be treated as lightweight metadata.
+
+---
+
+# 71. GitHub Architecture
+
+GitHub is a domain integration.
+
+Frontend:
+
+```text
+GitHub UI
+ ↓
+GrowFlow backend
+ ↓
+GitHub integration
+```
+
+The frontend should not directly own GitHub credentials or bypass the backend integration boundary.
+
+---
+
+# 72. Activity Architecture
+
+Activity is a derived representation.
+
+```text
+Canonical domain change
+      ↓
+Backend event/activity record
+      ↓
+Frontend activity feed
+```
+
+The activity feed displays what happened.
+
+It does not define the underlying canonical project state.
+
+---
+
+# 73. Analytics Architecture
+
+Analytics follows:
+
+```text
+Canonical backend state
+        ↓
+Events / Metrics
+        ↓
+Analytics backend
+        ↓
+Frontend visualization
+```
+
+Frontend charts are representations, not canonical sources of platform metrics.
+
+---
+
+# 74. RAG Frontend Architecture
+
+RAG frontend surfaces may expose:
+
+- processing status
+- source documents
+- ingestion state
+- retrieval diagnostics where authorized
+
+The frontend does not own:
+
+- vector storage
+- retrieval truth
+- embedding generation
+- RAG canonical state
+
+Those remain backend responsibilities.
+
+---
+
+# 75. No Direct Database Access
+
+The frontend must never communicate directly with PostgreSQL.
+
+Canonical architecture:
+
+```text
+Browser
+ ↓
+FastAPI
+ ↓
+Application Services
+ ↓
+Database
+```
+
+---
+
+# 76. No Direct Agent Execution
+
+The frontend must never directly invoke:
+
+- LangGraph
+- agents
+- agent tools
+- LLM providers
+
+Correct architecture:
+
+```text
+Frontend
+ ↓
+FastAPI
+ ↓
+Application / Generation Service
+ ↓
+LangGraph
+ ↓
+Agents / Tools
+```
+
+---
+
+# 77. Application Startup Lifecycle
+
+The frontend boot sequence should conceptually be:
+
+```text
+Application starts
+      ↓
+Load configuration
+      ↓
+Initialize authentication
+      ↓
+Resolve session
+      ↓
+Load authorization/workplace context
+      ↓
+Initialize application providers
+      ↓
+Resolve route
+      ↓
+Render experience
+```
+
+This prevents role-aware navigation from rendering before authorization context is available.
+
+---
+
+# 78. Deep-Link Lifecycle
+
+Example:
+
+```text
+/student/projects/123/tasks/456
+```
+
+while logged out.
+
+Flow:
+
+```text
+Deep link
+ ↓
+Authentication required
+ ↓
+Student login
+ ↓
+Authentication
+ ↓
+Authorization
+ ↓
+Restore intended route
+ ↓
+Project authorization
+ ↓
+Task page
+```
+
+This preserves Phase 02 deep-link behavior.
+
+---
+
+# 79. Suspended / Inactive Account
+
+If account state becomes suspended/inactive, the application must not simply continue rendering protected content.
+
+The frontend should distinguish:
+
+```text
+authenticated
++
+suspended/inactive
+```
+
+and render the appropriate system state.
+
+---
+
+# 80. Workplace Resolution
+
+A user may have:
+
+```text
+Student only
+Mentor only
+Admin only
+```
+
+or potentially multiple authorized workplaces.
+
+The frontend derives available workplaces from authoritative authorization context.
+
+It must never assume every user has access to every workplace.
+
+---
+
+# 81. Shared vs Role-Specific Components
+
+## Shared
+
+```text
+GlobalTopNav
+Search
+Notifications
+Profile
+Settings
+Dialog
+Table
+Form
+Toast
+```
+
+## Student-specific
+
+```text
+StudentProjectWorkspace
+AssessmentInterface
+StudentAIMentor
+```
+
+## Mentor-specific
+
+```text
+GroupWorkspace
+MentorStudentOverview
+MentorProjectDefinitionEditor
+```
+
+## Admin-specific
+
+```text
+AITraceViewer
+SystemHealthDashboard
+InvestigationInspector
+```
+
+---
+
+# 82. Avoid Role Duplication
+
+If semantics are identical, share the component.
+
+Example:
+
+```text
+StatusBadge
+```
+
+instead of:
+
+```text
+StudentStatusBadge
+MentorStatusBadge
+AdminStatusBadge
+```
+
+unless their semantics genuinely differ.
+
+---
+
+# 83. Avoid Over-Generalization
+
+Do not create universal components with dozens of unrelated props merely to force reuse.
+
+Avoid patterns such as:
+
+```text
+UniversalEverythingCard
+```
+
+The goal is:
+
+> **Reuse where semantics are shared; separation where semantics differ.**
+
+---
+
+# 84. Frontend Contracts
+
+Every domain should have clear contracts for:
+
+```text
+request
+response
+loading
+error
+mutation
+events
+permissions
+```
+
+Frontend components should consume structured backend responses rather than reconstructing domain meaning from arbitrary strings.
+
+---
+
+# 85. Type Safety
+
+Where the chosen frontend technology supports it, backend contracts should produce strongly typed frontend models.
+
+This reduces:
+
+- field mismatches
+- undefined assumptions
+- API drift
+- runtime failures
+
+The exact code-generation or contract strategy is intentionally deferred to later technical decisions.
+
+---
+
+# 86. Backend Contract Evolution
+
+Frontend architecture must allow API contracts to evolve.
+
+Where required:
+
+```text
+versioning
+compatibility
+migration
+```
+
+may be introduced.
+
+However, complex versioning should not be added prematurely to every endpoint.
+
+---
+
+# 87. Performance Budget Philosophy
+
+Measure and monitor:
+
+```text
+initial load
+route load
+API latency
+render cost
+large-table performance
+AI stream responsiveness
+document-viewer performance
+```
+
+Performance is an engineering property that should be measured rather than judged only subjectively.
+
+---
+
+# 88. Frontend Observability
+
+Frontend errors should contain enough context to support diagnosis, such as:
+
+```text
+route
+user/workplace context where safe
+request ID / correlation ID where available
+API endpoint
+error category
+execution ID where applicable
+timestamp
+```
+
+Sensitive information must not be unnecessarily included in telemetry.
+
+---
+
+# 89. Correlation IDs
+
+For complex AI workflows, correlation IDs can connect:
+
+```text
+Frontend request
+ ↓
+Request ID
+ ↓
+Backend execution
+ ↓
+Agent execution
+ ↓
+Tool calls
+ ↓
+QA
+```
+
+The frontend can display or report relevant execution identifiers without requiring knowledge of internal agent implementation.
+
+---
+
+# 90. Accessibility + Error + Loading as Shared Architecture
+
+These should not be reinvented separately on every page.
+
+Shared primitives should provide:
+
+```text
+LoadingState
+ErrorState
+EmptyState
+AccessibleDialog
+AccessibleTabs
+AccessibleFormField
+```
+
+This creates consistent application behavior.
+
+---
+
+# 91. Final Frontend Dependency Model
+
+```text
+                         GROWFLOW FRONTEND
+                                │
+                       ┌────────▼────────┐
+                       │ APPLICATION     │
+                       │ SHELL           │
+                       └────────┬────────┘
+                                │
+                  ┌─────────────┼─────────────┐
+                  │             │             │
+                BUILD       SUPERVISE       GOVERN
+                  │             │             │
+                  └─────────────┼─────────────┘
+                                │
+                         EXPERIENCE LAYER
+                                │
+                           DOMAIN LAYER
+                                │
+             ┌──────────────────┼──────────────────┐
+             │                  │                  │
+        SERVER STATE       STREAMING STATE      UI STATE
+             │                  │                  │
+             └──────────────────┼──────────────────┘
+                                │
+                         INFRASTRUCTURE
+                     ┌──────────┼──────────┐
+                     │          │          │
+                    REST       SSE        AUTH
+                     │          │          │
+                     └──────────┼──────────┘
+                                │
+                              FASTAPI
+                                │
+                       APPLICATION SERVICES
+                                │
+                  ┌─────────────┼─────────────┐
+                  │             │             │
+               DATABASE       AI/RAG        EVENTS
+```
+
+---
+
+# 92. Frontend Architecture Anti-Patterns
+
+The following are explicitly prohibited:
+
+### ❌ Giant global state
+
+### ❌ Direct fetch calls everywhere
+
+### ❌ Direct database access
+
+### ❌ Direct LLM/provider calls
+
+### ❌ Frontend-owned canonical domain state
+
+### ❌ Role-based duplicated applications
+
+### ❌ God components
+
+### ❌ God API files
+
+### ❌ Global dumping-ground utilities
+
+### ❌ Frontend-only authorization
+
+### ❌ SSE treated as source of truth
+
+### ❌ AI execution tied to component lifecycle
+
+### ❌ Loading entire datasets unnecessarily
+
+### ❌ Client-only filtering of huge collections
+
+### ❌ Business logic hidden inside UI components
+
+---
+
+# 93. What Phase 03 Does Not Freeze
+
+Phase 03 freezes the **frontend architecture and responsibility model**, not every implementation library.
+
+The following remain intentionally open for later technical decisions:
+
+- exact React framework choice
+- exact state-management library
+- exact server-state/data-fetching library
+- exact form library
+- exact validation library
+- exact styling framework
+- exact UI component library
+- exact testing libraries
+- exact frontend build tooling
+- exact TypeScript configuration
+- exact implementation-level directory conventions
+- exact API client implementation
+- exact SSE implementation
+
+This prevents premature technology decisions from being mistaken for architectural requirements.
+
+---
+
+# 94. Final Phase 03 Architecture Rules
+
+The following rules form the proposed Phase 03 freeze set.
+
+## Architecture
+
+1. One frontend application.
+2. One shared design language.
+3. One global top navigation.
+4. Role-specific experiences live beneath the common application shell.
+5. Domain-oriented architecture is preferred over page-only architecture.
+6. Shared functionality is centralized only when genuinely shared.
+7. Role-specific behavior remains role-specific.
+
+## State
+
+8. Backend owns canonical state.
+9. Frontend owns representation state.
+10. Server state, UI state and streaming state remain separate.
+11. Global state is intentionally minimal.
+12. URL owns shareable/navigation-relevant view state.
+13. Forms own temporary draft state.
+
+## API
+
+14. Frontend communicates with backend through REST/SSE.
+15. API communication is centralized.
+16. Domain API clients own domain interactions.
+17. Components do not directly perform arbitrary HTTP requests.
+18. Frontend never directly accesses PostgreSQL.
+19. Frontend never directly invokes AI providers.
+
+## Authentication
+
+20. Authentication and authorization remain separate.
+21. Backend authorization is authoritative.
+22. Frontend authorization is UX-oriented.
+23. Workplace access comes from authoritative authorization context.
+24. Deep links preserve intended destinations.
+
+## AI
+
+25. AI executions are persistent backend jobs.
+26. Frontend component lifetime does not determine execution lifetime.
+27. SSE is delivery, not truth.
+28. Reconnection must reconcile with backend state.
+29. AI states are backend-defined.
+30. Frontend does not hardcode LangGraph internals.
+
+## Scalability
+
+31. Large collections use server-side pagination/filtering.
+32. Heavy features can be lazy-loaded.
+33. Large tables/logs/traces can use virtualization.
+34. Domain modules have clear ownership.
+35. God components and god API files are prohibited.
+
+## Reliability
+
+36. 401, 403 and 404 remain distinct.
+37. Loading, empty and error states are first-class.
+38. Errors are normalized.
+39. Error boundaries isolate failures.
+40. Network/SSE failures have recovery paths.
+
+## Security
+
+41. Nothing in frontend is trusted as a security boundary.
+42. No secrets are exposed to browser code.
+43. AI provider credentials remain backend-only.
+44. Resource/action authorization is enforced server-side.
+
+## Maintainability
+
+45. Components consume domain abstractions rather than raw infrastructure.
+46. Cross-domain communication follows explicit contracts.
+47. Backend/frontend contracts should be strongly typed where practical.
+48. Observability is built into the architecture.
+49. Accessibility is built into shared primitives.
+50. Performance is treated as an engineering requirement.
+
+---
+
+# 95. Phase 03 Freeze Statement
+
+Phase 03 establishes the structural architecture of the GrowFlow frontend.
+
+The frontend is defined as:
+
+```text
+One application
+        ↓
+One shared shell
+        ↓
+BUILD / SUPERVISE / GOVERN experiences
+        ↓
+Domain-oriented frontend capabilities
+        ↓
+Separate Server / UI / Streaming state
+        ↓
+Centralized REST / SSE / Auth infrastructure
+        ↓
+FastAPI backend
+```
+
+The frontend is a presentation and interaction layer over canonical backend state.
+
+It does not own:
+
+- database truth
+- authorization truth
+- AI execution truth
+- analytics truth
+- RAG truth
+- persistent workflow truth
+
+Long-running AI and processing workflows survive navigation and browser lifecycle because execution is persistent on the backend.
+
+The architecture is designed to support the complete Phase 01 page inventory and Phase 02 navigation model without requiring separate role applications or duplicated infrastructure.
+
+---
+
+## Status
+
+**Phase 03: Frontend Application Architecture**
+
+**Current status:** Proposed for review / freeze
+
+**Freeze condition:** User explicitly accepts this architecture.
+
+**Next phase after acceptance:** Phase 04 — to be defined according to the sequential GrowFlow architecture workflow.

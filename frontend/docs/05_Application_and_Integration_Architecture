@@ -1,0 +1,3464 @@
+# GrowFlow — Phase 05
+# Application & Integration Architecture
+
+**Status:** 🔒 FROZEN / AUTHORITATIVE  
+**Phase:** 05  
+**Scope:** V1 application, backend, data, AI, integration, reliability, security, and operational architecture  
+**Depends on:** Phase 01, Phase 02, Phase 03, Phase 04
+
+---
+
+## Purpose
+
+Phase 05 is the technical architecture contract beneath the frontend specification.
+
+It defines **where canonical state lives, how requests flow, how domain rules execute, how AI is orchestrated, how long-running work survives browser disconnects, how events reach the frontend, how RAG remains derived, how external integrations are isolated, and how security/observability/reliability are enforced.**
+
+### Frozen system direction
+
+```text
+Frontend
+   ↓ REST / SSE
+FastAPI
+   ↓
+Application Services
+   ↓
+Domain Services
+   ↓
+PostgreSQL / Canonical State
+   ↓
+Events + Jobs + AI + RAG + Integrations
+   ↓
+Validated Persistence
+   ↓
+Notifications / SSE / Derived Views
+   ↓
+Frontend Reconciliation
+```
+
+### Core invariant
+
+> **Everything important eventually resolves to canonical, authorized, validated state.**
+
+AI may generate. RAG may retrieve. Workers may process. Events may distribute. SSE may deliver. Documents may represent. Analytics may analyze. The frontend may present. None of these silently replaces canonical domain ownership.
+
+---
+
+## Phase 05 Governance
+
+- No architectural decision from Phases 01–04 is silently changed.
+- Implementation-specific values are explicitly labeled rather than guessed.
+- Every high-risk workflow has an owner, state model, failure model, security boundary, and observability path.
+- Every derived representation has a defined source.
+- Every asynchronous workflow is independent of browser connectivity.
+- Every sensitive operation has explicit authorization.
+- Every future architecture change is recorded through a Technical Decision Record.
+
+---
+
+---
+
+# 1. Phase 05 Objective
+
+**Purpose:** Define the complete technical architecture behind GrowFlow so every frontend operation, backend use case, AI workflow, integration, event, and persistence boundary has an explicit home.
+
+## Required Decisions / Rules
+
+- Define the complete system boundary and runtime components.
+- Identify ownership, dependencies, data flow, failure boundaries, and integration boundaries.
+- Trace important operations from user action to canonical persistence and back to the frontend.
+- Never hide an unresolved architecture choice behind an assumption.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Define the complete technical architecture behind GrowFlow so every frontend operation, backend use case, AI workflow, integration, event, and persistence boundary has an explicit home.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 2. Core Architectural Layers
+
+**Purpose:** Establish Presentation, API, Application, Domain, Repository/Persistence, and Infrastructure responsibilities and dependency direction.
+
+## Required Decisions / Rules
+
+- Keep transport, application orchestration, domain rules, persistence abstraction, and infrastructure responsibilities separated.
+- PostgreSQL remains the canonical transactional owner of domain state.
+- Authentication identity comes from Supabase Auth; application authorization comes from GrowFlow.
+- Resource scope and action authorization are evaluated before sensitive data is returned or used.
+- RLS reinforces server-side authorization at the database boundary.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Establish Presentation, API, Application, Domain, Repository/Persistence, and Infrastructure responsibilities and dependency direction.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 3. Database Architecture
+
+**Purpose:** PostgreSQL is the canonical transactional system. Define authoritative entities, relationships, constraints, indexes, migrations, and lifecycle metadata.
+
+## Required Decisions / Rules
+
+- Keep transport, application orchestration, domain rules, persistence abstraction, and infrastructure responsibilities separated.
+- PostgreSQL remains the canonical transactional owner of domain state.
+- Authentication identity comes from Supabase Auth; application authorization comes from GrowFlow.
+- Resource scope and action authorization are evaluated before sensitive data is returned or used.
+- RLS reinforces server-side authorization at the database boundary.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** PostgreSQL is the canonical transactional system. Define authoritative entities, relationships, constraints, indexes, migrations, and lifecycle metadata.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 4. Canonical vs Derived Data
+
+**Purpose:** Canonical business state remains authoritative; progress, health, activity, analytics, search projections, RAG indexes, and rendered documents are derived representations.
+
+## Required Decisions / Rules
+
+- Keep transport, application orchestration, domain rules, persistence abstraction, and infrastructure responsibilities separated.
+- PostgreSQL remains the canonical transactional owner of domain state.
+- Authentication identity comes from Supabase Auth; application authorization comes from GrowFlow.
+- Resource scope and action authorization are evaluated before sensitive data is returned or used.
+- RLS reinforces server-side authorization at the database boundary.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Canonical business state remains authoritative; progress, health, activity, analytics, search projections, RAG indexes, and rendered documents are derived representations.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 5. User / Identity Architecture
+
+**Purpose:** Supabase Auth owns authentication identity; GrowFlow owns application profile, role, authorization, and domain context.
+
+## Required Decisions / Rules
+
+- Keep transport, application orchestration, domain rules, persistence abstraction, and infrastructure responsibilities separated.
+- PostgreSQL remains the canonical transactional owner of domain state.
+- Authentication identity comes from Supabase Auth; application authorization comes from GrowFlow.
+- Resource scope and action authorization are evaluated before sensitive data is returned or used.
+- RLS reinforces server-side authorization at the database boundary.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Supabase Auth owns authentication identity; GrowFlow owns application profile, role, authorization, and domain context.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 6. Role Architecture
+
+**Purpose:** Three workplaces exist: Student/BUILD, Mentor/SUPERVISE, and Admin/GOVERN. They share one platform and do not imply universal multi-role access.
+
+## Required Decisions / Rules
+
+- Keep transport, application orchestration, domain rules, persistence abstraction, and infrastructure responsibilities separated.
+- PostgreSQL remains the canonical transactional owner of domain state.
+- Authentication identity comes from Supabase Auth; application authorization comes from GrowFlow.
+- Resource scope and action authorization are evaluated before sensitive data is returned or used.
+- RLS reinforces server-side authorization at the database boundary.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Three workplaces exist: Student/BUILD, Mentor/SUPERVISE, and Admin/GOVERN. They share one platform and do not imply universal multi-role access.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 7. Authorization Architecture
+
+**Purpose:** Authorization evaluates actor, role, resource, scope, and action. Backend enforcement is authoritative.
+
+## Required Decisions / Rules
+
+- Keep transport, application orchestration, domain rules, persistence abstraction, and infrastructure responsibilities separated.
+- PostgreSQL remains the canonical transactional owner of domain state.
+- Authentication identity comes from Supabase Auth; application authorization comes from GrowFlow.
+- Resource scope and action authorization are evaluated before sensitive data is returned or used.
+- RLS reinforces server-side authorization at the database boundary.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Authorization evaluates actor, role, resource, scope, and action. Backend enforcement is authoritative.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 8. Authorization Layers
+
+**Purpose:** Use frontend UX guards, API authentication/authorization, domain authorization, and database/RLS defense in depth.
+
+## Required Decisions / Rules
+
+- Keep transport, application orchestration, domain rules, persistence abstraction, and infrastructure responsibilities separated.
+- PostgreSQL remains the canonical transactional owner of domain state.
+- Authentication identity comes from Supabase Auth; application authorization comes from GrowFlow.
+- Resource scope and action authorization are evaluated before sensitive data is returned or used.
+- RLS reinforces server-side authorization at the database boundary.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Use frontend UX guards, API authentication/authorization, domain authorization, and database/RLS defense in depth.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 9. Resource Scoping
+
+**Purpose:** Access is constrained by user, role, group, definition, instance, ownership, mentor relationship, and administrative scope.
+
+## Required Decisions / Rules
+
+- Keep transport, application orchestration, domain rules, persistence abstraction, and infrastructure responsibilities separated.
+- PostgreSQL remains the canonical transactional owner of domain state.
+- Authentication identity comes from Supabase Auth; application authorization comes from GrowFlow.
+- Resource scope and action authorization are evaluated before sensitive data is returned or used.
+- RLS reinforces server-side authorization at the database boundary.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Access is constrained by user, role, group, definition, instance, ownership, mentor relationship, and administrative scope.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 10. RLS Architecture
+
+**Purpose:** PostgreSQL/Supabase RLS protects canonical data at the database boundary and reinforces application authorization.
+
+## Required Decisions / Rules
+
+- Keep transport, application orchestration, domain rules, persistence abstraction, and infrastructure responsibilities separated.
+- PostgreSQL remains the canonical transactional owner of domain state.
+- Authentication identity comes from Supabase Auth; application authorization comes from GrowFlow.
+- Resource scope and action authorization are evaluated before sensitive data is returned or used.
+- RLS reinforces server-side authorization at the database boundary.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** PostgreSQL/Supabase RLS protects canonical data at the database boundary and reinforces application authorization.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 11. Project Definition Architecture
+
+**Purpose:** Project Definitions are reusable mentor-authored specifications with versioned content and assignment relationships.
+
+## Required Decisions / Rules
+
+- Preserve identity, ownership, relationships, provenance, lifecycle state, and timestamps.
+- Project Definition and Student Project Instance remain separate across storage, API, permissions, history, and UI.
+- Definition versions preserve historical context.
+- Status, progress, phase, and health remain distinct concepts.
+- Derived values must reconcile from canonical records.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Project Definitions are reusable mentor-authored specifications with versioned content and assignment relationships.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 12. Project Instance Architecture
+
+**Purpose:** Student Project Instances represent actual work and reference the originating definition/version without becoming copies that silently track it.
+
+## Required Decisions / Rules
+
+- Preserve identity, ownership, relationships, provenance, lifecycle state, and timestamps.
+- Project Definition and Student Project Instance remain separate across storage, API, permissions, history, and UI.
+- Definition versions preserve historical context.
+- Status, progress, phase, and health remain distinct concepts.
+- Derived values must reconcile from canonical records.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Student Project Instances represent actual work and reference the originating definition/version without becoming copies that silently track it.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 13. Definition Versioning
+
+**Purpose:** Definition history is preserved through version-aware records so existing instances retain historical provenance.
+
+## Required Decisions / Rules
+
+- Preserve identity, ownership, relationships, provenance, lifecycle state, and timestamps.
+- Project Definition and Student Project Instance remain separate across storage, API, permissions, history, and UI.
+- Definition versions preserve historical context.
+- Status, progress, phase, and health remain distinct concepts.
+- Derived values must reconcile from canonical records.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Definition history is preserved through version-aware records so existing instances retain historical provenance.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 14. Definition Update Rule
+
+**Purpose:** Definition updates create new versions, identify affected instances, notify users, and require controlled adoption through Project Change rather than silent mutation.
+
+## Required Decisions / Rules
+
+- Preserve identity, ownership, relationships, provenance, lifecycle state, and timestamps.
+- Project Definition and Student Project Instance remain separate across storage, API, permissions, history, and UI.
+- Definition versions preserve historical context.
+- Status, progress, phase, and health remain distinct concepts.
+- Derived values must reconcile from canonical records.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Definition updates create new versions, identify affected instances, notify users, and require controlled adoption through Project Change rather than silent mutation.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 15. Project Lifecycle Domain
+
+**Purpose:** Canonical lifecycle is IDEA → ASSESSMENT → BLUEPRINT → PLANNING → IMPLEMENTATION → TESTING → DEPLOYMENT → COMPLETED.
+
+## Required Decisions / Rules
+
+- Preserve identity, ownership, relationships, provenance, lifecycle state, and timestamps.
+- Project Definition and Student Project Instance remain separate across storage, API, permissions, history, and UI.
+- Definition versions preserve historical context.
+- Status, progress, phase, and health remain distinct concepts.
+- Derived values must reconcile from canonical records.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Canonical lifecycle is IDEA → ASSESSMENT → BLUEPRINT → PLANNING → IMPLEMENTATION → TESTING → DEPLOYMENT → COMPLETED.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 16. Task / Milestone / Progress / Phase / Health Model
+
+**Purpose:** Phase contains milestones; milestones contain tasks; progress rolls upward; health is a distinct derived signal.
+
+## Required Decisions / Rules
+
+- Preserve identity, ownership, relationships, provenance, lifecycle state, and timestamps.
+- Project Definition and Student Project Instance remain separate across storage, API, permissions, history, and UI.
+- Definition versions preserve historical context.
+- Status, progress, phase, and health remain distinct concepts.
+- Derived values must reconcile from canonical records.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Phase contains milestones; milestones contain tasks; progress rolls upward; health is a distinct derived signal.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 17. Task Architecture
+
+**Purpose:** Tasks have identity, description, status, priority, project/milestone/phase relationships, assignment, dates, dependencies, and completion metadata.
+
+## Required Decisions / Rules
+
+- Preserve identity, ownership, relationships, provenance, lifecycle state, and timestamps.
+- Project Definition and Student Project Instance remain separate across storage, API, permissions, history, and UI.
+- Definition versions preserve historical context.
+- Status, progress, phase, and health remain distinct concepts.
+- Derived values must reconcile from canonical records.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Tasks have identity, description, status, priority, project/milestone/phase relationships, assignment, dates, dependencies, and completion metadata.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 18. Milestone Architecture
+
+**Purpose:** Milestones represent meaningful outcomes and group tasks within a project phase.
+
+## Required Decisions / Rules
+
+- Preserve identity, ownership, relationships, provenance, lifecycle state, and timestamps.
+- Project Definition and Student Project Instance remain separate across storage, API, permissions, history, and UI.
+- Definition versions preserve historical context.
+- Status, progress, phase, and health remain distinct concepts.
+- Derived values must reconcile from canonical records.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Milestones represent meaningful outcomes and group tasks within a project phase.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 19. Risk Architecture
+
+**Purpose:** Risks capture description, probability, impact, severity, status, mitigation, and project relationships.
+
+## Required Decisions / Rules
+
+- Preserve identity, ownership, relationships, provenance, lifecycle state, and timestamps.
+- Project Definition and Student Project Instance remain separate across storage, API, permissions, history, and UI.
+- Definition versions preserve historical context.
+- Status, progress, phase, and health remain distinct concepts.
+- Derived values must reconcile from canonical records.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Risks capture description, probability, impact, severity, status, mitigation, and project relationships.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 20. Health Architecture
+
+**Purpose:** Health is derived from defined project signals such as delays, blocked work, risks, inactivity, integration failures, and help requests. Exact scoring is explicitly specified for implementation rather than invented by the UI.
+
+## Required Decisions / Rules
+
+- Preserve identity, ownership, relationships, provenance, lifecycle state, and timestamps.
+- Project Definition and Student Project Instance remain separate across storage, API, permissions, history, and UI.
+- Definition versions preserve historical context.
+- Status, progress, phase, and health remain distinct concepts.
+- Derived values must reconcile from canonical records.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Health is derived from defined project signals such as delays, blocked work, risks, inactivity, integration failures, and help requests. Exact scoring is explicitly specified for implementation rather than invented by the UI.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 21. Assessment Architecture
+
+**Purpose:** Assessment contains questions, responses, adaptive decisions, completion state, and result. Backend owns assessment logic.
+
+## Required Decisions / Rules
+
+- Assessment decisions remain backend-owned.
+- Adaptive question selection is not calculated by the frontend.
+- Blueprint generation is persistent and browser-independent.
+- AI output is structured, schema-validated, business-validated, and evaluated by QA/Judge.
+- Each agent has an explicit contract and failure/retry policy.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Assessment contains questions, responses, adaptive decisions, completion state, and result. Backend owns assessment logic.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 22. Adaptive Assessment
+
+**Purpose:** Student responses flow through FastAPI to the assessment service, which owns adaptive question selection.
+
+## Required Decisions / Rules
+
+- Assessment decisions remain backend-owned.
+- Adaptive question selection is not calculated by the frontend.
+- Blueprint generation is persistent and browser-independent.
+- AI output is structured, schema-validated, business-validated, and evaluated by QA/Judge.
+- Each agent has an explicit contract and failure/retry policy.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Student responses flow through FastAPI to the assessment service, which owns adaptive question selection.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 23. Blueprint Architecture
+
+**Purpose:** Blueprint generation consumes project and assessment context, executes LangGraph, validates structured output, runs QA/Judge, and persists an approved version.
+
+## Required Decisions / Rules
+
+- Assessment decisions remain backend-owned.
+- Adaptive question selection is not calculated by the frontend.
+- Blueprint generation is persistent and browser-independent.
+- AI output is structured, schema-validated, business-validated, and evaluated by QA/Judge.
+- Each agent has an explicit contract and failure/retry policy.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Blueprint generation consumes project and assessment context, executes LangGraph, validates structured output, runs QA/Judge, and persists an approved version.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 24. Blueprint Agent Pipeline
+
+**Purpose:** The twelve logical agents are Idea, Scope, Technology, Features, Specification, MVP, Timeline/Duration, Risk, Task, Milestone, README, and QA/Judge. The execution graph may parallelize independent work while preserving dependencies.
+
+## Required Decisions / Rules
+
+- Assessment decisions remain backend-owned.
+- Adaptive question selection is not calculated by the frontend.
+- Blueprint generation is persistent and browser-independent.
+- AI output is structured, schema-validated, business-validated, and evaluated by QA/Judge.
+- Each agent has an explicit contract and failure/retry policy.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** The twelve logical agents are Idea, Scope, Technology, Features, Specification, MVP, Timeline/Duration, Risk, Task, Milestone, README, and QA/Judge. The execution graph may parallelize independent work while preserving dependencies.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 25. Agent Contract
+
+**Purpose:** Every agent has an ID, purpose, input/output schema, context requirements, allowed tools, dependencies, validation, failure/retry policy, persistence, observability, and security classification.
+
+## Required Decisions / Rules
+
+- Assessment decisions remain backend-owned.
+- Adaptive question selection is not calculated by the frontend.
+- Blueprint generation is persistent and browser-independent.
+- AI output is structured, schema-validated, business-validated, and evaluated by QA/Judge.
+- Each agent has an explicit contract and failure/retry policy.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Every agent has an ID, purpose, input/output schema, context requirements, allowed tools, dependencies, validation, failure/retry policy, persistence, observability, and security classification.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 26. Agent Responsibility Boundaries
+
+**Purpose:** Each of the twelve agents has a single documented responsibility; QA/Judge evaluates generated results rather than merely producing another uncontrolled text response.
+
+## Required Decisions / Rules
+
+- Assessment decisions remain backend-owned.
+- Adaptive question selection is not calculated by the frontend.
+- Blueprint generation is persistent and browser-independent.
+- AI output is structured, schema-validated, business-validated, and evaluated by QA/Judge.
+- Each agent has an explicit contract and failure/retry policy.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Each of the twelve agents has a single documented responsibility; QA/Judge evaluates generated results rather than merely producing another uncontrolled text response.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 27. QA/Judge Architecture
+
+**Purpose:** Generated output passes schema validation, business validation, and QA/Judge before canonical persistence.
+
+## Required Decisions / Rules
+
+- Assessment decisions remain backend-owned.
+- Adaptive question selection is not calculated by the frontend.
+- Blueprint generation is persistent and browser-independent.
+- AI output is structured, schema-validated, business-validated, and evaluated by QA/Judge.
+- Each agent has an explicit contract and failure/retry policy.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Generated output passes schema validation, business validation, and QA/Judge before canonical persistence.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 28. AI Structured Output
+
+**Purpose:** AI outputs are schema-constrained, parsed, normalized, and validated before becoming domain objects.
+
+## Required Decisions / Rules
+
+- Assessment decisions remain backend-owned.
+- Adaptive question selection is not calculated by the frontend.
+- Blueprint generation is persistent and browser-independent.
+- AI output is structured, schema-validated, business-validated, and evaluated by QA/Judge.
+- Each agent has an explicit contract and failure/retry policy.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** AI outputs are schema-constrained, parsed, normalized, and validated before becoming domain objects.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 29. AI Provider Gateway
+
+**Purpose:** All provider access is centralized behind a gateway that abstracts provider/model selection, credentials, retries, rate limits, usage, cost, health, and fallback.
+
+## Required Decisions / Rules
+
+- All AI provider access passes through the AI Provider Gateway.
+- AIExecution and job state are persisted independently from browser connections.
+- Provider failures, quotas, rate limits, retries, and usage are observable.
+- The twelve logical agents remain fixed even if the LangGraph execution graph uses parallel branches.
+- Expensive AI operations require bounded retries and duplicate-request protection.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** All provider access is centralized behind a gateway that abstracts provider/model selection, credentials, retries, rate limits, usage, cost, health, and fallback.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 30. Provider Adapter
+
+**Purpose:** Provider adapters implement a common internal contract so domain/agent logic does not depend on a vendor SDK.
+
+## Required Decisions / Rules
+
+- All AI provider access passes through the AI Provider Gateway.
+- AIExecution and job state are persisted independently from browser connections.
+- Provider failures, quotas, rate limits, retries, and usage are observable.
+- The twelve logical agents remain fixed even if the LangGraph execution graph uses parallel branches.
+- Expensive AI operations require bounded retries and duplicate-request protection.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Provider adapters implement a common internal contract so domain/agent logic does not depend on a vendor SDK.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 31. API Key Pool
+
+**Purpose:** Provider credentials are maintained in a secure pool; aliases and health metadata may be observable to Admin, but secret values never reach clients.
+
+## Required Decisions / Rules
+
+- All AI provider access passes through the AI Provider Gateway.
+- AIExecution and job state are persisted independently from browser connections.
+- Provider failures, quotas, rate limits, retries, and usage are observable.
+- The twelve logical agents remain fixed even if the LangGraph execution graph uses parallel branches.
+- Expensive AI operations require bounded retries and duplicate-request protection.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Provider credentials are maintained in a secure pool; aliases and health metadata may be observable to Admin, but secret values never reach clients.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 32. Key Rotation / Failure
+
+**Purpose:** Gateway policy handles quota, rate-limit, invalid-key, and repeated-failure conditions through health marking and controlled key selection. Exact thresholds are implementation configuration.
+
+## Required Decisions / Rules
+
+- All AI provider access passes through the AI Provider Gateway.
+- AIExecution and job state are persisted independently from browser connections.
+- Provider failures, quotas, rate limits, retries, and usage are observable.
+- The twelve logical agents remain fixed even if the LangGraph execution graph uses parallel branches.
+- Expensive AI operations require bounded retries and duplicate-request protection.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Gateway policy handles quota, rate-limit, invalid-key, and repeated-failure conditions through health marking and controlled key selection. Exact thresholds are implementation configuration.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 33. AI Usage Architecture
+
+**Purpose:** Each meaningful execution records agent/project/workflow identity, provider abstraction, model metadata, token usage, latency, status, timestamp, and cost metadata where available.
+
+## Required Decisions / Rules
+
+- All AI provider access passes through the AI Provider Gateway.
+- AIExecution and job state are persisted independently from browser connections.
+- Provider failures, quotas, rate limits, retries, and usage are observable.
+- The twelve logical agents remain fixed even if the LangGraph execution graph uses parallel branches.
+- Expensive AI operations require bounded retries and duplicate-request protection.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Each meaningful execution records agent/project/workflow identity, provider abstraction, model metadata, token usage, latency, status, timestamp, and cost metadata where available.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 34. AI Execution Architecture
+
+**Purpose:** AIExecution records represent persistent workflow executions and contain execution steps for agents/tools.
+
+## Required Decisions / Rules
+
+- All AI provider access passes through the AI Provider Gateway.
+- AIExecution and job state are persisted independently from browser connections.
+- Provider failures, quotas, rate limits, retries, and usage are observable.
+- The twelve logical agents remain fixed even if the LangGraph execution graph uses parallel branches.
+- Expensive AI operations require bounded retries and duplicate-request protection.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** AIExecution records represent persistent workflow executions and contain execution steps for agents/tools.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 35. AI Trace
+
+**Purpose:** Detailed traces record execution sequence, agent steps, tools, validation, QA, timing, errors, and gateway metadata subject to sensitive-data policy.
+
+## Required Decisions / Rules
+
+- All AI provider access passes through the AI Provider Gateway.
+- AIExecution and job state are persisted independently from browser connections.
+- Provider failures, quotas, rate limits, retries, and usage are observable.
+- The twelve logical agents remain fixed even if the LangGraph execution graph uses parallel branches.
+- Expensive AI operations require bounded retries and duplicate-request protection.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Detailed traces record execution sequence, agent steps, tools, validation, QA, timing, errors, and gateway metadata subject to sensitive-data policy.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 36. LangGraph Architecture
+
+**Purpose:** LangGraph orchestrates explicit workflow state, agent/tool nodes, structured state updates, dependencies, and terminal outcomes.
+
+## Required Decisions / Rules
+
+- All AI provider access passes through the AI Provider Gateway.
+- AIExecution and job state are persisted independently from browser connections.
+- Provider failures, quotas, rate limits, retries, and usage are observable.
+- The twelve logical agents remain fixed even if the LangGraph execution graph uses parallel branches.
+- Expensive AI operations require bounded retries and duplicate-request protection.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** LangGraph orchestrates explicit workflow state, agent/tool nodes, structured state updates, dependencies, and terminal outcomes.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 37. AI Workflow Persistence
+
+**Purpose:** AI execution is independent of the browser and survives navigation, tab closure, and SSE disconnection.
+
+## Required Decisions / Rules
+
+- All AI provider access passes through the AI Provider Gateway.
+- AIExecution and job state are persisted independently from browser connections.
+- Provider failures, quotas, rate limits, retries, and usage are observable.
+- The twelve logical agents remain fixed even if the LangGraph execution graph uses parallel branches.
+- Expensive AI operations require bounded retries and duplicate-request protection.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** AI execution is independent of the browser and survives navigation, tab closure, and SSE disconnection.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 38. Background Job Architecture
+
+**Purpose:** Long-running work is persisted as jobs, queued, executed by workers, and finalized with canonical state and events.
+
+## Required Decisions / Rules
+
+- All AI provider access passes through the AI Provider Gateway.
+- AIExecution and job state are persisted independently from browser connections.
+- Provider failures, quotas, rate limits, retries, and usage are observable.
+- The twelve logical agents remain fixed even if the LangGraph execution graph uses parallel branches.
+- Expensive AI operations require bounded retries and duplicate-request protection.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Long-running work is persisted as jobs, queued, executed by workers, and finalized with canonical state and events.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 39. Job State Machine
+
+**Purpose:** Jobs support QUEUED, RUNNING, COMPLETED, FAILED, and controlled CANCELLED/RETRYING states where supported.
+
+## Required Decisions / Rules
+
+- All AI provider access passes through the AI Provider Gateway.
+- AIExecution and job state are persisted independently from browser connections.
+- Provider failures, quotas, rate limits, retries, and usage are observable.
+- The twelve logical agents remain fixed even if the LangGraph execution graph uses parallel branches.
+- Expensive AI operations require bounded retries and duplicate-request protection.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Jobs support QUEUED, RUNNING, COMPLETED, FAILED, and controlled CANCELLED/RETRYING states where supported.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 40. Event Architecture
+
+**Purpose:** Meaningful domain changes create persistent events that drive notifications, activity, analytics, background processing, and live delivery.
+
+## Required Decisions / Rules
+
+- All AI provider access passes through the AI Provider Gateway.
+- AIExecution and job state are persisted independently from browser connections.
+- Provider failures, quotas, rate limits, retries, and usage are observable.
+- The twelve logical agents remain fixed even if the LangGraph execution graph uses parallel branches.
+- Expensive AI operations require bounded retries and duplicate-request protection.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Meaningful domain changes create persistent events that drive notifications, activity, analytics, background processing, and live delivery.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 41. Event Reliability
+
+**Purpose:** Event handling must tolerate duplicate delivery, consumer failure, ordering concerns, retries, and eventual consistency.
+
+## Required Decisions / Rules
+
+- Events are persistent and consumers are designed for duplicate delivery.
+- Use a transactional outbox so canonical mutations and required events cannot silently diverge.
+- SSE is delivery only; canonical state is read through APIs.
+- Reconnection causes reconciliation rather than reliance on client memory.
+- RAG is project-scoped, authorization-aware, derived, and rebuildable.
+- Documents and external integrations use controlled lifecycle/version semantics.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Event handling must tolerate duplicate delivery, consumer failure, ordering concerns, retries, and eventual consistency.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 42. Outbox Pattern
+
+**Purpose:** Use a transactional outbox pattern so canonical mutations and their corresponding events are committed together before asynchronous consumers process them.
+
+## Required Decisions / Rules
+
+- Events are persistent and consumers are designed for duplicate delivery.
+- Use a transactional outbox so canonical mutations and required events cannot silently diverge.
+- SSE is delivery only; canonical state is read through APIs.
+- Reconnection causes reconciliation rather than reliance on client memory.
+- RAG is project-scoped, authorization-aware, derived, and rebuildable.
+- Documents and external integrations use controlled lifecycle/version semantics.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Use a transactional outbox pattern so canonical mutations and their corresponding events are committed together before asynchronous consumers process them.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 43. SSE Architecture
+
+**Purpose:** Persistent events are delivered to authenticated clients through SSE; SSE is transport only and never the canonical state store.
+
+## Required Decisions / Rules
+
+- Events are persistent and consumers are designed for duplicate delivery.
+- Use a transactional outbox so canonical mutations and required events cannot silently diverge.
+- SSE is delivery only; canonical state is read through APIs.
+- Reconnection causes reconciliation rather than reliance on client memory.
+- RAG is project-scoped, authorization-aware, derived, and rebuildable.
+- Documents and external integrations use controlled lifecycle/version semantics.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Persistent events are delivered to authenticated clients through SSE; SSE is transport only and never the canonical state store.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 44. SSE Event Contract
+
+**Purpose:** Standardize event ID, event type, timestamp, resource type/ID, scope, payload, correlation ID, and schema version.
+
+## Required Decisions / Rules
+
+- Events are persistent and consumers are designed for duplicate delivery.
+- Use a transactional outbox so canonical mutations and required events cannot silently diverge.
+- SSE is delivery only; canonical state is read through APIs.
+- Reconnection causes reconciliation rather than reliance on client memory.
+- RAG is project-scoped, authorization-aware, derived, and rebuildable.
+- Documents and external integrations use controlled lifecycle/version semantics.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Standardize event ID, event type, timestamp, resource type/ID, scope, payload, correlation ID, and schema version.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 45. SSE Reconnection
+
+**Purpose:** Clients reconnect safely and reconcile important state through canonical API reads instead of assuming no events were missed.
+
+## Required Decisions / Rules
+
+- Events are persistent and consumers are designed for duplicate delivery.
+- Use a transactional outbox so canonical mutations and required events cannot silently diverge.
+- SSE is delivery only; canonical state is read through APIs.
+- Reconnection causes reconciliation rather than reliance on client memory.
+- RAG is project-scoped, authorization-aware, derived, and rebuildable.
+- Documents and external integrations use controlled lifecycle/version semantics.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Clients reconnect safely and reconcile important state through canonical API reads instead of assuming no events were missed.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 46. Notification Architecture
+
+**Purpose:** Domain events can create notification records with delivery/read state and canonical deep links.
+
+## Required Decisions / Rules
+
+- Events are persistent and consumers are designed for duplicate delivery.
+- Use a transactional outbox so canonical mutations and required events cannot silently diverge.
+- SSE is delivery only; canonical state is read through APIs.
+- Reconnection causes reconciliation rather than reliance on client memory.
+- RAG is project-scoped, authorization-aware, derived, and rebuildable.
+- Documents and external integrations use controlled lifecycle/version semantics.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Domain events can create notification records with delivery/read state and canonical deep links.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 47. Activity Architecture
+
+**Purpose:** Activity is a user-facing derived representation of meaningful events and is not a replacement for canonical state or audit records.
+
+## Required Decisions / Rules
+
+- Events are persistent and consumers are designed for duplicate delivery.
+- Use a transactional outbox so canonical mutations and required events cannot silently diverge.
+- SSE is delivery only; canonical state is read through APIs.
+- Reconnection causes reconciliation rather than reliance on client memory.
+- RAG is project-scoped, authorization-aware, derived, and rebuildable.
+- Documents and external integrations use controlled lifecycle/version semantics.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Activity is a user-facing derived representation of meaningful events and is not a replacement for canonical state or audit records.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 48. RAG Architecture
+
+**Purpose:** Project-scoped documents/knowledge are parsed, chunked, embedded, indexed, and retrieved as derived context for AI.
+
+## Required Decisions / Rules
+
+- Events are persistent and consumers are designed for duplicate delivery.
+- Use a transactional outbox so canonical mutations and required events cannot silently diverge.
+- SSE is delivery only; canonical state is read through APIs.
+- Reconnection causes reconciliation rather than reliance on client memory.
+- RAG is project-scoped, authorization-aware, derived, and rebuildable.
+- Documents and external integrations use controlled lifecycle/version semantics.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Project-scoped documents/knowledge are parsed, chunked, embedded, indexed, and retrieved as derived context for AI.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 49. RAG Isolation
+
+**Purpose:** Retrieval is constrained to authorized project scope before context reaches an AI workflow.
+
+## Required Decisions / Rules
+
+- Events are persistent and consumers are designed for duplicate delivery.
+- Use a transactional outbox so canonical mutations and required events cannot silently diverge.
+- SSE is delivery only; canonical state is read through APIs.
+- Reconnection causes reconciliation rather than reliance on client memory.
+- RAG is project-scoped, authorization-aware, derived, and rebuildable.
+- Documents and external integrations use controlled lifecycle/version semantics.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Retrieval is constrained to authorized project scope before context reaches an AI workflow.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 50. RAG Rebuild
+
+**Purpose:** RAG indexes are rebuildable from canonical source documents to support parser, chunking, embedding, or index changes.
+
+## Required Decisions / Rules
+
+- Events are persistent and consumers are designed for duplicate delivery.
+- Use a transactional outbox so canonical mutations and required events cannot silently diverge.
+- SSE is delivery only; canonical state is read through APIs.
+- Reconnection causes reconciliation rather than reliance on client memory.
+- RAG is project-scoped, authorization-aware, derived, and rebuildable.
+- Documents and external integrations use controlled lifecycle/version semantics.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** RAG indexes are rebuildable from canonical source documents to support parser, chunking, embedding, or index changes.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 51. Document Architecture
+
+**Purpose:** Documents have identity, project association, type, version, source, status, timestamps, and storage/content metadata.
+
+## Required Decisions / Rules
+
+- Events are persistent and consumers are designed for duplicate delivery.
+- Use a transactional outbox so canonical mutations and required events cannot silently diverge.
+- SSE is delivery only; canonical state is read through APIs.
+- Reconnection causes reconciliation rather than reliance on client memory.
+- RAG is project-scoped, authorization-aware, derived, and rebuildable.
+- Documents and external integrations use controlled lifecycle/version semantics.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Documents have identity, project association, type, version, source, status, timestamps, and storage/content metadata.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 52. Document Generation
+
+**Purpose:** Generation is an asynchronous job that produces content, validates it, persists a version, stores the artifact, and emits completion/failure events.
+
+## Required Decisions / Rules
+
+- Events are persistent and consumers are designed for duplicate delivery.
+- Use a transactional outbox so canonical mutations and required events cannot silently diverge.
+- SSE is delivery only; canonical state is read through APIs.
+- Reconnection causes reconciliation rather than reliance on client memory.
+- RAG is project-scoped, authorization-aware, derived, and rebuildable.
+- Documents and external integrations use controlled lifecycle/version semantics.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Generation is an asynchronous job that produces content, validates it, persists a version, stores the artifact, and emits completion/failure events.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 53. README Architecture
+
+**Purpose:** README is a generated representation derived from project state; it never replaces the canonical project model.
+
+## Required Decisions / Rules
+
+- Events are persistent and consumers are designed for duplicate delivery.
+- Use a transactional outbox so canonical mutations and required events cannot silently diverge.
+- SSE is delivery only; canonical state is read through APIs.
+- Reconnection causes reconciliation rather than reliance on client memory.
+- RAG is project-scoped, authorization-aware, derived, and rebuildable.
+- Documents and external integrations use controlled lifecycle/version semantics.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** README is a generated representation derived from project state; it never replaces the canonical project model.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 54. GitHub Integration Architecture
+
+**Purpose:** GitHub is isolated behind an integration boundary with secure authorization, integration records, repository mapping, synchronization, and events.
+
+## Required Decisions / Rules
+
+- Events are persistent and consumers are designed for duplicate delivery.
+- Use a transactional outbox so canonical mutations and required events cannot silently diverge.
+- SSE is delivery only; canonical state is read through APIs.
+- Reconnection causes reconciliation rather than reliance on client memory.
+- RAG is project-scoped, authorization-aware, derived, and rebuildable.
+- Documents and external integrations use controlled lifecycle/version semantics.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** GitHub is isolated behind an integration boundary with secure authorization, integration records, repository mapping, synchronization, and events.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 55. GitHub Synchronization
+
+**Purpose:** GitHub connection states are explicit and external observations do not silently overwrite canonical GrowFlow project state.
+
+## Required Decisions / Rules
+
+- Events are persistent and consumers are designed for duplicate delivery.
+- Use a transactional outbox so canonical mutations and required events cannot silently diverge.
+- SSE is delivery only; canonical state is read through APIs.
+- Reconnection causes reconciliation rather than reliance on client memory.
+- RAG is project-scoped, authorization-aware, derived, and rebuildable.
+- Documents and external integrations use controlled lifecycle/version semantics.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** GitHub connection states are explicit and external observations do not silently overwrite canonical GrowFlow project state.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 56. Help Request Architecture
+
+**Purpose:** Student help requests move through a controlled request/response lifecycle with mentor intervention and resolution.
+
+## Required Decisions / Rules
+
+- Project changes are staged, reviewable, version-aware, and protected against partial mutation.
+- Admin observability is based on operational records, not reconstructed frontend state.
+- Audit, activity, runtime logs, analytics, and health have distinct semantics.
+- Secrets never reach frontend clients, ordinary API responses, logs, or AI context without explicit authorization.
+- AI output is treated as untrusted until validated for its destination.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Student help requests move through a controlled request/response lifecycle with mentor intervention and resolution.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 57. Mentor Notes
+
+**Purpose:** Mentor notes have explicit visibility classification so private mentor content cannot leak into student views.
+
+## Required Decisions / Rules
+
+- Project changes are staged, reviewable, version-aware, and protected against partial mutation.
+- Admin observability is based on operational records, not reconstructed frontend state.
+- Audit, activity, runtime logs, analytics, and health have distinct semantics.
+- Secrets never reach frontend clients, ordinary API responses, logs, or AI context without explicit authorization.
+- AI output is treated as untrusted until validated for its destination.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Mentor notes have explicit visibility classification so private mentor content cannot leak into student views.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 58. Project Change Architecture
+
+**Purpose:** Project changes follow Change Request → Impact Analysis → Impact Review → Regeneration → Validation → QA/Judge → Persisted Change.
+
+## Required Decisions / Rules
+
+- Project changes are staged, reviewable, version-aware, and protected against partial mutation.
+- Admin observability is based on operational records, not reconstructed frontend state.
+- Audit, activity, runtime logs, analytics, and health have distinct semantics.
+- Secrets never reach frontend clients, ordinary API responses, logs, or AI context without explicit authorization.
+- AI output is treated as untrusted until validated for its destination.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Project changes follow Change Request → Impact Analysis → Impact Review → Regeneration → Validation → QA/Judge → Persisted Change.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 59. Change Impact Model
+
+**Purpose:** Impact analysis identifies affected scope, features, technology, specification, MVP, timeline, risks, tasks, milestones, documents, and README where applicable.
+
+## Required Decisions / Rules
+
+- Project changes are staged, reviewable, version-aware, and protected against partial mutation.
+- Admin observability is based on operational records, not reconstructed frontend state.
+- Audit, activity, runtime logs, analytics, and health have distinct semantics.
+- Secrets never reach frontend clients, ordinary API responses, logs, or AI context without explicit authorization.
+- AI output is treated as untrusted until validated for its destination.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Impact analysis identifies affected scope, features, technology, specification, MVP, timeline, risks, tasks, milestones, documents, and README where applicable.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 60. Change Atomicity
+
+**Purpose:** Project changes use a controlled staged/versioned mutation strategy so partial canonical mutation is not exposed as an accidental outcome.
+
+## Required Decisions / Rules
+
+- Project changes are staged, reviewable, version-aware, and protected against partial mutation.
+- Admin observability is based on operational records, not reconstructed frontend state.
+- Audit, activity, runtime logs, analytics, and health have distinct semantics.
+- Secrets never reach frontend clients, ordinary API responses, logs, or AI context without explicit authorization.
+- AI output is treated as untrusted until validated for its destination.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Project changes use a controlled staged/versioned mutation strategy so partial canonical mutation is not exposed as an accidental outcome.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 61. Analytics Architecture
+
+**Purpose:** Analytics derive from canonical records, events, AI executions, and usage records rather than becoming business truth.
+
+## Required Decisions / Rules
+
+- Project changes are staged, reviewable, version-aware, and protected against partial mutation.
+- Admin observability is based on operational records, not reconstructed frontend state.
+- Audit, activity, runtime logs, analytics, and health have distinct semantics.
+- Secrets never reach frontend clients, ordinary API responses, logs, or AI context without explicit authorization.
+- AI output is treated as untrusted until validated for its destination.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Analytics derive from canonical records, events, AI executions, and usage records rather than becoming business truth.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 62. Admin Observability
+
+**Purpose:** Admin receives operational views over AI, cost, key pools, system health, RAG, documents, security, audit, and analytics.
+
+## Required Decisions / Rules
+
+- Project changes are staged, reviewable, version-aware, and protected against partial mutation.
+- Admin observability is based on operational records, not reconstructed frontend state.
+- Audit, activity, runtime logs, analytics, and health have distinct semantics.
+- Secrets never reach frontend clients, ordinary API responses, logs, or AI context without explicit authorization.
+- AI output is treated as untrusted until validated for its destination.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Admin receives operational views over AI, cost, key pools, system health, RAG, documents, security, audit, and analytics.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 63. Audit Architecture
+
+**Purpose:** Sensitive and meaningful operations create auditable records containing actor, action, resource, timestamp, outcome, correlation, and relevant metadata.
+
+## Required Decisions / Rules
+
+- Project changes are staged, reviewable, version-aware, and protected against partial mutation.
+- Admin observability is based on operational records, not reconstructed frontend state.
+- Audit, activity, runtime logs, analytics, and health have distinct semantics.
+- Secrets never reach frontend clients, ordinary API responses, logs, or AI context without explicit authorization.
+- AI output is treated as untrusted until validated for its destination.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Sensitive and meaningful operations create auditable records containing actor, action, resource, timestamp, outcome, correlation, and relevant metadata.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 64. Investigation Architecture
+
+**Purpose:** Admin investigations are controlled, authorized, auditable inspections without introducing normal-user impersonation.
+
+## Required Decisions / Rules
+
+- Project changes are staged, reviewable, version-aware, and protected against partial mutation.
+- Admin observability is based on operational records, not reconstructed frontend state.
+- Audit, activity, runtime logs, analytics, and health have distinct semantics.
+- Secrets never reach frontend clients, ordinary API responses, logs, or AI context without explicit authorization.
+- AI output is treated as untrusted until validated for its destination.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Admin investigations are controlled, authorized, auditable inspections without introducing normal-user impersonation.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 65. Security Architecture
+
+**Purpose:** Security is enforced from browser/API authentication through authorization, domain rules, RLS, and external-system boundaries.
+
+## Required Decisions / Rules
+
+- Project changes are staged, reviewable, version-aware, and protected against partial mutation.
+- Admin observability is based on operational records, not reconstructed frontend state.
+- Audit, activity, runtime logs, analytics, and health have distinct semantics.
+- Secrets never reach frontend clients, ordinary API responses, logs, or AI context without explicit authorization.
+- AI output is treated as untrusted until validated for its destination.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Security is enforced from browser/API authentication through authorization, domain rules, RLS, and external-system boundaries.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 66. Secrets Architecture
+
+**Purpose:** Provider keys, GitHub tokens, service credentials, database credentials, signing secrets, and infrastructure credentials remain server-side and out of logs/prompts/responses.
+
+## Required Decisions / Rules
+
+- Project changes are staged, reviewable, version-aware, and protected against partial mutation.
+- Admin observability is based on operational records, not reconstructed frontend state.
+- Audit, activity, runtime logs, analytics, and health have distinct semantics.
+- Secrets never reach frontend clients, ordinary API responses, logs, or AI context without explicit authorization.
+- AI output is treated as untrusted until validated for its destination.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Provider keys, GitHub tokens, service credentials, database credentials, signing secrets, and infrastructure credentials remain server-side and out of logs/prompts/responses.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 67. AI Security Boundary
+
+**Purpose:** AI output is untrusted computational output and must be validated before being used as code, URLs, queries, structured state, or other executable/sensitive content.
+
+## Required Decisions / Rules
+
+- Project changes are staged, reviewable, version-aware, and protected against partial mutation.
+- Admin observability is based on operational records, not reconstructed frontend state.
+- Audit, activity, runtime logs, analytics, and health have distinct semantics.
+- Secrets never reach frontend clients, ordinary API responses, logs, or AI context without explicit authorization.
+- AI output is treated as untrusted until validated for its destination.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** AI output is untrusted computational output and must be validated before being used as code, URLs, queries, structured state, or other executable/sensitive content.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 68. Prompt / Context Security
+
+**Purpose:** AI context is deliberately assembled from authorized data; model capability cannot bypass resource authorization.
+
+## Required Decisions / Rules
+
+- Project changes are staged, reviewable, version-aware, and protected against partial mutation.
+- Admin observability is based on operational records, not reconstructed frontend state.
+- Audit, activity, runtime logs, analytics, and health have distinct semantics.
+- Secrets never reach frontend clients, ordinary API responses, logs, or AI context without explicit authorization.
+- AI output is treated as untrusted until validated for its destination.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** AI context is deliberately assembled from authorized data; model capability cannot bypass resource authorization.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 69. API Security
+
+**Purpose:** API security includes authentication, authorization, validation, rate limiting, request-size controls, CORS policy, safe errors, and correlation.
+
+## Required Decisions / Rules
+
+- Project changes are staged, reviewable, version-aware, and protected against partial mutation.
+- Admin observability is based on operational records, not reconstructed frontend state.
+- Audit, activity, runtime logs, analytics, and health have distinct semantics.
+- Secrets never reach frontend clients, ordinary API responses, logs, or AI context without explicit authorization.
+- AI output is treated as untrusted until validated for its destination.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** API security includes authentication, authorization, validation, rate limiting, request-size controls, CORS policy, safe errors, and correlation.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 70. Error Architecture
+
+**Purpose:** Errors are normalized into authentication, authorization, validation, not-found, conflict, rate-limit, external-service, AI, job, and internal categories.
+
+## Required Decisions / Rules
+
+- Project changes are staged, reviewable, version-aware, and protected against partial mutation.
+- Admin observability is based on operational records, not reconstructed frontend state.
+- Audit, activity, runtime logs, analytics, and health have distinct semantics.
+- Secrets never reach frontend clients, ordinary API responses, logs, or AI context without explicit authorization.
+- AI output is treated as untrusted until validated for its destination.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Errors are normalized into authentication, authorization, validation, not-found, conflict, rate-limit, external-service, AI, job, and internal categories.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 71. Idempotency
+
+**Purpose:** Expensive or retry-prone operations use idempotency or deduplication where duplicate execution could cause incorrect state or unnecessary cost.
+
+## Required Decisions / Rules
+
+- Normalize API errors into stable categories.
+- Use transactions where atomic domain mutation is required.
+- Use idempotency for expensive or retry-prone operations.
+- Handle concurrency explicitly through version/conflict policy.
+- Keep caching and search derived.
+- Use structured logs, health checks, metrics, traces, and correlation IDs.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Expensive or retry-prone operations use idempotency or deduplication where duplicate execution could cause incorrect state or unnecessary cost.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 72. Transaction Boundaries
+
+**Purpose:** Transactions are defined around atomic canonical mutations and their required event/outbox changes.
+
+## Required Decisions / Rules
+
+- Normalize API errors into stable categories.
+- Use transactions where atomic domain mutation is required.
+- Use idempotency for expensive or retry-prone operations.
+- Handle concurrency explicitly through version/conflict policy.
+- Keep caching and search derived.
+- Use structured logs, health checks, metrics, traces, and correlation IDs.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Transactions are defined around atomic canonical mutations and their required event/outbox changes.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 73. Concurrency
+
+**Purpose:** Concurrent edits and executions are handled through versioning, optimistic concurrency where appropriate, conflict detection, and idempotency.
+
+## Required Decisions / Rules
+
+- Normalize API errors into stable categories.
+- Use transactions where atomic domain mutation is required.
+- Use idempotency for expensive or retry-prone operations.
+- Handle concurrency explicitly through version/conflict policy.
+- Keep caching and search derived.
+- Use structured logs, health checks, metrics, traces, and correlation IDs.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Concurrent edits and executions are handled through versioning, optimistic concurrency where appropriate, conflict detection, and idempotency.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 74. Caching
+
+**Purpose:** Caching is an optimization only; canonical project mutations invalidate or reconcile relevant cached representations.
+
+## Required Decisions / Rules
+
+- Normalize API errors into stable categories.
+- Use transactions where atomic domain mutation is required.
+- Use idempotency for expensive or retry-prone operations.
+- Handle concurrency explicitly through version/conflict policy.
+- Keep caching and search derived.
+- Use structured logs, health checks, metrics, traces, and correlation IDs.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Caching is an optimization only; canonical project mutations invalidate or reconcile relevant cached representations.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 75. Search Architecture
+
+**Purpose:** Search may use a derived projection/index, but authorization filtering occurs before results are exposed.
+
+## Required Decisions / Rules
+
+- Normalize API errors into stable categories.
+- Use transactions where atomic domain mutation is required.
+- Use idempotency for expensive or retry-prone operations.
+- Handle concurrency explicitly through version/conflict policy.
+- Keep caching and search derived.
+- Use structured logs, health checks, metrics, traces, and correlation IDs.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Search may use a derived projection/index, but authorization filtering occurs before results are exposed.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 76. Configuration Architecture
+
+**Purpose:** Application configuration, environment configuration, secrets, and feature flags are separated and centrally managed.
+
+## Required Decisions / Rules
+
+- Normalize API errors into stable categories.
+- Use transactions where atomic domain mutation is required.
+- Use idempotency for expensive or retry-prone operations.
+- Handle concurrency explicitly through version/conflict policy.
+- Keep caching and search derived.
+- Use structured logs, health checks, metrics, traces, and correlation IDs.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Application configuration, environment configuration, secrets, and feature flags are separated and centrally managed.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 77. Environment Architecture
+
+**Purpose:** Development, testing, and production are distinct environments with isolated configuration and credentials; staging/preview can be added later.
+
+## Required Decisions / Rules
+
+- Normalize API errors into stable categories.
+- Use transactions where atomic domain mutation is required.
+- Use idempotency for expensive or retry-prone operations.
+- Handle concurrency explicitly through version/conflict policy.
+- Keep caching and search derived.
+- Use structured logs, health checks, metrics, traces, and correlation IDs.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Development, testing, and production are distinct environments with isolated configuration and credentials; staging/preview can be added later.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 78. Logging
+
+**Purpose:** Runtime logs are structured and correlated while excluding credentials, tokens, and unnecessary sensitive project content.
+
+## Required Decisions / Rules
+
+- Normalize API errors into stable categories.
+- Use transactions where atomic domain mutation is required.
+- Use idempotency for expensive or retry-prone operations.
+- Handle concurrency explicitly through version/conflict policy.
+- Keep caching and search derived.
+- Use structured logs, health checks, metrics, traces, and correlation IDs.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Runtime logs are structured and correlated while excluding credentials, tokens, and unnecessary sensitive project content.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 79. Correlation IDs
+
+**Purpose:** Cross-system requests/jobs/AI executions/events share correlation identifiers so operational traces can be reconstructed.
+
+## Required Decisions / Rules
+
+- Normalize API errors into stable categories.
+- Use transactions where atomic domain mutation is required.
+- Use idempotency for expensive or retry-prone operations.
+- Handle concurrency explicitly through version/conflict policy.
+- Keep caching and search derived.
+- Use structured logs, health checks, metrics, traces, and correlation IDs.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Cross-system requests/jobs/AI executions/events share correlation identifiers so operational traces can be reconstructed.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 80. Monitoring
+
+**Purpose:** Monitor application, database, AI, jobs, events, and SSE health, latency, errors, throughput, and operational lag.
+
+## Required Decisions / Rules
+
+- Normalize API errors into stable categories.
+- Use transactions where atomic domain mutation is required.
+- Use idempotency for expensive or retry-prone operations.
+- Handle concurrency explicitly through version/conflict policy.
+- Keep caching and search derived.
+- Use structured logs, health checks, metrics, traces, and correlation IDs.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Monitor application, database, AI, jobs, events, and SSE health, latency, errors, throughput, and operational lag.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 81. Health Checks
+
+**Purpose:** Expose component-level Healthy, Degraded, and Unavailable status for API, database, AI gateway, workers, events/SSE, RAG, documents, and integrations.
+
+## Required Decisions / Rules
+
+- Normalize API errors into stable categories.
+- Use transactions where atomic domain mutation is required.
+- Use idempotency for expensive or retry-prone operations.
+- Handle concurrency explicitly through version/conflict policy.
+- Keep caching and search derived.
+- Use structured logs, health checks, metrics, traces, and correlation IDs.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Expose component-level Healthy, Degraded, and Unavailable status for API, database, AI gateway, workers, events/SSE, RAG, documents, and integrations.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 82. Testing Architecture
+
+**Purpose:** Testing follows unit → domain/application → API → integration → AI/event → end-to-end layers.
+
+## Required Decisions / Rules
+
+- Normalize API errors into stable categories.
+- Use transactions where atomic domain mutation is required.
+- Use idempotency for expensive or retry-prone operations.
+- Handle concurrency explicitly through version/conflict policy.
+- Keep caching and search derived.
+- Use structured logs, health checks, metrics, traces, and correlation IDs.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Testing follows unit → domain/application → API → integration → AI/event → end-to-end layers.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 83. Domain Tests
+
+**Purpose:** Deterministic business rules such as lifecycle transitions, relationships, risk logic, authorization, and project changes receive focused tests.
+
+## Required Decisions / Rules
+
+- Normalize API errors into stable categories.
+- Use transactions where atomic domain mutation is required.
+- Use idempotency for expensive or retry-prone operations.
+- Handle concurrency explicitly through version/conflict policy.
+- Keep caching and search derived.
+- Use structured logs, health checks, metrics, traces, and correlation IDs.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Deterministic business rules such as lifecycle transitions, relationships, risk logic, authorization, and project changes receive focused tests.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 84. AI Tests
+
+**Purpose:** AI tests cover schemas, malformed output, missing fields, validation, QA/Judge, provider failure, timeouts, retries, and context boundaries without relying only on live providers.
+
+## Required Decisions / Rules
+
+- Normalize API errors into stable categories.
+- Use transactions where atomic domain mutation is required.
+- Use idempotency for expensive or retry-prone operations.
+- Handle concurrency explicitly through version/conflict policy.
+- Keep caching and search derived.
+- Use structured logs, health checks, metrics, traces, and correlation IDs.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** AI tests cover schemas, malformed output, missing fields, validation, QA/Judge, provider failure, timeouts, retries, and context boundaries without relying only on live providers.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 85. Integration Tests
+
+**Purpose:** Integration tests cover API/application/domain/database behavior, AI gateway adapters with mocks, and mutation/event/consumer flows.
+
+## Required Decisions / Rules
+
+- Normalize API errors into stable categories.
+- Use transactions where atomic domain mutation is required.
+- Use idempotency for expensive or retry-prone operations.
+- Handle concurrency explicitly through version/conflict policy.
+- Keep caching and search derived.
+- Use structured logs, health checks, metrics, traces, and correlation IDs.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Integration tests cover API/application/domain/database behavior, AI gateway adapters with mocks, and mutation/event/consumer flows.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 86. E2E Tests
+
+**Purpose:** Critical Student, Mentor, and Admin journeys from authentication through core workflows are tested as complete user paths.
+
+## Required Decisions / Rules
+
+- Normalize API errors into stable categories.
+- Use transactions where atomic domain mutation is required.
+- Use idempotency for expensive or retry-prone operations.
+- Handle concurrency explicitly through version/conflict policy.
+- Keep caching and search derived.
+- Use structured logs, health checks, metrics, traces, and correlation IDs.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Critical Student, Mentor, and Admin journeys from authentication through core workflows are tested as complete user paths.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 87. Failure & Recovery Architecture
+
+**Purpose:** Every major subsystem defines failure state, persistence, user communication, retry/recovery, and terminal handling.
+
+## Required Decisions / Rules
+
+- Normalize API errors into stable categories.
+- Use transactions where atomic domain mutation is required.
+- Use idempotency for expensive or retry-prone operations.
+- Handle concurrency explicitly through version/conflict policy.
+- Keep caching and search derived.
+- Use structured logs, health checks, metrics, traces, and correlation IDs.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Every major subsystem defines failure state, persistence, user communication, retry/recovery, and terminal handling.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 88. Cancellation
+
+**Purpose:** Long-running operations have explicit cancellation eligibility, authority, partial-output behavior, resume behavior, and persistence semantics.
+
+## Required Decisions / Rules
+
+- Normalize API errors into stable categories.
+- Use transactions where atomic domain mutation is required.
+- Use idempotency for expensive or retry-prone operations.
+- Handle concurrency explicitly through version/conflict policy.
+- Keep caching and search derived.
+- Use structured logs, health checks, metrics, traces, and correlation IDs.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Long-running operations have explicit cancellation eligibility, authority, partial-output behavior, resume behavior, and persistence semantics.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 89. Retry Architecture
+
+**Purpose:** Transient failures may retry under bounded policy; permanent failures must stop without endless retry.
+
+## Required Decisions / Rules
+
+- Normalize API errors into stable categories.
+- Use transactions where atomic domain mutation is required.
+- Use idempotency for expensive or retry-prone operations.
+- Handle concurrency explicitly through version/conflict policy.
+- Keep caching and search derived.
+- Use structured logs, health checks, metrics, traces, and correlation IDs.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Transient failures may retry under bounded policy; permanent failures must stop without endless retry.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 90. Data Retention
+
+**Purpose:** Retention is explicitly defined per domain such as AI traces, usage, activity, notifications, audit, investigations, documents, and artifacts rather than assumed globally.
+
+## Required Decisions / Rules
+
+- Normalize API errors into stable categories.
+- Use transactions where atomic domain mutation is required.
+- Use idempotency for expensive or retry-prone operations.
+- Handle concurrency explicitly through version/conflict policy.
+- Keep caching and search derived.
+- Use structured logs, health checks, metrics, traces, and correlation IDs.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Retention is explicitly defined per domain such as AI traces, usage, activity, notifications, audit, investigations, documents, and artifacts rather than assumed globally.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 91. Data Deletion
+
+**Purpose:** Each entity is assigned an appropriate hard-delete, soft-delete, archive, anonymization, or derived-rebuild strategy.
+
+## Required Decisions / Rules
+
+- Test domain rules independently from infrastructure.
+- Test AI using deterministic mocks/fixtures as well as controlled integration tests.
+- Define failure, retry, cancellation, retention, deletion, and versioning policies.
+- Keep collection APIs bounded, filterable, paginated, stable, and documented.
+- Isolate external integrations behind adapters.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Each entity is assigned an appropriate hard-delete, soft-delete, archive, anonymization, or derived-rebuild strategy.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 92. Versioning Architecture
+
+**Purpose:** Definitions, blueprints, documents, project changes, and generated outputs use explicit version/provenance semantics where history matters.
+
+## Required Decisions / Rules
+
+- Test domain rules independently from infrastructure.
+- Test AI using deterministic mocks/fixtures as well as controlled integration tests.
+- Define failure, retry, cancellation, retention, deletion, and versioning policies.
+- Keep collection APIs bounded, filterable, paginated, stable, and documented.
+- Isolate external integrations behind adapters.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Definitions, blueprints, documents, project changes, and generated outputs use explicit version/provenance semantics where history matters.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 93. API Versioning
+
+**Purpose:** The V1 API uses one documented versioning strategy; exact URL convention is standardized before implementation.
+
+## Required Decisions / Rules
+
+- Test domain rules independently from infrastructure.
+- Test AI using deterministic mocks/fixtures as well as controlled integration tests.
+- Define failure, retry, cancellation, retention, deletion, and versioning policies.
+- Keep collection APIs bounded, filterable, paginated, stable, and documented.
+- Isolate external integrations behind adapters.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** The V1 API uses one documented versioning strategy; exact URL convention is standardized before implementation.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 94. API Resource Organization
+
+**Purpose:** Endpoints follow domain resources such as projects, definitions, instances, assessments, blueprints, tasks, milestones, risks, documents, AI, notifications, and admin.
+
+## Required Decisions / Rules
+
+- Test domain rules independently from infrastructure.
+- Test AI using deterministic mocks/fixtures as well as controlled integration tests.
+- Define failure, retry, cancellation, retention, deletion, and versioning policies.
+- Keep collection APIs bounded, filterable, paginated, stable, and documented.
+- Isolate external integrations behind adapters.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Endpoints follow domain resources such as projects, definitions, instances, assessments, blueprints, tasks, milestones, risks, documents, AI, notifications, and admin.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 95. API Pagination
+
+**Purpose:** Collections use consistent bounded pagination with stable ordering and scalable query behavior.
+
+## Required Decisions / Rules
+
+- Test domain rules independently from infrastructure.
+- Test AI using deterministic mocks/fixtures as well as controlled integration tests.
+- Define failure, retry, cancellation, retention, deletion, and versioning policies.
+- Keep collection APIs bounded, filterable, paginated, stable, and documented.
+- Isolate external integrations behind adapters.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Collections use consistent bounded pagination with stable ordering and scalable query behavior.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 96. API Filtering
+
+**Purpose:** Collection endpoints support standardized filters for status, health, project, group, student, dates, priority, and risk where relevant.
+
+## Required Decisions / Rules
+
+- Test domain rules independently from infrastructure.
+- Test AI using deterministic mocks/fixtures as well as controlled integration tests.
+- Define failure, retry, cancellation, retention, deletion, and versioning policies.
+- Keep collection APIs bounded, filterable, paginated, stable, and documented.
+- Isolate external integrations behind adapters.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Collection endpoints support standardized filters for status, health, project, group, student, dates, priority, and risk where relevant.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 97. API Response Consistency
+
+**Purpose:** Responses share predictable identifiers, timestamps, nullable fields, pagination, metadata, and error conventions.
+
+## Required Decisions / Rules
+
+- Test domain rules independently from infrastructure.
+- Test AI using deterministic mocks/fixtures as well as controlled integration tests.
+- Define failure, retry, cancellation, retention, deletion, and versioning policies.
+- Keep collection APIs bounded, filterable, paginated, stable, and documented.
+- Isolate external integrations behind adapters.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Responses share predictable identifiers, timestamps, nullable fields, pagination, metadata, and error conventions.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 98. API Documentation
+
+**Purpose:** Every endpoint documents purpose, auth, authorization, request, response, errors, side effects, emitted events, idempotency, and pagination.
+
+## Required Decisions / Rules
+
+- Test domain rules independently from infrastructure.
+- Test AI using deterministic mocks/fixtures as well as controlled integration tests.
+- Define failure, retry, cancellation, retention, deletion, and versioning policies.
+- Keep collection APIs bounded, filterable, paginated, stable, and documented.
+- Isolate external integrations behind adapters.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Every endpoint documents purpose, auth, authorization, request, response, errors, side effects, emitted events, idempotency, and pagination.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 99. External Integration Boundary
+
+**Purpose:** External systems are accessed through adapters/interfaces rather than direct domain coupling.
+
+## Required Decisions / Rules
+
+- Test domain rules independently from infrastructure.
+- Test AI using deterministic mocks/fixtures as well as controlled integration tests.
+- Define failure, retry, cancellation, retention, deletion, and versioning policies.
+- Keep collection APIs bounded, filterable, paginated, stable, and documented.
+- Isolate external integrations behind adapters.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** External systems are accessed through adapters/interfaces rather than direct domain coupling.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 100. Database Migration Architecture
+
+**Purpose:** Schema changes are versioned, migration-based, tested, and not performed as undocumented production-only edits.
+
+## Required Decisions / Rules
+
+- Test domain rules independently from infrastructure.
+- Test AI using deterministic mocks/fixtures as well as controlled integration tests.
+- Define failure, retry, cancellation, retention, deletion, and versioning policies.
+- Keep collection APIs bounded, filterable, paginated, stable, and documented.
+- Isolate external integrations behind adapters.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Schema changes are versioned, migration-based, tested, and not performed as undocumented production-only edits.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 101. Seed / Reference Data
+
+**Purpose:** System/reference seed data is separated from user-generated data and managed explicitly.
+
+## Required Decisions / Rules
+
+- Test domain rules independently from infrastructure.
+- Test AI using deterministic mocks/fixtures as well as controlled integration tests.
+- Define failure, retry, cancellation, retention, deletion, and versioning policies.
+- Keep collection APIs bounded, filterable, paginated, stable, and documented.
+- Isolate external integrations behind adapters.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** System/reference seed data is separated from user-generated data and managed explicitly.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 102. Audit vs Activity vs Logs
+
+**Purpose:** Audit is security/operation history; Activity is user-facing event representation; Logs are runtime diagnostics.
+
+## Required Decisions / Rules
+
+- Test domain rules independently from infrastructure.
+- Test AI using deterministic mocks/fixtures as well as controlled integration tests.
+- Define failure, retry, cancellation, retention, deletion, and versioning policies.
+- Keep collection APIs bounded, filterable, paginated, stable, and documented.
+- Isolate external integrations behind adapters.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Audit is security/operation history; Activity is user-facing event representation; Logs are runtime diagnostics.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 103. Analytics vs Observability
+
+**Purpose:** Analytics explains product/platform behavior; observability explains system operation and debugging.
+
+## Required Decisions / Rules
+
+- Test domain rules independently from infrastructure.
+- Test AI using deterministic mocks/fixtures as well as controlled integration tests.
+- Define failure, retry, cancellation, retention, deletion, and versioning policies.
+- Keep collection APIs bounded, filterable, paginated, stable, and documented.
+- Isolate external integrations behind adapters.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Analytics explains product/platform behavior; observability explains system operation and debugging.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 104. AI Quality vs System Health
+
+**Purpose:** AI Quality measures output quality; System Health measures infrastructure/service availability. They are independent dimensions.
+
+## Required Decisions / Rules
+
+- Test domain rules independently from infrastructure.
+- Test AI using deterministic mocks/fixtures as well as controlled integration tests.
+- Define failure, retry, cancellation, retention, deletion, and versioning policies.
+- Keep collection APIs bounded, filterable, paginated, stable, and documented.
+- Isolate external integrations behind adapters.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** AI Quality measures output quality; System Health measures infrastructure/service availability. They are independent dimensions.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 105. Cost Architecture
+
+**Purpose:** AI usage produces cost records/aggregates; the frontend does not become the source of cost truth.
+
+## Required Decisions / Rules
+
+- Test domain rules independently from infrastructure.
+- Test AI using deterministic mocks/fixtures as well as controlled integration tests.
+- Define failure, retry, cancellation, retention, deletion, and versioning policies.
+- Keep collection APIs bounded, filterable, paginated, stable, and documented.
+- Isolate external integrations behind adapters.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** AI usage produces cost records/aggregates; the frontend does not become the source of cost truth.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 106. Rate Limiting
+
+**Purpose:** Authentication, public APIs, expensive AI requests, document generation, search, and sensitive admin operations are evaluated for bounded rate limits.
+
+## Required Decisions / Rules
+
+- Preserve historical traceability.
+- Keep implementation choices configurable where appropriate.
+- Ensure background work remains persistent and observable.
+- Make every cross-system workflow traceable by correlation identifiers.
+- Do not allow derived systems to become accidental sources of truth.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Authentication, public APIs, expensive AI requests, document generation, search, and sensitive admin operations are evaluated for bounded rate limits.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 107. AI Request Deduplication
+
+**Purpose:** Generation requests use idempotency/deduplication so repeated clicks or retries do not create uncontrolled duplicate executions.
+
+## Required Decisions / Rules
+
+- Preserve historical traceability.
+- Keep implementation choices configurable where appropriate.
+- Ensure background work remains persistent and observable.
+- Make every cross-system workflow traceable by correlation identifiers.
+- Do not allow derived systems to become accidental sources of truth.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Generation requests use idempotency/deduplication so repeated clicks or retries do not create uncontrolled duplicate executions.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 108. Project-Level AI Context
+
+**Purpose:** AI receives only deliberately assembled project context such as definition, instance, assessment, blueprint, tasks, milestones, risks, documents, relevant RAG, and user request.
+
+## Required Decisions / Rules
+
+- Preserve historical traceability.
+- Keep implementation choices configurable where appropriate.
+- Ensure background work remains persistent and observable.
+- Make every cross-system workflow traceable by correlation identifiers.
+- Do not allow derived systems to become accidental sources of truth.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** AI receives only deliberately assembled project context such as definition, instance, assessment, blueprint, tasks, milestones, risks, documents, relevant RAG, and user request.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 109. AI Context Provenance
+
+**Purpose:** Generated results retain provenance to source entities/documents, execution, version, and timestamp where practical.
+
+## Required Decisions / Rules
+
+- Preserve historical traceability.
+- Keep implementation choices configurable where appropriate.
+- Ensure background work remains persistent and observable.
+- Make every cross-system workflow traceable by correlation identifiers.
+- Do not allow derived systems to become accidental sources of truth.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Generated results retain provenance to source entities/documents, execution, version, and timestamp where practical.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 110. AI Regeneration
+
+**Purpose:** Regeneration creates a new controlled execution and preserves prior output/history rather than silently overwriting it.
+
+## Required Decisions / Rules
+
+- Preserve historical traceability.
+- Keep implementation choices configurable where appropriate.
+- Ensure background work remains persistent and observable.
+- Make every cross-system workflow traceable by correlation identifiers.
+- Do not allow derived systems to become accidental sources of truth.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Regeneration creates a new controlled execution and preserves prior output/history rather than silently overwriting it.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 111. Blueprint Versioning
+
+**Purpose:** Blueprints have explicit versions and one identifiable active version.
+
+## Required Decisions / Rules
+
+- Preserve historical traceability.
+- Keep implementation choices configurable where appropriate.
+- Ensure background work remains persistent and observable.
+- Make every cross-system workflow traceable by correlation identifiers.
+- Do not allow derived systems to become accidental sources of truth.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Blueprints have explicit versions and one identifiable active version.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 112. Document Versioning
+
+**Purpose:** Documents have explicit versions traceable to their generation context.
+
+## Required Decisions / Rules
+
+- Preserve historical traceability.
+- Keep implementation choices configurable where appropriate.
+- Ensure background work remains persistent and observable.
+- Make every cross-system workflow traceable by correlation identifiers.
+- Do not allow derived systems to become accidental sources of truth.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Documents have explicit versions traceable to their generation context.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 113. Event-to-Frontend Example
+
+**Purpose:** Blueprint completion demonstrates canonical persistence first, event creation, notification/activity consumers, SSE delivery, and frontend canonical reconciliation.
+
+## Required Decisions / Rules
+
+- Preserve historical traceability.
+- Keep implementation choices configurable where appropriate.
+- Ensure background work remains persistent and observable.
+- Make every cross-system workflow traceable by correlation identifiers.
+- Do not allow derived systems to become accidental sources of truth.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Blueprint completion demonstrates canonical persistence first, event creation, notification/activity consumers, SSE delivery, and frontend canonical reconciliation.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 114. Project Definition Update Example
+
+**Purpose:** Definition update demonstrates version creation, affected-instance discovery, notification, and optional student adoption through Project Change.
+
+## Required Decisions / Rules
+
+- Preserve historical traceability.
+- Keep implementation choices configurable where appropriate.
+- Ensure background work remains persistent and observable.
+- Make every cross-system workflow traceable by correlation identifiers.
+- Do not allow derived systems to become accidental sources of truth.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Definition update demonstrates version creation, affected-instance discovery, notification, and optional student adoption through Project Change.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 115. Blueprint Failure Example
+
+**Purpose:** Blueprint failure demonstrates persistent job/execution failure, event, notification, and controlled retry/recovery.
+
+## Required Decisions / Rules
+
+- Preserve historical traceability.
+- Keep implementation choices configurable where appropriate.
+- Ensure background work remains persistent and observable.
+- Make every cross-system workflow traceable by correlation identifiers.
+- Do not allow derived systems to become accidental sources of truth.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Blueprint failure demonstrates persistent job/execution failure, event, notification, and controlled retry/recovery.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 116. Browser Disconnect Example
+
+**Purpose:** Background execution continues independently of the browser and is discovered through persisted state after the user returns.
+
+## Required Decisions / Rules
+
+- Preserve historical traceability.
+- Keep implementation choices configurable where appropriate.
+- Ensure background work remains persistent and observable.
+- Make every cross-system workflow traceable by correlation identifiers.
+- Do not allow derived systems to become accidental sources of truth.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Background execution continues independently of the browser and is discovered through persisted state after the user returns.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 117. Admin AI Trace Example
+
+**Purpose:** Admin trace inspection joins authorized execution, steps, validation, QA, usage, and errors without exposing unauthorized sensitive content.
+
+## Required Decisions / Rules
+
+- Preserve historical traceability.
+- Keep implementation choices configurable where appropriate.
+- Ensure background work remains persistent and observable.
+- Make every cross-system workflow traceable by correlation identifiers.
+- Do not allow derived systems to become accidental sources of truth.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Admin trace inspection joins authorized execution, steps, validation, QA, usage, and errors without exposing unauthorized sensitive content.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 118. Recommended Backend Project Structure
+
+**Purpose:** Use a layered FastAPI project organization separating API, application, domain, infrastructure, workers, observability, configuration, migrations, tests, and scripts.
+
+## Required Decisions / Rules
+
+- Preserve historical traceability.
+- Keep implementation choices configurable where appropriate.
+- Ensure background work remains persistent and observable.
+- Make every cross-system workflow traceable by correlation identifiers.
+- Do not allow derived systems to become accidental sources of truth.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Use a layered FastAPI project organization separating API, application, domain, infrastructure, workers, observability, configuration, migrations, tests, and scripts.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 119. Deployment Architecture
+
+**Purpose:** Define how frontend, FastAPI, workers, event delivery, database, AI gateway, RAG, storage, and integrations are deployed and isolated across environments.
+
+## Required Decisions / Rules
+
+- Frontend consumes canonical REST responses and live SSE events.
+- No frontend/database or frontend/provider shortcut is permitted.
+- Architecture decisions distinguish frozen principles from implementation configuration.
+- Phase 05 deliverables must cover system, backend, database, domain, security, API, AI, RAG, jobs, events, SSE, documents, integrations, operations, and testing.
+- Every major frontend surface must be traceable to a backend capability.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Define how frontend, FastAPI, workers, event delivery, database, AI gateway, RAG, storage, and integrations are deployed and isolated across environments.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 120. CI/CD Architecture
+
+**Purpose:** Define source control, validation, migration checks, automated tests, build artifacts, deployment gates, rollback strategy, and environment promotion.
+
+## Required Decisions / Rules
+
+- Frontend consumes canonical REST responses and live SSE events.
+- No frontend/database or frontend/provider shortcut is permitted.
+- Architecture decisions distinguish frozen principles from implementation configuration.
+- Phase 05 deliverables must cover system, backend, database, domain, security, API, AI, RAG, jobs, events, SSE, documents, integrations, operations, and testing.
+- Every major frontend surface must be traceable to a backend capability.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Define source control, validation, migration checks, automated tests, build artifacts, deployment gates, rollback strategy, and environment promotion.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 121. Storage Architecture
+
+**Purpose:** Separate transactional database data from document/object artifacts, generated files, uploads, and other binary assets with controlled access and lifecycle.
+
+## Required Decisions / Rules
+
+- Frontend consumes canonical REST responses and live SSE events.
+- No frontend/database or frontend/provider shortcut is permitted.
+- Architecture decisions distinguish frozen principles from implementation configuration.
+- Phase 05 deliverables must cover system, backend, database, domain, security, API, AI, RAG, jobs, events, SSE, documents, integrations, operations, and testing.
+- Every major frontend surface must be traceable to a backend capability.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Separate transactional database data from document/object artifacts, generated files, uploads, and other binary assets with controlled access and lifecycle.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 122. Queue and Worker Capacity
+
+**Purpose:** Define bounded concurrency, queue priorities, worker ownership, backpressure, timeout behavior, and workload isolation for long-running jobs.
+
+## Required Decisions / Rules
+
+- Frontend consumes canonical REST responses and live SSE events.
+- No frontend/database or frontend/provider shortcut is permitted.
+- Architecture decisions distinguish frozen principles from implementation configuration.
+- Phase 05 deliverables must cover system, backend, database, domain, security, API, AI, RAG, jobs, events, SSE, documents, integrations, operations, and testing.
+- Every major frontend surface must be traceable to a backend capability.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Define bounded concurrency, queue priorities, worker ownership, backpressure, timeout behavior, and workload isolation for long-running jobs.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 123. Database Integrity and Indexing
+
+**Purpose:** Define foreign keys, uniqueness, check constraints, indexes, query patterns, and integrity guarantees required by canonical domain data.
+
+## Required Decisions / Rules
+
+- Frontend consumes canonical REST responses and live SSE events.
+- No frontend/database or frontend/provider shortcut is permitted.
+- Architecture decisions distinguish frozen principles from implementation configuration.
+- Phase 05 deliverables must cover system, backend, database, domain, security, API, AI, RAG, jobs, events, SSE, documents, integrations, operations, and testing.
+- Every major frontend surface must be traceable to a backend capability.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Define foreign keys, uniqueness, check constraints, indexes, query patterns, and integrity guarantees required by canonical domain data.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 124. API Authentication Context
+
+**Purpose:** Define how authenticated identity, role, resource scope, correlation, and request context are propagated from Supabase Auth through FastAPI to application services.
+
+## Required Decisions / Rules
+
+- Frontend consumes canonical REST responses and live SSE events.
+- No frontend/database or frontend/provider shortcut is permitted.
+- Architecture decisions distinguish frozen principles from implementation configuration.
+- Phase 05 deliverables must cover system, backend, database, domain, security, API, AI, RAG, jobs, events, SSE, documents, integrations, operations, and testing.
+- Every major frontend surface must be traceable to a backend capability.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Define how authenticated identity, role, resource scope, correlation, and request context are propagated from Supabase Auth through FastAPI to application services.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 125. External Webhook Architecture
+
+**Purpose:** Define authenticated, idempotent, replay-safe handling for GitHub or other external callbacks and synchronization events.
+
+## Required Decisions / Rules
+
+- Frontend consumes canonical REST responses and live SSE events.
+- No frontend/database or frontend/provider shortcut is permitted.
+- Architecture decisions distinguish frozen principles from implementation configuration.
+- Phase 05 deliverables must cover system, backend, database, domain, security, API, AI, RAG, jobs, events, SSE, documents, integrations, operations, and testing.
+- Every major frontend surface must be traceable to a backend capability.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Define authenticated, idempotent, replay-safe handling for GitHub or other external callbacks and synchronization events.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 126. Disaster Recovery and Backup
+
+**Purpose:** Define backup, restore, recovery objectives, derived-state rebuilding, and recovery verification for canonical and derived systems.
+
+## Required Decisions / Rules
+
+- Frontend consumes canonical REST responses and live SSE events.
+- No frontend/database or frontend/provider shortcut is permitted.
+- Architecture decisions distinguish frozen principles from implementation configuration.
+- Phase 05 deliverables must cover system, backend, database, domain, security, API, AI, RAG, jobs, events, SSE, documents, integrations, operations, and testing.
+- Every major frontend surface must be traceable to a backend capability.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Define backup, restore, recovery objectives, derived-state rebuilding, and recovery verification for canonical and derived systems.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 127. Technical Decision Record Process
+
+**Purpose:** Define how implementation-level choices are recorded, reviewed, versioned, and prevented from silently changing the frozen architecture.
+
+## Required Decisions / Rules
+
+- Frontend consumes canonical REST responses and live SSE events.
+- No frontend/database or frontend/provider shortcut is permitted.
+- Architecture decisions distinguish frozen principles from implementation configuration.
+- Phase 05 deliverables must cover system, backend, database, domain, security, API, AI, RAG, jobs, events, SSE, documents, integrations, operations, and testing.
+- Every major frontend surface must be traceable to a backend capability.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Define how implementation-level choices are recorded, reviewed, versioned, and prevented from silently changing the frozen architecture.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 128. Frontend ↔ Backend Contract
+
+**Purpose:** Frontend uses REST for canonical reads/mutations and SSE for live delivery while all domain decisions remain server-side.
+
+## Required Decisions / Rules
+
+- Treat this as an implementation-grade architecture boundary.
+- Define the owner, interface, lifecycle, security, failure, observability, and testing requirements before coding.
+- Keep environment/vendor-specific values outside domain logic.
+- Document the final implementation choice in the Technical Decision Record process.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Frontend uses REST for canonical reads/mutations and SSE for live delivery while all domain decisions remain server-side.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 129. What Must Never Happen
+
+**Purpose:** Explicitly prohibit frontend/database direct access, direct provider calls, agent bypass of validation, AI direct canonical mutation, SSE as source of truth, and similar shortcuts.
+
+## Required Decisions / Rules
+
+- Treat this as an implementation-grade architecture boundary.
+- Define the owner, interface, lifecycle, security, failure, observability, and testing requirements before coding.
+- Keep environment/vendor-specific values outside domain logic.
+- Document the final implementation choice in the Technical Decision Record process.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Explicitly prohibit frontend/database direct access, direct provider calls, agent bypass of validation, AI direct canonical mutation, SSE as source of truth, and similar shortcuts.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 130. Architecture Decision Register
+
+**Purpose:** Maintain a decision register distinguishing already frozen architecture from implementation details requiring controlled configuration or later explicit decisions.
+
+## Required Decisions / Rules
+
+- Treat this as an implementation-grade architecture boundary.
+- Define the owner, interface, lifecycle, security, failure, observability, and testing requirements before coding.
+- Keep environment/vendor-specific values outside domain logic.
+- Document the final implementation choice in the Technical Decision Record process.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Maintain a decision register distinguishing already frozen architecture from implementation details requiring controlled configuration or later explicit decisions.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 131. Decisions Requiring Finalization During Phase 05
+
+**Purpose:** Finalize infrastructure, schema, RAG, provider, job, event, API, security, and project-change details without silently guessing.
+
+## Required Decisions / Rules
+
+- Treat this as an implementation-grade architecture boundary.
+- Define the owner, interface, lifecycle, security, failure, observability, and testing requirements before coding.
+- Keep environment/vendor-specific values outside domain logic.
+- Document the final implementation choice in the Technical Decision Record process.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Finalize infrastructure, schema, RAG, provider, job, event, API, security, and project-change details without silently guessing.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 132. Phase 05 Deliverables
+
+**Purpose:** Produce master index plus system, backend, database, domain, auth, lifecycle, API, AI, RAG, jobs, events, SSE, documents, GitHub, notifications/activity, observability, security, testing, rules, decisions, traceability, and definition-of-done documents.
+
+## Required Decisions / Rules
+
+- Treat this as an implementation-grade architecture boundary.
+- Define the owner, interface, lifecycle, security, failure, observability, and testing requirements before coding.
+- Keep environment/vendor-specific values outside domain logic.
+- Document the final implementation choice in the Technical Decision Record process.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Produce master index plus system, backend, database, domain, auth, lifecycle, API, AI, RAG, jobs, events, SSE, documents, GitHub, notifications/activity, observability, security, testing, rules, decisions, traceability, and definition-of-done documents.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 133. Phase 05 Traceability Requirement
+
+**Purpose:** Every major frontend surface can be traced through feature/API/application/domain/database/event/job/AI/notification/SSE boundaries.
+
+## Required Decisions / Rules
+
+- Treat this as an implementation-grade architecture boundary.
+- Define the owner, interface, lifecycle, security, failure, observability, and testing requirements before coding.
+- Keep environment/vendor-specific values outside domain logic.
+- Document the final implementation choice in the Technical Decision Record process.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Every major frontend surface can be traced through feature/API/application/domain/database/event/job/AI/notification/SSE boundaries.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 134. Phase 05 Definition of Done
+
+**Purpose:** Phase is complete only when architecture, data, authorization, API, AI, jobs, events, RAG, integrations, operations, reliability, and testing answers are explicit.
+
+## Required Decisions / Rules
+
+- Treat this as an implementation-grade architecture boundary.
+- Define the owner, interface, lifecycle, security, failure, observability, and testing requirements before coding.
+- Keep environment/vendor-specific values outside domain logic.
+- Document the final implementation choice in the Technical Decision Record process.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Phase is complete only when architecture, data, authorization, API, AI, jobs, events, RAG, integrations, operations, reliability, and testing answers are explicit.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 135. The Most Important Architectural Rule
+
+**Purpose:** All representations and workflows ultimately reconcile to canonical state; derived systems assist, display, or process but do not silently become authority.
+
+## Required Decisions / Rules
+
+- Treat this as an implementation-grade architecture boundary.
+- Define the owner, interface, lifecycle, security, failure, observability, and testing requirements before coding.
+- Keep environment/vendor-specific values outside domain logic.
+- Document the final implementation choice in the Technical Decision Record process.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** All representations and workflows ultimately reconcile to canonical state; derived systems assist, display, or process but do not silently become authority.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# 136. Phase 05 Current Status
+
+**Purpose:** Phase 05 becomes FROZEN after accepted recommendations are documented; the next phase can proceed from this authoritative architecture.
+
+## Required Decisions / Rules
+
+- Treat this as an implementation-grade architecture boundary.
+- Define the owner, interface, lifecycle, security, failure, observability, and testing requirements before coding.
+- Keep environment/vendor-specific values outside domain logic.
+- Document the final implementation choice in the Technical Decision Record process.
+
+## Inputs / Outputs / Boundaries
+
+- **Input:** Phase 05 becomes FROZEN after accepted recommendations are documented; the next phase can proceed from this authoritative architecture.
+- **Canonical owner:** GrowFlow backend/domain/database unless another owner is explicitly named.
+- **Frontend role:** Render authorized state, submit commands, consume results, and reconcile after asynchronous events.
+- **Security:** Authorization and scope must be enforced before sensitive access or processing.
+- **Reliability:** Failure must be observable, recoverable where appropriate, and prevented from creating hidden canonical divergence.
+- **Testing:** The behavior must be represented in the appropriate unit, integration, contract, or E2E layer.
+
+---
+
+# Cross-Phase Traceability
+
+## Phase 01 → Phase 05
+
+```text
+P01–P04   → Public content/configuration/contact capabilities
+A01–A09   → Authentication, identity, role resolution, authorization, onboarding
+X01–X05   → Search, notifications, profile/settings, sharing
+S01–S33   → Student projects, assessment, blueprint, work management,
+            documents, GitHub, AI Mentor, help requests, feedback, changes
+M01–M36   → Groups, students, definitions, instances, supervision,
+            at-risk, help requests, notes, activity, AI Mentor
+AD01–AD29 → Governance, AI Observatory, cost, system health,
+            RAG/documents, security/audit, investigations, analytics
+SYS01–10  → Application/API/AI/job/system-state handling
+```
+
+## Phase 02 → Phase 05
+
+Preserved architecture:
+
+- unified global top navigation;
+- Workplace selector;
+- BUILD / SUPERVISE / GOVERN;
+- role-aware authorization;
+- separate Login and Sign Up;
+- protected Admin entry;
+- deep links;
+- canonical notification/share routes;
+- persistent background workflows.
+
+## Phase 03 → Phase 05
+
+The architecture supplies data/state for:
+
+- lifecycle visualization;
+- progress;
+- health;
+- task/milestone hierarchy;
+- AI execution state;
+- dashboards;
+- tables;
+- documents;
+- system health;
+- analytics.
+
+## Phase 04 → Phase 05
+
+Phase 05 provides the backend contracts for:
+
+- Server State;
+- UI State;
+- Streaming State;
+- REST;
+- SSE;
+- asynchronous AI;
+- project workflows;
+- notifications;
+- search;
+- observability.
+
+---
+
+# Canonical Ownership Matrix
+
+| Concern | Canonical / Authoritative Owner |
+|---|---|
+| Authentication identity | Supabase Auth |
+| Application profile | GrowFlow backend/database |
+| Authorization | GrowFlow backend + RLS |
+| Project | PostgreSQL/domain |
+| Project Definition | PostgreSQL/domain |
+| Project Instance | PostgreSQL/domain |
+| Assessment | PostgreSQL/domain + assessment service |
+| Blueprint | PostgreSQL/domain |
+| Tasks | PostgreSQL/domain |
+| Milestones | PostgreSQL/domain |
+| Risks | PostgreSQL/domain |
+| Progress | Defined domain-derived representation |
+| Health | Defined derived domain representation |
+| Documents | Controlled domain + storage boundary |
+| AI Execution | PostgreSQL/operational domain |
+| AI Trace | Operational persistence |
+| RAG | Derived/rebuildable infrastructure |
+| Activity | Derived event representation |
+| Notifications | Notification domain |
+| Analytics | Derived analytical representation |
+| Audit | Audit subsystem |
+| SSE | Delivery transport |
+| Frontend UI state | Frontend |
+| Frontend streaming state | Frontend |
+| Provider credentials | Secure server-side infrastructure |
+
+---
+
+# Non-Negotiable System Invariants
+
+1. Browser never directly mutates PostgreSQL.
+2. Browser never directly calls an AI provider.
+3. Browser never directly accesses RAG infrastructure.
+4. AI agents never bypass validation.
+5. AI output never silently becomes canonical state.
+6. RAG never becomes the canonical project database.
+7. Activity never becomes the canonical event store.
+8. SSE never becomes the source of truth.
+9. Frontend authorization never replaces backend authorization.
+10. Definition updates never silently mutate existing instances.
+11. Background jobs never depend on an open browser connection.
+12. Provider secrets never reach frontend clients.
+13. GitHub secrets never reach ordinary API responses.
+14. Admin investigation never becomes unrestricted impersonation.
+15. Expensive duplicate AI requests are controlled.
+16. Canonical mutations and required events cannot silently diverge.
+17. Derived projections are rebuildable where claimed.
+18. Important asynchronous workflows have terminal success/failure states.
+19. High-risk operations are observable and traceable.
+20. Architecture changes are explicit and recorded.
+
+---
+
+# Final Phase 05 Definition of Done
+
+### Architecture
+- [x] System boundaries defined.
+- [x] Backend layers defined.
+- [x] Dependency direction defined.
+- [x] Infrastructure boundaries defined.
+- [x] Deployment and CI/CD responsibilities defined.
+
+### Data
+- [x] Canonical vs derived state defined.
+- [x] Domain entities identified.
+- [x] Definition/instance separation preserved.
+- [x] Versioning requirements defined.
+- [x] Integrity/indexing requirements identified.
+- [x] Retention/deletion requirements identified.
+- [x] Backup/recovery requirements identified.
+
+### Security
+- [x] Authentication defined.
+- [x] Authorization defined.
+- [x] Resource scope defined.
+- [x] RLS responsibility defined.
+- [x] Secret boundary defined.
+- [x] AI trust boundary defined.
+- [x] Webhook security requirements defined.
+
+### AI
+- [x] Twelve agents preserved.
+- [x] Agent responsibilities defined.
+- [x] Agent contracts defined.
+- [x] LangGraph responsibility defined.
+- [x] AI Provider Gateway defined.
+- [x] Provider adapter boundary defined.
+- [x] Execution persistence defined.
+- [x] Validation and QA/Judge defined.
+- [x] Usage/cost/traceability defined.
+- [x] Request deduplication defined.
+
+### Async / Events
+- [x] Background jobs defined.
+- [x] Queue/worker responsibilities defined.
+- [x] Job lifecycle defined.
+- [x] Persistent events defined.
+- [x] Outbox approach defined.
+- [x] SSE responsibility defined.
+- [x] Reconnection/reconciliation defined.
+- [x] Notification/activity relationships defined.
+
+### RAG / Documents / Integrations
+- [x] RAG is project-scoped.
+- [x] RAG is derived/rebuildable.
+- [x] Document lifecycle defined.
+- [x] Document versioning defined.
+- [x] GitHub boundary defined.
+- [x] Webhook handling requirements defined.
+- [x] Help request/mentor-note boundaries defined.
+
+### Operations
+- [x] Admin observability requirements defined.
+- [x] Audit/activity/log separation defined.
+- [x] Analytics/observability separation defined.
+- [x] Cost tracking defined.
+- [x] Health monitoring defined.
+- [x] Correlation IDs defined.
+- [x] Structured logging defined.
+- [x] Monitoring requirements defined.
+
+### Reliability
+- [x] Failure behavior defined.
+- [x] Retry philosophy defined.
+- [x] Cancellation requirements defined.
+- [x] Idempotency defined.
+- [x] Concurrency addressed.
+- [x] Browser-independent execution mandatory.
+- [x] Backup/recovery requirements defined.
+
+### API
+- [x] API responsibility defined.
+- [x] Resource organization defined.
+- [x] Pagination/filtering requirements defined.
+- [x] Error normalization defined.
+- [x] Authentication context defined.
+- [x] API documentation requirements defined.
+
+### Testing
+- [x] Unit testing defined.
+- [x] Domain testing defined.
+- [x] AI testing defined.
+- [x] Integration testing defined.
+- [x] Event testing defined.
+- [x] E2E testing defined.
+
+### Traceability
+- [x] Phase 01 traceability established.
+- [x] Phase 02 traceability established.
+- [x] Phase 03 traceability established.
+- [x] Phase 04 traceability established.
+- [x] Frontend → API → Application → Domain → Database → Event/Job/AI → Frontend traceability established.
+
+---
+
+# Phase 05 Freeze Statement
+
+**PHASE 05 — APPLICATION & INTEGRATION ARCHITECTURE: 🔒 FROZEN**
+
+The architecture now provides the technical foundation for implementation while explicitly separating:
+
+```text
+FROZEN ARCHITECTURAL PRINCIPLES
+            from
+IMPLEMENTATION-SPECIFIC CONFIGURATION
+```
+
+The latter may be selected during implementation, but it must not silently change the former.
+
+```text
+🔒 Phase 01 — Frontend Inventory
+        ↓
+🔒 Phase 02 — Information Architecture
+        ↓
+🔒 Phase 03 — Visual Design System
+        ↓
+🔒 Phase 04 — Frontend Documentation
+        ↓
+🔒 Phase 05 — Application & Integration Architecture
+        ↓
+▶ NEXT — Frontend Foundation / Implementation Gate
+```
+
+**Phase 05 is authoritative for V1 unless a later phase explicitly supersedes a decision.**

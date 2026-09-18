@@ -1,0 +1,3047 @@
+# GrowFlow — Phase 06H: Stitch Foundation Validation
+
+**Status:** FROZEN / AUTHORITATIVE  
+**Version:** 1.0  
+**Phase:** 06H  
+**Depends On:** Phase 06A–06G  
+**Primary Purpose:** Validate the complete frontend foundation before page-by-page Stitch design begins.
+
+---
+
+# 01. Purpose
+
+Phase 06H is the final validation gate before GrowFlow enters page-by-page Stitch design.
+
+The objective is not to introduce a new design system.
+
+The objective is to prove that the decisions already established across Phases 06A–06G are:
+
+- internally consistent;
+- implementation-ready;
+- sufficiently explicit for Stitch;
+- sufficiently constrained to prevent visual drift;
+- responsive;
+- accessible;
+- behaviorally coherent;
+- compatible with the application architecture;
+- ready to be converted into page-specific design prompts.
+
+The governing principle is:
+
+> **Stitch must consume a stable foundation, not invent one.**
+
+---
+
+# 02. Foundation Being Validated
+
+The validation chain is:
+
+```text
+06A Design Foundation
+        ↓
+06B Brand & Visual Assets
+        ↓
+06C Design Tokens
+        ↓
+06D Core Components
+        ↓
+06E Application Shell
+        ↓
+06F Frontend Behavior
+        ↓
+06G Responsive + Accessibility
+        ↓
+06H Foundation Validation
+        ↓
+06I Page-by-Page Stitch Design
+```
+
+No major foundational decision should be invented inside 06I.
+
+---
+
+# 03. Validation Scope
+
+06H validates:
+
+1. Brand consistency
+2. Visual system consistency
+3. Design token consistency
+4. Component consistency
+5. Shell consistency
+6. Navigation consistency
+7. State behavior consistency
+8. Responsive consistency
+9. Accessibility consistency
+10. AI interaction consistency
+11. Backend/frontend boundary consistency
+12. Security consistency
+13. Stitch prompt readiness
+14. Page-design readiness
+15. Asset readiness
+16. Implementation traceability
+17. Design governance
+
+---
+
+# 04. Authoritative Source Hierarchy
+
+When two frontend documents appear to disagree, use this hierarchy:
+
+```text
+Frozen project architecture
+        ↓
+Phase 06A–06G explicit decisions
+        ↓
+Current canonical token/component contracts
+        ↓
+Page-specific approved decisions
+        ↓
+Stitch-generated interpretation
+```
+
+Stitch output never overrides a frozen architectural decision automatically.
+
+---
+
+# 05. Validation Principle
+
+Every foundation decision must answer:
+
+```text
+What is it?
+Why does it exist?
+Where is it used?
+What are its states?
+What happens responsively?
+What happens accessibly?
+What must Stitch not change?
+```
+
+If these questions cannot be answered, the foundation is not sufficiently defined.
+
+---
+
+# 06. Brand Validation
+
+The GrowFlow brand direction is:
+
+```text
+Primary concept:
+Connected Flow + Abstract G
+
+Brand meaning:
+growth
+flow
+progression
+structured development
+intelligent assistance
+
+Typeface:
+Manrope
+
+Primary accent:
+#6F7F63
+
+Identity:
+calm
+intelligent
+structured
+human
+```
+
+Validation requirement:
+
+- logo direction remains consistent;
+- wordmark and standalone mark belong to one system;
+- favicon/app icon uses the same identity;
+- no role-specific branding exists.
+
+---
+
+# 07. Brand Anti-Drift Validation
+
+Stitch must not introduce:
+
+- leaf clichés;
+- brain icons;
+- circuit-board AI imagery;
+- neon AI identity;
+- cyberpunk styling;
+- rainbow role colors;
+- unrelated geometric symbols.
+
+The identity must remain subtle.
+
+---
+
+# 08. Typography Validation
+
+Canonical typeface:
+
+**Manrope**
+
+Supported weights:
+
+```text
+400
+500
+600
+700
+800
+```
+
+Typography hierarchy must remain consistent with Phase 06C.
+
+Stitch must not substitute:
+
+- Inter;
+- Roboto;
+- Poppins;
+- generic system fonts
+
+as the primary visual identity without explicit approval.
+
+---
+
+# 09. Typography Validation Matrix
+
+Validate:
+
+- display headings;
+- page headings;
+- section headings;
+- body;
+- metadata;
+- captions;
+- buttons;
+- tables;
+- AI interfaces;
+- code/document interfaces.
+
+Text must remain readable across breakpoints.
+
+---
+
+# 10. Color Validation
+
+Light foundation:
+
+```text
+Background      #F7F7F4
+Surface         #FFFFFF
+Secondary       #F2F2EE
+Tertiary        #EDEDE8
+Primary Text    #1C1C1A
+Secondary Text  #5F625D
+Tertiary Text   #858780
+Accent          #6F7F63
+```
+
+Dark foundation:
+
+```text
+Background      #171816
+Surface         #20221F
+Primary Text    #F0F1EC
+Secondary Text  #C2C5BD
+Accent          #9AAA8D
+```
+
+Stitch must remain within the semantic token architecture.
+
+---
+
+# 11. Semantic Color Validation
+
+Validate:
+
+```text
+Success
+Warning
+Danger
+Info
+AI
+```
+
+Semantic colors must communicate state consistently across:
+
+- buttons;
+- alerts;
+- badges;
+- tables;
+- dashboards;
+- workflows;
+- charts.
+
+---
+
+# 12. AI Color Validation
+
+AI uses the deeper neutral AI variant.
+
+AI styling must remain:
+
+```text
+intelligent
+deeper
+calm
+native
+restrained
+```
+
+Avoid:
+
+```text
+neon
+purple glow
+cyberpunk
+gradient-heavy
+futuristic cliché
+```
+
+---
+
+# 13. Surface Validation
+
+GrowFlow uses a restrained neutral surface hierarchy.
+
+Preferred:
+
+```text
+background
+→ secondary
+→ surface
+→ elevated
+```
+
+Cards should not all appear as floating white rectangles.
+
+---
+
+# 14. Card Validation
+
+Cards are used when they provide meaningful grouping.
+
+Validate that Stitch does not produce:
+
+```text
+card
+card
+card
+card
+card
+```
+
+for every piece of content.
+
+Use:
+
+- sections;
+- tables;
+- lists;
+- panels;
+- dividers;
+- grouped content
+
+where semantically appropriate.
+
+---
+
+# 15. Table Validation
+
+Tables are first-class operational interfaces.
+
+Validate:
+
+- dense but readable;
+- integrated with page surfaces;
+- strong row hierarchy;
+- clear headers;
+- responsive behavior;
+- accessible structure.
+
+Avoid oversized decorative cards around every table.
+
+---
+
+# 16. Motion Validation
+
+Canonical motion:
+
+```text
+Float → Settle
+```
+
+Motion should feel:
+
+- subtle;
+- physical;
+- calm;
+- intentional.
+
+No excessive animation.
+
+---
+
+# 17. Reduced Motion Validation
+
+Every design using motion must have a reduced-motion representation.
+
+Preferred:
+
+```text
+motion
+→ fade/settle
+```
+
+rather than removing functional meaning.
+
+---
+
+# 18. Public Website Validation
+
+Public website should be:
+
+- expressive;
+- editorial;
+- visually memorable;
+- interactive;
+- storytelling-oriented.
+
+But it must remain consistent with the same GrowFlow design system.
+
+---
+
+# 19. Authenticated Workspace Validation
+
+Authenticated workplace should be:
+
+- restrained;
+- information-dense;
+- productive;
+- operational;
+- low-friction.
+
+Public visual storytelling must not leak into dense workplace interfaces unnecessarily.
+
+---
+
+# 20. Login Validation
+
+Login has a distinct composition.
+
+However:
+
+```text
+distinct composition
+≠
+different design system
+```
+
+Validate:
+
+- Manrope;
+- GrowFlow identity;
+- muted palette;
+- same controls;
+- same interaction behavior;
+- same accessibility standards.
+
+---
+
+# 21. Dashboard Validation
+
+Dashboards are visual data instruments.
+
+Validate:
+
+- meaningful hierarchy;
+- useful metrics;
+- real data representation;
+- responsive adaptation;
+- partial failure states;
+- accessible summaries.
+
+Avoid decorative charts.
+
+---
+
+# 22. Hero Validation
+
+Hero pages should combine:
+
+```text
+statement
++
+visual storytelling
+```
+
+Validate:
+
+- clear primary message;
+- clear primary CTA;
+- contextual imagery;
+- accessible heading;
+- responsive composition;
+- restrained motion.
+
+---
+
+# 23. Image Validation
+
+Images should be:
+
+- editorial/contextual;
+- relevant;
+- high quality;
+- appropriately cropped;
+- accessible.
+
+Avoid generic stock imagery where it weakens the GrowFlow identity.
+
+---
+
+# 24. Asset Validation
+
+Before Stitch page design, the project should have a known asset strategy for:
+
+```text
+logo
+wordmark
+favicon
+app icon
+font
+editorial images
+illustrations where required
+icons
+```
+
+No page should invent a separate logo treatment.
+
+---
+
+# 25. Component Validation
+
+Stitch designs should use the Phase 06D component vocabulary.
+
+Examples:
+
+```text
+Button
+Input
+Select
+Tabs
+Menu
+Dialog
+Drawer
+Table
+Badge
+Alert
+Card
+Panel
+Timeline
+AI Execution
+Document Viewer
+```
+
+New components require explicit architectural justification.
+
+---
+
+# 26. Component State Validation
+
+Every applicable component should support:
+
+```text
+default
+hover
+focus
+active
+disabled
+loading
+error
+success
+empty
+streaming
+```
+
+Only relevant states need to be shown visually.
+
+---
+
+# 27. Component Responsive Validation
+
+Every complex component must have:
+
+```text
+desktop
+tablet
+mobile
+```
+
+behavior.
+
+Validate whether the component:
+
+```text
+scales
+reflows
+collapses
+scrolls
+transforms
+```
+
+---
+
+# 28. Component Accessibility Validation
+
+Validate:
+
+- semantic HTML;
+- keyboard operation;
+- focus;
+- accessible names;
+- state semantics;
+- reduced motion;
+- screen-reader behavior.
+
+---
+
+# 29. Shell Validation
+
+The application shell is canonical.
+
+```text
+TopNav
++
+Workplace Selector
++
+Sidebar
++
+Main Content
+```
+
+Role-specific sidebars exist within the shared shell.
+
+---
+
+# 30. Top Navigation Validation
+
+Top navigation must support:
+
+- GrowFlow identity;
+- Workplace;
+- search;
+- notifications;
+- profile;
+- public links where appropriate;
+- Login;
+- Sign Up.
+
+Stitch must not create independent navigation systems for each page.
+
+---
+
+# 31. Workplace Selector Validation
+
+Workplace options:
+
+```text
+BUILD
+SUPERVISE
+GOVERN
+```
+
+Behavior depends on authentication and authorization.
+
+The selector is not a visual theme switch.
+
+---
+
+# 32. Role Theme Validation
+
+There are no separate role color themes.
+
+Student, Mentor, and Admin are differentiated through:
+
+- content;
+- information architecture;
+- context;
+- capabilities.
+
+Not:
+
+```text
+Student = blue
+Mentor = purple
+Admin = red
+```
+
+---
+
+# 33. Sidebar Validation
+
+Validate:
+
+- correct role navigation;
+- active route;
+- collapse;
+- keyboard access;
+- mobile drawer;
+- accessible names;
+- responsive behavior.
+
+---
+
+# 34. Global Search Validation
+
+Search is:
+
+```text
+global
+role-aware
+authorization-aware
+backend-powered
+canonical-route aware
+```
+
+Stitch should design:
+
+```text
+idle
+typing
+searching
+results
+no results
+error
+```
+
+---
+
+# 35. Notification Validation
+
+Notifications should support:
+
+- unread;
+- read;
+- live arrival;
+- deep links;
+- mobile representation;
+- accessibility.
+
+Notifications must route to canonical resources.
+
+---
+
+# 36. Profile Validation
+
+Profile remains a shared authenticated destination.
+
+Validate:
+
+- identity;
+- account context;
+- accessible controls;
+- settings navigation;
+- responsive behavior.
+
+---
+
+# 37. Settings Validation
+
+Settings should preserve separation between:
+
+```text
+profile
+preferences
+```
+
+and future settings categories.
+
+---
+
+# 38. Route Validation
+
+Routes follow Phase 02 conventions:
+
+```text
+lowercase
+kebab-case
+plural collections
+IDs for resources
+nested contextual resources
+query params for view state
+```
+
+Stitch page names should correspond to canonical route destinations.
+
+---
+
+# 39. Page Inventory Validation
+
+Every Phase 01 page must have a destination.
+
+No page may disappear because a Stitch prompt overlooked it.
+
+The page inventory remains the canonical coverage checklist.
+
+---
+
+# 40. Student Coverage Validation
+
+Validate coverage for:
+
+- dashboard;
+- projects;
+- project creation;
+- mentor catalog;
+- project detail;
+- assessment;
+- blueprint;
+- tasks;
+- milestones;
+- risks;
+- roadmap;
+- documents;
+- GitHub;
+- activity;
+- AI Mentor;
+- help requests;
+- mentor feedback;
+- project changes.
+
+---
+
+# 41. Mentor Coverage Validation
+
+Validate coverage for:
+
+- overview;
+- groups;
+- students;
+- projects;
+- definitions;
+- instances;
+- at-risk;
+- help requests;
+- activity;
+- notes;
+- AI Mentor.
+
+---
+
+# 42. Admin Coverage Validation
+
+Validate coverage for:
+
+- overview;
+- mentors;
+- students;
+- groups;
+- projects;
+- AI observability;
+- cost/usage;
+- system health;
+- documents/RAG;
+- security/audit;
+- investigations;
+- analytics.
+
+---
+
+# 43. System State Coverage
+
+Validate designs for:
+
+```text
+401
+403
+404
+suspended/inactive
+generic error
+network failure
+AI unavailable
+AI failed
+AI in progress
+RAG/document processing
+```
+
+---
+
+# 44. Workflow Coverage
+
+Complex workflows must have designs for:
+
+```text
+entry
+active
+success
+failure
+recovery
+```
+
+where applicable.
+
+---
+
+# 45. Assessment Validation
+
+Assessment design must cover:
+
+```text
+introduction
+questions
+adaptive state
+completion
+result
+```
+
+The frontend must not invent scoring logic.
+
+---
+
+# 46. Blueprint Validation
+
+Blueprint workflow must cover:
+
+```text
+generation
+progress
+validation
+QA
+approval
+failure/recovery
+```
+
+---
+
+# 47. Project Change Validation
+
+Project change must cover:
+
+```text
+request
+impact analysis
+review
+regeneration
+validation
+QA
+result
+```
+
+---
+
+# 48. Document Validation
+
+Documents must cover:
+
+```text
+list
+detail
+preview
+generation
+processing
+failure
+versions
+```
+
+---
+
+# 49. AI Mentor Validation
+
+AI Mentor must support:
+
+- chat;
+- loading;
+- streaming;
+- completion;
+- error;
+- retry;
+- context;
+- accessibility;
+- mobile.
+
+No hidden reasoning should be shown.
+
+---
+
+# 50. Responsive Foundation Validation
+
+Validate:
+
+```text
+Mobile <768
+Tablet 768–1199
+Desktop >=1200
+```
+
+for the system as a whole.
+
+---
+
+# 51. Mobile Validation Gate
+
+A mobile design fails validation if:
+
+- primary action is inaccessible;
+- navigation disappears;
+- critical information is unreadable;
+- tables become unusable;
+- dialogs overflow;
+- text is clipped;
+- touch targets are too small;
+- essential functionality depends on hover.
+
+---
+
+# 52. Tablet Validation Gate
+
+A tablet design fails if it simply compresses desktop content into unusable columns.
+
+Tablet must have intentional composition.
+
+---
+
+# 53. Desktop Validation Gate
+
+Desktop fails if:
+
+- content is excessively sparse without purpose;
+- information hierarchy is unclear;
+- tables become decorative cards;
+- shell consumes excessive space;
+- dense workflows become visually noisy.
+
+---
+
+# 54. Accessibility Validation Gate
+
+A page fails if:
+
+- keyboard users cannot complete the primary workflow;
+- focus is invisible;
+- controls lack accessible names;
+- form errors are not associated;
+- status depends only on color;
+- dialogs trap focus incorrectly;
+- dynamic state is inaccessible.
+
+---
+
+# 55. Keyboard Validation
+
+Critical flows:
+
+```text
+login
+registration
+project creation
+assessment
+blueprint generation
+task management
+document viewing
+AI Mentor
+help requests
+mentor supervision
+admin investigation
+```
+
+must be keyboard-completable.
+
+---
+
+# 56. Screen Reader Validation
+
+At minimum verify:
+
+- page title;
+- heading structure;
+- navigation;
+- forms;
+- dialogs;
+- tables;
+- status;
+- dynamic updates.
+
+---
+
+# 57. Focus Validation
+
+Validate:
+
+```text
+route change
+modal open
+modal close
+drawer open
+drawer close
+form error
+dynamic content
+workflow completion
+```
+
+Focus must remain predictable.
+
+---
+
+# 58. Color Independence Validation
+
+Every semantic state must remain understandable without color.
+
+Example:
+
+```text
+High Risk
+```
+
+not merely a red indicator.
+
+---
+
+# 59. Contrast Validation
+
+Validate:
+
+- body text;
+- metadata;
+- borders;
+- controls;
+- focus indicators;
+- status text;
+- dark mode.
+
+Muted styling must not become low-contrast styling.
+
+---
+
+# 60. Zoom Validation
+
+Validate at approximately:
+
+```text
+100%
+125%
+200%
+```
+
+Check:
+
+- navigation;
+- forms;
+- tables;
+- dialogs;
+- dashboards;
+- project workspace.
+
+---
+
+# 61. Reduced Motion Validation
+
+Any page using:
+
+- Float → Settle;
+- entrance animation;
+- hover movement;
+- streaming animation
+
+must have a reduced-motion representation.
+
+---
+
+# 62. AI State Validation
+
+Validate that Stitch does not create fake:
+
+```text
+AI typing
+progress
+completion
+reasoning
+```
+
+AI status must correspond to actual backend state.
+
+---
+
+# 63. Streaming Validation
+
+Streaming UI must support:
+
+```text
+connected
+running
+reconnecting
+completed
+failed
+```
+
+where applicable.
+
+---
+
+# 64. Async Validation
+
+Long-running operations must visually communicate:
+
+```text
+queued
+running
+completed
+failed
+cancelled
+```
+
+where backend states exist.
+
+---
+
+# 65. Navigation During Async Work
+
+Design must account for:
+
+```text
+start operation
+→ navigate away
+→ return
+```
+
+The operation remains backend-owned.
+
+---
+
+# 66. Network Validation
+
+Design must cover:
+
+```text
+online
+degraded
+offline
+recovering
+```
+
+without making the interface unnecessarily disruptive.
+
+---
+
+# 67. Error Validation
+
+Every major feature must have:
+
+```text
+initial loading
+refreshing
+empty
+error
+success
+```
+
+and relevant processing/streaming states.
+
+---
+
+# 68. Partial Failure Validation
+
+Dashboards and composite pages must allow one region to fail while others remain usable.
+
+---
+
+# 69. Permission Validation
+
+Validate:
+
+```text
+visible
+disabled
+hidden
+forbidden
+```
+
+behavior according to authorization semantics.
+
+Frontend visibility is not security.
+
+---
+
+# 70. Conflict Validation
+
+Design must support:
+
+```text
+409 conflict
+→ latest state
+→ reconciliation
+→ user decision
+```
+
+for applicable resources.
+
+---
+
+# 71. Version Validation
+
+Versioned resources must visually distinguish:
+
+```text
+current
+previous
+proposed
+generated
+approved
+```
+
+where applicable.
+
+---
+
+# 72. Project Definition / Instance Validation
+
+Design must clearly distinguish:
+
+```text
+Project Definition
+```
+
+from:
+
+```text
+Student Project Instance
+```
+
+The distinction must remain visible in mentor workflows.
+
+---
+
+# 73. Definition Change Validation
+
+If a definition changes:
+
+```text
+student instance remains stable
++
+notification/change opportunity
+```
+
+There must be no silent mutation representation.
+
+---
+
+# 74. Security Validation
+
+Stitch must not introduce:
+
+- exposed secrets;
+- provider keys;
+- unrestricted trace views;
+- insecure download controls;
+- client-only authorization assumptions.
+
+---
+
+# 75. Admin Validation
+
+Admin designs must remain governance-oriented.
+
+Do not design an “impersonate user” interaction unless separately approved by architecture.
+
+---
+
+# 76. Data Validation
+
+Stitch mock data must be plausible enough to test layout.
+
+Avoid:
+
+- every name having the same length;
+- every status being successful;
+- empty dashboards;
+- unrealistically short titles.
+
+---
+
+# 77. Content Resilience Validation
+
+Designs should be tested with:
+
+- long titles;
+- long descriptions;
+- long names;
+- missing metadata;
+- multiple statuses;
+- large numbers;
+- large tables.
+
+---
+
+# 78. Responsive Content Resilience
+
+Validate that long content does not:
+
+- overlap;
+- overflow;
+- push critical actions off-screen;
+- break cards;
+- break tables.
+
+---
+
+# 79. Empty State Validation
+
+Every collection page should define an empty state where meaningful.
+
+Examples:
+
+```text
+No projects
+No tasks
+No risks
+No documents
+No notifications
+No help requests
+```
+
+---
+
+# 80. Empty State Action Validation
+
+Where a user can create/populate the resource, the empty state should provide the appropriate next action.
+
+---
+
+# 81. Loading State Validation
+
+Loading designs should preserve page structure and avoid unnecessary full-screen blockers.
+
+---
+
+# 82. Error State Validation
+
+Errors should be contextual and recoverable where possible.
+
+---
+
+# 83. Success State Validation
+
+Success should be visible in canonical state, not only transient notification.
+
+---
+
+# 84. Destructive Action Validation
+
+Confirmations should explain consequences.
+
+Stitch must not make destructive actions visually easy to trigger accidentally.
+
+---
+
+# 85. Form Validation
+
+Validate:
+
+- labels;
+- required state;
+- errors;
+- disabled state;
+- submitting;
+- success;
+- server errors.
+
+---
+
+# 86. Search Validation
+
+Validate:
+
+- debounce representation;
+- loading;
+- result grouping;
+- empty;
+- error;
+- keyboard behavior;
+- mobile.
+
+---
+
+# 87. Notification Validation
+
+Validate:
+
+- live arrival;
+- unread count;
+- list;
+- deep-link;
+- mobile drawer/route;
+- accessibility.
+
+---
+
+# 88. Table Validation Checklist
+
+Every table should answer:
+
+```text
+What does each row represent?
+What is the primary identity?
+What is the important status?
+What actions exist?
+How does it work on mobile?
+How does keyboard navigation work?
+What happens when empty?
+What happens when loading?
+What happens when an error occurs?
+```
+
+---
+
+# 89. Dashboard Validation Checklist
+
+Every dashboard should answer:
+
+```text
+What decisions does this dashboard support?
+Which metric is most important?
+What is the freshness?
+What if one widget fails?
+What happens on mobile?
+What is the accessible summary?
+```
+
+---
+
+# 90. AI Screen Validation Checklist
+
+Every AI screen should answer:
+
+```text
+What is happening?
+Why is it happening?
+What stage is active?
+Can the user cancel?
+Can the user retry?
+What happens if the user leaves?
+What is the final result?
+What was validated?
+```
+
+---
+
+# 91. Document Screen Validation Checklist
+
+Every document screen should answer:
+
+```text
+What document is this?
+What version?
+What status?
+When generated?
+Can it be previewed?
+Can it be downloaded?
+Is it processing?
+Did generation fail?
+```
+
+---
+
+# 92. Accessibility Content Validation
+
+Text used for labels and descriptions must be meaningful.
+
+Avoid:
+
+```text
+Click here
+More
+Thing
+Action
+```
+
+without context.
+
+---
+
+# 93. Interaction Consistency
+
+The same action should look and behave consistently across GrowFlow.
+
+Examples:
+
+```text
+Edit
+Delete
+Share
+Retry
+Cancel
+Save
+Generate
+```
+
+---
+
+# 94. Button Hierarchy Validation
+
+Primary, secondary, tertiary, destructive actions must follow the component system.
+
+Do not make every action a primary CTA.
+
+---
+
+# 95. Icon Consistency
+
+Use one coherent icon family.
+
+Do not mix unrelated icon styles.
+
+---
+
+# 96. Radius Validation
+
+Use canonical radius tokens.
+
+Do not introduce arbitrary:
+
+```text
+24px
+32px
+40px
+```
+
+rounding merely for visual trend.
+
+---
+
+# 97. Shadow Validation
+
+Use restrained elevation.
+
+Avoid:
+
+```text
+heavy card shadows
+glowing shadows
+floating-everything
+```
+
+---
+
+# 98. Gradient Validation
+
+Gradients are not part of the default GrowFlow visual language.
+
+Use only when explicitly justified by approved brand storytelling.
+
+---
+
+# 99. Glassmorphism Validation
+
+Glassmorphism is not a default pattern.
+
+Avoid translucent frosted panels that reduce clarity or contrast.
+
+---
+
+# 100. Background Decoration Validation
+
+Avoid:
+
+- animated backgrounds;
+- excessive blobs;
+- noise overlays;
+- decorative grids;
+- unnecessary particles.
+
+---
+
+# 101. Image-to-Content Ratio
+
+Public storytelling may use larger imagery.
+
+Authenticated interfaces should prioritize information over decorative imagery.
+
+---
+
+# 102. Responsive Image Cropping
+
+Important subject matter must not be accidentally cropped on mobile.
+
+---
+
+# 103. Font Loading Validation
+
+Manrope must load efficiently.
+
+Fallback typography must remain readable.
+
+---
+
+# 104. Performance Validation
+
+Stitch designs should not imply impossible performance requirements.
+
+Avoid excessive:
+
+- simultaneous animation;
+- huge imagery;
+- video backgrounds;
+- complex decorative effects.
+
+---
+
+# 105. Accessibility + Performance
+
+Accessibility mechanisms must remain performant.
+
+Avoid excessive live-region updates or DOM churn.
+
+---
+
+# 106. Behavioral Validation
+
+A page design is valid only if its behavior can be mapped to:
+
+```text
+Phase 06F state model
+```
+
+No design may require an undefined state.
+
+---
+
+# 107. Component Mapping Validation
+
+Every significant UI region should map to:
+
+```text
+Phase 06D component
+```
+
+or have an explicit reason for being page-specific.
+
+---
+
+# 108. Token Mapping Validation
+
+Every significant visual property should map to:
+
+```text
+Phase 06C token
+```
+
+where a token exists.
+
+---
+
+# 109. Shell Mapping Validation
+
+Every authenticated page must map to:
+
+```text
+Phase 06E shell
+```
+
+and role navigation.
+
+---
+
+# 110. Route Mapping Validation
+
+Every page must map to:
+
+```text
+Phase 02 canonical route
+```
+
+or an explicitly approved route extension.
+
+---
+
+# 111. Backend Mapping Validation
+
+Every data-driven region must map to:
+
+```text
+Phase 05 backend/API/domain concept
+```
+
+The design must not invent domain entities.
+
+---
+
+# 112. AI Mapping Validation
+
+Every AI surface must map to:
+
+```text
+Phase 05 AI execution architecture
+```
+
+No direct provider interaction should be implied.
+
+---
+
+# 113. Event Mapping Validation
+
+Live UI must map to:
+
+```text
+SSE/event behavior
+```
+
+where applicable.
+
+---
+
+# 114. Responsive Mapping Validation
+
+Every page design must map to:
+
+```text
+desktop
+tablet
+mobile
+```
+
+---
+
+# 115. Accessibility Mapping Validation
+
+Every page design must map to:
+
+```text
+semantic structure
+keyboard
+focus
+labels
+dynamic status
+reduced motion
+```
+
+---
+
+# 116. Stitch Prompt Architecture
+
+Each page-specific Stitch prompt should contain:
+
+```text
+1. Page identity
+2. Route
+3. Role
+4. Purpose
+5. Information hierarchy
+6. Shell requirements
+7. Components
+8. Data/content
+9. Actions
+10. States
+11. Responsive behavior
+12. Accessibility
+13. Motion
+14. Visual constraints
+15. Anti-patterns
+16. Related pages
+```
+
+---
+
+# 117. Stitch Prompt Size Rule
+
+Do not feed the entire GrowFlow architecture into every prompt.
+
+Each prompt should contain:
+
+```text
+global foundation summary
++
+page-specific requirements
+```
+
+The full architecture remains in project documentation.
+
+---
+
+# 118. Stitch Prompt Authority
+
+Page prompts may specialize the foundation.
+
+They may not contradict:
+
+- tokens;
+- component system;
+- shell;
+- behavior;
+- responsive rules;
+- accessibility;
+- backend semantics.
+
+---
+
+# 119. Stitch Iteration Rule
+
+Stitch output is treated as:
+
+```text
+proposal
+→ review
+→ correction
+→ approval
+```
+
+not automatically authoritative.
+
+---
+
+# 120. Stitch Drift Detection
+
+After each page is generated, compare against:
+
+```text
+tokens
+components
+shell
+behavior
+responsive
+accessibility
+route
+```
+
+Any deviation must be explicitly reviewed.
+
+---
+
+# 121. Page Approval
+
+A page is approved only after:
+
+```text
+Visual review
++
+Behavior review
++
+Responsive review
++
+Accessibility review
++
+Architecture review
+```
+
+---
+
+# 122. Page Rejection Criteria
+
+Reject a Stitch page if it:
+
+- invents a new visual language;
+- violates shell rules;
+- creates inaccessible controls;
+- hides critical mobile functionality;
+- invents domain semantics;
+- uses fake AI states;
+- breaks responsive behavior;
+- introduces unapproved assets;
+- violates role permissions.
+
+---
+
+# 123. Page Documentation Requirement
+
+Every approved page must eventually have a page specification containing:
+
+```text
+Page ID
+Name
+Route
+Role
+Purpose
+Entry
+Exit
+Layout
+Regions
+Components
+Data
+Server State
+UI State
+Streaming State
+Actions
+Permissions
+API
+SSE
+Loading
+Empty
+Error
+Success
+AI State
+Responsive
+Accessibility
+Analytics
+Security
+Related Pages
+Implementation Notes
+```
+
+---
+
+# 124. Page Coverage Tracking
+
+Maintain a page coverage matrix:
+
+| Page | Designed | Responsive | Accessible | Behavior | Approved |
+|---|---|---|---|---|---|
+| P01 | ☐ | ☐ | ☐ | ☐ | ☐ |
+| P02 | ☐ | ☐ | ☐ | ☐ | ☐ |
+| Student pages | ☐ | ☐ | ☐ | ☐ | ☐ |
+| Mentor pages | ☐ | ☐ | ☐ | ☐ | ☐ |
+| Admin pages | ☐ | ☐ | ☐ | ☐ | ☐ |
+| System states | ☐ | ☐ | ☐ | ☐ | ☐ |
+
+The actual tracker should enumerate every canonical Page ID from Phase 01.
+
+---
+
+# 125. Foundation Validation Matrix
+
+| Area | Source | Validation |
+|---|---|---|
+| Brand | 06B | identity consistency |
+| Typography | 06C | type hierarchy |
+| Color | 06C | semantic token usage |
+| Components | 06D | component reuse |
+| Shell | 06E | navigation consistency |
+| Behavior | 06F | state coverage |
+| Responsive | 06G | breakpoint behavior |
+| Accessibility | 06G | keyboard/AT |
+| Backend | 05 | domain/API alignment |
+| Pages | 01 | complete coverage |
+| Routes | 02 | canonical mapping |
+| Stitch | 06H | prompt readiness |
+
+---
+
+# 126. Foundation Gate 01 — Brand
+
+Pass criteria:
+
+- logo direction frozen;
+- wordmark direction frozen;
+- Manrope frozen;
+- accent frozen;
+- role branding prohibited;
+- AI visual language controlled.
+
+---
+
+# 127. Foundation Gate 02 — Tokens
+
+Pass criteria:
+
+- light tokens defined;
+- dark tokens defined;
+- typography defined;
+- spacing defined;
+- radius defined;
+- elevation defined;
+- motion defined;
+- responsive tokens defined.
+
+---
+
+# 128. Foundation Gate 03 — Components
+
+Pass criteria:
+
+- primitives defined;
+- controls defined;
+- forms defined;
+- feedback defined;
+- overlays defined;
+- navigation defined;
+- data components defined;
+- AI components defined;
+- workflow components defined.
+
+---
+
+# 129. Foundation Gate 04 — Shell
+
+Pass criteria:
+
+- global top nav defined;
+- workplace selector defined;
+- role sidebars defined;
+- mobile drawer defined;
+- search defined;
+- notifications defined;
+- profile/settings defined.
+
+---
+
+# 130. Foundation Gate 05 — Behavior
+
+Pass criteria:
+
+- state model defined;
+- API model defined;
+- SSE defined;
+- reconciliation defined;
+- async jobs defined;
+- AI workflows defined;
+- error/recovery defined;
+- permission behavior defined.
+
+---
+
+# 131. Foundation Gate 06 — Responsive
+
+Pass criteria:
+
+- mobile defined;
+- tablet defined;
+- desktop defined;
+- tables defined;
+- forms defined;
+- dashboards defined;
+- documents defined;
+- workflows defined.
+
+---
+
+# 132. Foundation Gate 07 — Accessibility
+
+Pass criteria:
+
+- semantic structure;
+- keyboard;
+- focus;
+- labels;
+- forms;
+- dialogs;
+- dynamic state;
+- reduced motion;
+- zoom/reflow;
+- screen-reader strategy.
+
+---
+
+# 133. Foundation Gate 08 — Stitch
+
+Pass criteria:
+
+- compact prompt strategy defined;
+- global foundation summary defined;
+- page prompt template defined;
+- anti-drift rules defined;
+- review process defined;
+- approval process defined.
+
+---
+
+# 134. Validation of Existing Assets
+
+Before page design begins, confirm:
+
+```text
+brand assets
+fonts
+reference images
+component references
+design documentation
+Stitch instructions
+```
+
+are organized and discoverable.
+
+---
+
+# 135. Asset Naming
+
+Assets should use predictable names.
+
+Preferred:
+
+```text
+growflow-logo-primary
+growflow-logo-mark
+growflow-logo-monochrome
+growflow-favicon
+growflow-manrope
+growflow-reference-hero-01
+```
+
+Avoid meaningless names such as:
+
+```text
+final2
+newnew
+image7
+latest
+```
+
+---
+
+# 136. Asset Variant Strategy
+
+Logo variants should include where applicable:
+
+```text
+light background
+dark background
+monochrome
+mark-only
+wordmark
+combined
+favicon/app icon
+```
+
+---
+
+# 137. Font Package Validation
+
+The font package must clearly identify:
+
+```text
+family
+weight
+style
+file
+usage
+```
+
+Only approved Manrope variants should be used.
+
+---
+
+# 138. Reference Image Governance
+
+Reference images are:
+
+```text
+inspiration
+```
+
+not:
+
+```text
+literal templates
+```
+
+Stitch should derive:
+
+- composition;
+- hierarchy;
+- mood;
+- interaction ideas.
+
+It must not copy another product's identity.
+
+---
+
+# 139. Reference Image Mapping
+
+Each important reference should have a documented lesson:
+
+```text
+reference
+→ what is useful
+→ what is not to copy
+```
+
+---
+
+# 140. Figma/Design-System Readiness
+
+If a Figma design-system asset is prepared, it should map to:
+
+- tokens;
+- components;
+- typography;
+- colors;
+- spacing;
+- states.
+
+Figma becomes a design representation, not a replacement for project architecture.
+
+---
+
+# 141. Stitch-to-Figma Relationship
+
+Recommended:
+
+```text
+Foundation
+ ↓
+Stitch exploration
+ ↓
+Approved design
+ ↓
+Figma/design-system representation where needed
+ ↓
+Implementation
+```
+
+Do not maintain contradictory token values in multiple systems.
+
+---
+
+# 142. Stitch-to-Code Relationship
+
+The target relationship is:
+
+```text
+Approved Stitch design
++
+canonical tokens/components
++
+page specification
+ ↓
+frontend implementation
+```
+
+Stitch should not dictate backend architecture.
+
+---
+
+# 143. Design-to-Code Traceability
+
+Every major page should be traceable:
+
+```text
+Page ID
+→ route
+→ Stitch prompt
+→ approved design
+→ component mapping
+→ implementation
+→ tests
+```
+
+---
+
+# 144. Foundation Risk Register
+
+Before Stitch, explicitly watch for:
+
+| Risk | Control |
+|---|---|
+| Visual drift | token governance |
+| Component duplication | component catalog |
+| Role theme divergence | unified theme rule |
+| Mobile neglect | responsive gate |
+| Accessibility gaps | accessibility gate |
+| Fake AI UX | behavior contract |
+| Backend mismatch | architecture mapping |
+| Route mismatch | IA mapping |
+| Asset inconsistency | asset governance |
+| Stitch overreach | prompt constraints |
+
+---
+
+# 145. High-Risk Areas
+
+Extra review is required for:
+
+- application shell;
+- assessment;
+- blueprint generation;
+- project-change workflow;
+- AI Mentor;
+- admin observability;
+- dense tables;
+- document viewer;
+- investigation screens;
+- mobile navigation.
+
+---
+
+# 146. Shell Must Be Designed First
+
+Before page-specific Stitch work, the shell should be represented as a stable reference.
+
+This includes:
+
+```text
+TopNav
+Workplace Selector
+Sidebar
+Main content
+Mobile drawer
+```
+
+Page designs should reuse this shell.
+
+---
+
+# 147. Component Reference Screens
+
+Before page-specific work, create representative references for:
+
+```text
+buttons
+forms
+tables
+cards/panels
+dialogs
+drawers
+tabs
+badges
+alerts
+AI components
+document components
+workflow components
+```
+
+These establish visual consistency.
+
+---
+
+# 148. State Reference Screens
+
+Create representative references for:
+
+```text
+loading
+empty
+error
+success
+disabled
+streaming
+```
+
+This prevents Stitch from inventing state styling repeatedly.
+
+---
+
+# 149. Responsive Reference Screens
+
+Create representative references for:
+
+```text
+desktop shell
+tablet shell
+mobile shell
+```
+
+and major responsive components.
+
+---
+
+# 150. Accessibility Reference Screens
+
+Create representative examples for:
+
+- focus;
+- keyboard states;
+- errors;
+- dialog focus;
+- selected tabs;
+- accessible status;
+- reduced motion.
+
+---
+
+# 151. Foundation Validation Workshop
+
+Before starting page design, perform a structured review:
+
+```text
+Step 1 — Brand
+Step 2 — Tokens
+Step 3 — Components
+Step 4 — Shell
+Step 5 — Behavior
+Step 6 — Responsive
+Step 7 — Accessibility
+Step 8 — Stitch
+```
+
+Each step must produce:
+
+```text
+PASS
+or
+BLOCKED
+```
+
+---
+
+# 152. Blocking Issues
+
+A blocking issue is any issue that could force widespread redesign.
+
+Examples:
+
+- uncertain typography;
+- uncertain navigation;
+- missing responsive strategy;
+- missing AI state model;
+- missing table strategy;
+- missing accessibility model;
+- contradictory tokens.
+
+---
+
+# 153. Non-Blocking Issues
+
+Examples:
+
+- minor spacing adjustment;
+- small icon preference;
+- copy refinement;
+- image crop refinement.
+
+Non-blocking issues may be handled during page design.
+
+---
+
+# 154. Foundation Change Control
+
+After 06H is frozen, foundational changes require explicit change control.
+
+A page-specific preference must not silently modify the global system.
+
+---
+
+# 155. Change Request Categories
+
+Changes should be classified:
+
+```text
+Brand
+Token
+Component
+Shell
+Behavior
+Responsive
+Accessibility
+Page-specific
+```
+
+---
+
+# 156. Change Impact
+
+Before accepting a foundation change, assess:
+
+```text
+affected pages
+affected components
+affected prompts
+affected Stitch designs
+affected implementation
+affected tests
+```
+
+---
+
+# 157. Backward Compatibility
+
+Changes should preserve existing approved pages unless explicit redesign is accepted.
+
+---
+
+# 158. Foundation Freeze Rule
+
+Once 06H is frozen:
+
+> **Page design begins from the foundation; the foundation does not evolve casually because of individual page preferences.**
+
+---
+
+# 159. Page-Specific Exceptions
+
+Exceptions are allowed only when:
+
+- the page genuinely requires different behavior;
+- the reason is documented;
+- accessibility is preserved;
+- responsive behavior is defined;
+- component reuse was considered.
+
+---
+
+# 160. Exception Documentation
+
+Every exception should record:
+
+```text
+Page
+Problem
+Why shared pattern is insufficient
+Approved alternative
+Impact
+```
+
+---
+
+# 161. Stitch Review Checklist
+
+For every generated page:
+
+### Visual
+- [ ] Soft Intelligence
+- [ ] Manrope
+- [ ] muted palette
+- [ ] one subtle accent
+- [ ] quiet surfaces
+- [ ] correct hierarchy
+
+### Components
+- [ ] canonical components
+- [ ] canonical states
+- [ ] consistent controls
+
+### Shell
+- [ ] correct shell
+- [ ] correct role navigation
+- [ ] correct Workplace behavior
+
+### Behavior
+- [ ] loading
+- [ ] empty
+- [ ] error
+- [ ] success
+- [ ] streaming where relevant
+
+### Responsive
+- [ ] desktop
+- [ ] tablet
+- [ ] mobile
+
+### Accessibility
+- [ ] keyboard
+- [ ] focus
+- [ ] labels
+- [ ] semantic structure
+- [ ] reduced motion
+- [ ] non-color status
+
+### Architecture
+- [ ] route correct
+- [ ] domain meaning correct
+- [ ] permissions correct
+- [ ] API/state assumptions correct
+
+---
+
+# 162. Final Stitch Prompt Template
+
+Every page prompt should follow:
+
+```text
+PAGE
+- Page ID
+- Page name
+- Route
+- Role
+
+PURPOSE
+- User goal
+- Primary decision/action
+
+GLOBAL FOUNDATION
+- Soft Intelligence
+- Manrope
+- warm light / charcoal dark
+- muted palette
+- one subtle accent
+- canonical shell
+- canonical components
+
+LAYOUT
+- hierarchy
+- regions
+- density
+- primary/secondary content
+
+DATA
+- resources
+- key fields
+- realistic content characteristics
+
+ACTIONS
+- primary
+- secondary
+- destructive
+- navigation
+
+STATES
+- loading
+- empty
+- error
+- success
+- streaming/processing
+
+RESPONSIVE
+- desktop
+- tablet
+- mobile
+
+ACCESSIBILITY
+- semantic structure
+- keyboard
+- focus
+- labels
+- status
+- reduced motion
+
+MOTION
+- Float → Settle where appropriate
+- subtle physical behavior
+
+SECURITY
+- permission constraints
+- sensitive content boundaries
+
+ANTI-PATTERNS
+- prohibited visual/behavioral patterns
+```
+
+---
+
+# 163. Foundation Validation Result Standard
+
+A foundation area receives:
+
+```text
+PASS
+```
+
+only when implementation implications are clear.
+
+Use:
+
+```text
+BLOCKED
+```
+
+when an unresolved decision could cause downstream redesign.
+
+Do not mark uncertain areas as PASS.
+
+---
+
+# 164. Final Readiness Criteria
+
+GrowFlow is Stitch-ready only when:
+
+1. Brand is stable.
+2. Typography is stable.
+3. Tokens are stable.
+4. Components are stable.
+5. Shell is stable.
+6. Behavior is stable.
+7. Responsive rules are stable.
+8. Accessibility rules are stable.
+9. Routes are stable.
+10. Page inventory is stable.
+11. AI states are stable.
+12. Async workflows are stable.
+13. Asset strategy is stable.
+14. Stitch prompt structure is stable.
+15. Review process is defined.
+
+---
+
+# 165. Stitch Readiness Gate
+
+Final gate:
+
+```text
+BRAND            PASS
+TYPOGRAPHY       PASS
+TOKENS           PASS
+COMPONENTS       PASS
+SHELL            PASS
+BEHAVIOR         PASS
+RESPONSIVE       PASS
+ACCESSIBILITY    PASS
+ROUTES           PASS
+PAGE INVENTORY   PASS
+AI STATES        PASS
+ASYNC WORKFLOWS  PASS
+ASSETS           PASS
+PROMPTS          PASS
+REVIEW PROCESS   PASS
+```
+
+All must be PASS before page-by-page Stitch design begins.
+
+---
+
+# 166. What Stitch Is Responsible For
+
+Stitch is responsible for:
+
+- visual exploration;
+- page composition;
+- layout;
+- hierarchy;
+- responsive visual interpretation;
+- visual interaction representation.
+
+---
+
+# 167. What Stitch Is Not Responsible For
+
+Stitch is not responsible for:
+
+- backend architecture;
+- database design;
+- authorization;
+- canonical domain state;
+- AI orchestration;
+- provider selection;
+- persistence;
+- job execution;
+- security architecture;
+- authoritative business logic.
+
+---
+
+# 168. Design Authority
+
+The final authority hierarchy for visual implementation is:
+
+```text
+Frozen GrowFlow foundation
+        ↓
+Approved page specification
+        ↓
+Approved Stitch design
+        ↓
+Frontend implementation
+```
+
+---
+
+# 169. Behavioral Authority
+
+Behavior remains:
+
+```text
+Phase 05
++
+Phase 06F
+```
+
+Stitch cannot redefine behavior.
+
+---
+
+# 170. Accessibility Authority
+
+Accessibility remains:
+
+```text
+Phase 06G
+```
+
+Stitch cannot trade accessibility for visual aesthetics.
+
+---
+
+# 171. Responsive Authority
+
+Responsive behavior remains:
+
+```text
+Phase 06G
+```
+
+Stitch cannot invent arbitrary breakpoint systems.
+
+---
+
+# 172. Component Authority
+
+Component behavior remains:
+
+```text
+Phase 06D
+```
+
+Stitch should compose approved components.
+
+---
+
+# 173. Token Authority
+
+Visual tokens remain:
+
+```text
+Phase 06C
+```
+
+Stitch must use their intended semantic roles.
+
+---
+
+# 174. Shell Authority
+
+Navigation and shell remain:
+
+```text
+Phase 06E
+```
+
+Stitch page designs must fit the shell.
+
+---
+
+# 175. Route Authority
+
+Routes remain:
+
+```text
+Phase 02
+```
+
+Stitch page names must not silently create alternate information architecture.
+
+---
+
+# 176. Page Authority
+
+Page coverage remains:
+
+```text
+Phase 01
+```
+
+No canonical page may be lost.
+
+---
+
+# 177. Foundation Validation Summary
+
+The validated system is:
+
+```text
+Brand
+ ↓
+Tokens
+ ↓
+Components
+ ↓
+Shell
+ ↓
+Behavior
+ ↓
+Responsive
+ ↓
+Accessibility
+ ↓
+Stitch
+```
+
+This sequence prevents visual work from becoming disconnected from implementation.
+
+---
+
+# 178. Final Freeze Statement
+
+**Phase 06H — Stitch Foundation Validation is FROZEN as the final pre-Stitch validation gate.**
+
+The foundation is now defined as a controlled system rather than a collection of visual preferences.
+
+The purpose of 06H is to ensure that when page-by-page Stitch work begins:
+
+- the visual identity is already fixed;
+- the design tokens are already fixed;
+- the components are already defined;
+- the shell is already defined;
+- behavior is already defined;
+- responsive behavior is already defined;
+- accessibility is already defined;
+- routes are already defined;
+- page coverage is already defined;
+- AI/async states are already defined;
+- Stitch is constrained to visual composition rather than architecture invention.
+
+The next phase is:
+
+# **06I — Page-by-Page Design**
+
+Each page will be handled from the canonical Page ID and route through:
+
+```text
+Page Specification
+ ↓
+Compact Stitch Prompt
+ ↓
+Stitch Generation
+ ↓
+Visual Review
+ ↓
+Behavior Review
+ ↓
+Responsive Review
+ ↓
+Accessibility Review
+ ↓
+Architecture Review
+ ↓
+Approval
+```
+
+---
+
+# 179. Phase 06H Completion Checklist
+
+- [x] Brand validation defined
+- [x] Typography validation defined
+- [x] Color validation defined
+- [x] Surface validation defined
+- [x] Card validation defined
+- [x] Table validation defined
+- [x] Motion validation defined
+- [x] Public website validation defined
+- [x] Authenticated workspace validation defined
+- [x] Login validation defined
+- [x] Dashboard validation defined
+- [x] Hero validation defined
+- [x] Image validation defined
+- [x] Asset validation defined
+- [x] Component validation defined
+- [x] Shell validation defined
+- [x] Workplace selector validation defined
+- [x] Role-theme validation defined
+- [x] Search validation defined
+- [x] Notification validation defined
+- [x] Route validation defined
+- [x] Page inventory validation defined
+- [x] Student coverage validation defined
+- [x] Mentor coverage validation defined
+- [x] Admin coverage validation defined
+- [x] System-state coverage defined
+- [x] Workflow coverage defined
+- [x] Assessment validation defined
+- [x] Blueprint validation defined
+- [x] Project-change validation defined
+- [x] Document validation defined
+- [x] AI Mentor validation defined
+- [x] Responsive validation defined
+- [x] Accessibility validation defined
+- [x] Keyboard validation defined
+- [x] Screen-reader validation defined
+- [x] Focus validation defined
+- [x] Reduced-motion validation defined
+- [x] AI-state validation defined
+- [x] Streaming validation defined
+- [x] Async validation defined
+- [x] Network validation defined
+- [x] Error-state validation defined
+- [x] Permission validation defined
+- [x] Conflict/version validation defined
+- [x] Project Definition/Instance validation defined
+- [x] Security validation defined
+- [x] Data/content resilience defined
+- [x] Stitch prompt architecture defined
+- [x] Stitch iteration/review defined
+- [x] Asset governance defined
+- [x] Figma relationship defined
+- [x] Stitch-to-code relationship defined
+- [x] Design-to-code traceability defined
+- [x] Risk register defined
+- [x] Foundation gates defined
+- [x] Change-control rules defined
+- [x] Final readiness criteria defined
+- [x] Final freeze defined

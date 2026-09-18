@@ -1,0 +1,3126 @@
+# GrowFlow — Phase 06D
+# Core Component System Specification
+
+**Status:** FROZEN / AUTHORITATIVE after acceptance  
+**Phase:** 06D — Core Component System  
+**Project:** GrowFlow  
+**Design System:** Soft Intelligence  
+**Canonical Typeface:** Manrope  
+**Brand Direction:** Connected Flow + Abstract G  
+**Primary Accent:** `#6F7F63`  
+**Depends On:** Phase 03, Phase 05, Phase 06A, Phase 06B, Phase 06C
+
+---
+
+## 0. Purpose
+
+Phase 06D converts the frozen GrowFlow design-token system into a reusable, implementation-grade component system.
+
+The objective is to establish **one component language** that every public page, authenticated workplace, workflow, dashboard, document surface, AI interface, and administrative interface can consume.
+
+This phase defines:
+
+- component taxonomy
+- component responsibilities
+- component anatomy
+- variants
+- sizes
+- states
+- interaction behavior
+- accessibility behavior
+- responsive behavior
+- composition rules
+- data behavior
+- AI behavior
+- loading/error/empty behavior
+- implementation boundaries
+- component ownership
+- naming conventions
+- testing requirements
+- Storybook/design-system expectations
+- Stitch mapping
+- prohibited patterns
+- Definition of Done
+
+This document does **not** define individual product pages. Page-specific composition belongs to Phase 06I and later page specifications.
+
+---
+
+# 1. Component-System Philosophy
+
+GrowFlow follows:
+
+```text
+Tokens
+  ↓
+Primitive Components
+  ↓
+Composite Components
+  ↓
+Domain Components
+  ↓
+Page Composition
+```
+
+The component system must make correct design the easiest implementation path.
+
+A developer should normally be able to construct a page from existing components instead of creating one-off UI.
+
+---
+
+# 2. Core Principles
+
+## 2.1 Reuse Before Reinvention
+
+Before creating a new component:
+
+1. Search the component system.
+2. Check whether an existing component supports the need.
+3. Check whether a variant is sufficient.
+4. Check whether composition solves the problem.
+5. Only then propose a new component.
+
+## 2.2 Components Have Responsibilities
+
+A component should have one clear responsibility.
+
+Avoid components that simultaneously own:
+
+- routing
+- API requests
+- business mutations
+- visual rendering
+- authorization logic
+- workflow orchestration
+
+Domain containers may coordinate these concerns, but visual components should remain reusable.
+
+## 2.3 Components Are Not Pages
+
+A component:
+
+- renders a reusable UI concept
+- exposes controlled props/state
+- does not own arbitrary page layout
+- does not silently fetch unrelated data
+
+A page:
+
+- owns route context
+- composes components
+- coordinates page data
+- handles page-level workflow state
+
+---
+
+# 3. Component Architecture
+
+Recommended hierarchy:
+
+```text
+Design Tokens
+    ↓
+Foundations
+    ↓
+Primitive Components
+    ↓
+Composite Components
+    ↓
+Domain Components
+    ↓
+Workflow Components
+    ↓
+Pages
+```
+
+---
+
+# 4. Component Categories
+
+Canonical categories:
+
+```text
+FOUNDATION
+CONTROLS
+FORMS
+NAVIGATION
+FEEDBACK
+OVERLAYS
+DATA DISPLAY
+DASHBOARDS
+DOCUMENTS
+AI
+WORKFLOW
+PROJECT DOMAIN
+PEOPLE / GROUPS
+SYSTEM
+```
+
+---
+
+# 5. Foundation Components
+
+Foundation components establish basic reusable visual behavior.
+
+Required foundation components:
+
+- Box / Surface
+- Stack
+- Inline
+- Grid
+- Container
+- Divider
+- Text
+- Heading
+- Icon
+- Link
+- VisuallyHidden
+
+These components consume tokens and should remain highly reusable.
+
+---
+
+# 6. Surface
+
+## Purpose
+
+Provides a semantic visual surface without forcing card-like styling.
+
+Variants:
+
+```text
+default
+secondary
+tertiary
+elevated
+inverse
+ai
+```
+
+Properties should control:
+
+- surface semantic
+- padding
+- radius
+- border
+- elevation
+
+Surface must not automatically imply a card.
+
+---
+
+# 7. Stack
+
+Purpose:
+
+Provide predictable vertical spacing.
+
+Supports:
+
+```text
+direction: column
+gap: token
+align
+justify
+wrap
+```
+
+Spacing must use the Phase 06C spacing scale.
+
+---
+
+# 8. Inline
+
+Purpose:
+
+Horizontal arrangement of components.
+
+Supports:
+
+- gap
+- alignment
+- wrapping
+- distribution
+
+Common uses:
+
+- action groups
+- metadata
+- filters
+- badges
+- navigation actions
+
+---
+
+# 9. Grid
+
+Supports:
+
+- responsive columns
+- gap tokens
+- alignment
+- dense layouts
+
+Grid must not encode page-specific business logic.
+
+---
+
+# 10. Container
+
+Provides controlled content width.
+
+Semantic sizes:
+
+```text
+readable
+standard
+wide
+full
+```
+
+The component must consume the canonical layout tokens.
+
+---
+
+# 11. Divider
+
+Variants:
+
+```text
+horizontal
+vertical
+subtle
+standard
+strong
+```
+
+Use for structural separation, not decoration.
+
+---
+
+# 12. Text
+
+Text supports semantic roles rather than arbitrary styling.
+
+Examples:
+
+```text
+body
+bodyLarge
+bodySmall
+caption
+metadata
+label
+```
+
+Color should be semantic.
+
+---
+
+# 13. Heading
+
+Heading component supports:
+
+```text
+h1
+h2
+h3
+h4
+h5
+h6
+```
+
+It should preserve semantic HTML.
+
+Visual size must not be confused with document hierarchy.
+
+---
+
+# 14. Icon
+
+A single coherent icon family is required.
+
+Icon component should support:
+
+- semantic name
+- size token
+- accessible label where needed
+- decorative mode
+- disabled state
+
+Decorative icons should not be announced by screen readers.
+
+---
+
+# 15. Link
+
+Link supports:
+
+```text
+default
+muted
+subtle
+inverse
+```
+
+States:
+
+```text
+hover
+focus
+visited where appropriate
+disabled only where semantically required
+```
+
+Links should navigate to canonical routes.
+
+---
+
+# 16. Controls
+
+Core controls:
+
+- Button
+- IconButton
+- ButtonGroup
+- LinkButton
+- Toggle
+- Checkbox
+- Radio
+- Switch
+- Select
+- Combobox
+- SegmentedControl
+- Tabs
+- Menu
+- Dropdown
+
+---
+
+# 17. Button
+
+## Variants
+
+```text
+primary
+secondary
+tertiary
+ghost
+destructive
+```
+
+## Sizes
+
+```text
+compact
+standard
+large
+```
+
+## States
+
+```text
+default
+hover
+active
+focus
+disabled
+loading
+```
+
+## Rules
+
+Primary action should be visually dominant.
+
+Avoid multiple competing primary buttons in one local action group.
+
+Loading state must preserve button width where practical.
+
+A loading button must not accept duplicate activation.
+
+---
+
+# 18. IconButton
+
+For icon-only actions.
+
+Required:
+
+- accessible label
+- tooltip where useful
+- minimum hit area
+- focus state
+- disabled state
+
+IconButton must not be used when the action meaning cannot be understood from an icon.
+
+---
+
+# 19. ButtonGroup
+
+Groups related actions.
+
+Supports:
+
+```text
+horizontal
+vertical
+compact
+standard
+```
+
+Use sparingly.
+
+Destructive actions should not be visually ambiguous with ordinary actions.
+
+---
+
+# 20. Toggle
+
+Represents a reversible on/off choice.
+
+Use only when the user understands the state as a binary setting.
+
+Do not use Toggle where an immediate action button is more appropriate.
+
+---
+
+# 21. Checkbox
+
+Used for independent multi-select choices.
+
+Must support:
+
+```text
+unchecked
+checked
+indeterminate
+disabled
+focus
+error
+```
+
+Indeterminate state is essential for hierarchical selection.
+
+---
+
+# 22. Radio
+
+Used for mutually exclusive choices.
+
+Do not use radio groups for large searchable collections; use Combobox/select patterns instead.
+
+---
+
+# 23. Switch
+
+Used primarily for settings or persistent enable/disable behavior.
+
+Difference from Toggle:
+
+- Switch communicates persistent setting state.
+- Toggle may communicate local interaction state.
+
+---
+
+# 24. Select
+
+Used for bounded options.
+
+Required:
+
+- label
+- selected value
+- placeholder where needed
+- disabled
+- error
+- loading where options are asynchronous
+- keyboard interaction
+
+---
+
+# 25. Combobox
+
+Used for:
+
+- search + selection
+- large option lists
+- people selection
+- project selection
+- resource selection
+
+Must support:
+
+- keyboard navigation
+- filtering
+- selected state
+- loading
+- no results
+- error
+- clear action where appropriate
+
+---
+
+# 26. Segmented Control
+
+Used for switching between closely related display modes.
+
+Examples:
+
+```text
+List | Board | Timeline
+```
+
+Do not use as primary application navigation.
+
+---
+
+# 27. Tabs
+
+Tabs represent sibling views within one resource context.
+
+Rules:
+
+- preserve route context where tabs are route-addressable
+- selected state must be clear
+- keyboard navigation required
+- avoid excessive tab counts
+- mobile may scroll or transform presentation
+
+Tabs must not replace unrelated global navigation.
+
+---
+
+# 28. Menu / Dropdown
+
+Used for compact action collections.
+
+Must support:
+
+- keyboard navigation
+- focus management
+- escape-to-close
+- outside interaction
+- disabled items
+- destructive item styling where appropriate
+
+---
+
+# 29. Form System
+
+Core components:
+
+```text
+FormField
+Label
+HelperText
+ErrorText
+Input
+Textarea
+Select
+Combobox
+CheckboxField
+RadioGroup
+SwitchField
+DateInput
+FileInput
+```
+
+---
+
+# 30. FormField
+
+Provides common field structure:
+
+```text
+Label
+Input
+Helper
+Error
+```
+
+The component must maintain consistent spacing.
+
+---
+
+# 31. Input
+
+Variants:
+
+```text
+standard
+large
+compact
+```
+
+States:
+
+```text
+default
+hover
+focus
+disabled
+error
+success
+readonly
+```
+
+Inputs must expose labels through accessible associations.
+
+---
+
+# 32. Textarea
+
+Supports:
+
+- minimum height
+- resize behavior
+- character count where required
+- error state
+- loading/disabled state
+
+Do not automatically resize without a clear UX reason.
+
+---
+
+# 33. Date / Time Input
+
+Required for:
+
+- timeline planning
+- milestones
+- task scheduling
+- project planning
+
+Must handle:
+
+- locale-aware presentation
+- keyboard input where possible
+- invalid dates
+- timezone semantics where relevant
+
+Canonical backend dates remain authoritative.
+
+---
+
+# 34. File Input
+
+Supports:
+
+- drag/drop where appropriate
+- browse
+- upload progress
+- validation
+- failure
+- retry
+- remove/cancel
+
+Must clearly show accepted file types and size limits.
+
+---
+
+# 35. Feedback Components
+
+Required:
+
+- Alert
+- Banner
+- Toast
+- InlineMessage
+- Badge
+- StatusIndicator
+- Progress
+- Spinner
+- Skeleton
+- EmptyState
+- ErrorState
+- SuccessState
+- WarningState
+
+---
+
+# 36. Alert
+
+For contextual persistent messages.
+
+Variants:
+
+```text
+info
+success
+warning
+danger
+ai
+```
+
+Alerts should include meaningful text and optional action.
+
+---
+
+# 37. Toast
+
+For transient feedback.
+
+Use for:
+
+- successful mutation
+- lightweight confirmation
+- recoverable non-blocking errors
+
+Do not use toast as the sole communication channel for critical errors.
+
+---
+
+# 38. Badge
+
+Used for compact semantic metadata.
+
+Examples:
+
+```text
+In Progress
+Completed
+At Risk
+Draft
+Approved
+```
+
+Badges should remain short.
+
+---
+
+# 39. StatusIndicator
+
+Represents current condition.
+
+Supports:
+
+- icon
+- label
+- semantic state
+- optional tooltip/detail
+
+Never rely on color alone.
+
+---
+
+# 40. Progress
+
+Types:
+
+```text
+determinate
+indeterminate
+stage
+```
+
+Determinate progress must use truthful values.
+
+AI workflows without known numerical progress should use stage or indeterminate representation.
+
+---
+
+# 41. Spinner
+
+Use for short operations.
+
+Do not use a spinner for long-running background jobs when a persistent execution state is more appropriate.
+
+---
+
+# 42. Skeleton
+
+Used while content structure is loading.
+
+Skeleton should resemble expected content geometry.
+
+Avoid skeletons that cause large layout shifts.
+
+---
+
+# 43. EmptyState
+
+Structure:
+
+```text
+Icon/illustration
+Heading
+Explanation
+Primary action
+Optional secondary action
+```
+
+Keep operational empty states concise.
+
+---
+
+# 44. ErrorState
+
+Must communicate:
+
+- what failed
+- whether the failure is recoverable
+- what the user can do
+- optional retry
+
+Differentiate:
+
+```text
+network
+permission
+validation
+backend
+AI
+processing
+```
+
+---
+
+# 45. SuccessState
+
+Used for meaningful completed workflows.
+
+Structure:
+
+```text
+status
+message
+next action
+```
+
+Avoid unnecessary celebration.
+
+---
+
+# 46. Overlay System
+
+Required:
+
+- Modal
+- Drawer
+- Popover
+- Tooltip
+- ContextMenu
+- CommandPalette
+
+---
+
+# 47. Modal
+
+Use for focused actions.
+
+Examples:
+
+- confirm delete
+- create task
+- add risk
+- assign student
+
+Modal requirements:
+
+- focus trap
+- escape behavior
+- restore focus
+- accessible name
+- clear primary/secondary actions
+
+---
+
+# 48. Drawer
+
+Use for:
+
+- mobile sidebar
+- contextual details
+- filters
+- quick inspection
+
+Drawer must manage:
+
+- focus
+- scroll
+- close behavior
+- responsive width
+- overlay
+
+---
+
+# 49. Popover
+
+For contextual floating content.
+
+Examples:
+
+- filter controls
+- quick metadata
+- action menus
+
+Do not use popovers for complex workflows.
+
+---
+
+# 50. Tooltip
+
+For:
+
+- unfamiliar icon-only actions
+- truncated metadata
+- concise contextual explanation
+
+Never place essential instructions only inside tooltips.
+
+---
+
+# 51. Command Palette
+
+Global search/command surface.
+
+Must support:
+
+- keyboard access
+- query
+- grouped results
+- recent/relevant results
+- loading
+- no results
+- permissions-aware results
+
+Search must remain authorization-aware.
+
+---
+
+# 52. Navigation Components
+
+Required:
+
+- TopNav
+- WorkplaceSelector
+- Sidebar
+- SidebarItem
+- Breadcrumbs
+- Pagination
+- Tabs
+- MobileNavDrawer
+
+These components implement the Phase 02 navigation architecture.
+
+---
+
+# 53. TopNav
+
+Authenticated:
+
+```text
+64px
+```
+
+Public:
+
+```text
+68–76px
+```
+
+Contains appropriate combination of:
+
+- GrowFlow identity
+- public navigation where applicable
+- Workplace
+- search
+- notifications
+- profile
+- Login
+- Sign Up
+
+---
+
+# 54. WorkplaceSelector
+
+Workplaces:
+
+```text
+BUILD
+SUPERVISE
+GOVERN
+```
+
+Logged out:
+
+- Student → student authentication
+- Mentor → mentor authentication
+- Admin → protected admin entry
+
+Logged in:
+
+- only authorized workplaces are actionable
+- unauthorized workplaces must not become a security bypass
+
+---
+
+# 55. Sidebar
+
+Default:
+
+```text
+248px
+```
+
+Collapsed:
+
+```text
+72px
+```
+
+Desktop collapse means compact navigation, not disappearance.
+
+Mobile converts sidebar into drawer.
+
+---
+
+# 56. Breadcrumbs
+
+Used where nested resource context benefits navigation.
+
+Example:
+
+```text
+Projects
+  /
+AI Study Assistant
+  /
+Tasks
+  /
+Task 12
+```
+
+Must reflect canonical routes.
+
+---
+
+# 57. Pagination
+
+Supports:
+
+- page navigation
+- next/previous
+- current page
+- total where known
+- compact mobile behavior
+
+Server pagination is authoritative for large collections.
+
+---
+
+# 58. Data Display Components
+
+Required:
+
+- Card
+- Metric
+- Table
+- DataTable
+- List
+- ListItem
+- DescriptionList
+- Timeline
+- ActivityItem
+- Avatar
+- AvatarGroup
+- Progress
+- Tree
+- FilterBar
+- SortControl
+- ColumnVisibilityControl
+
+---
+
+# 59. Card
+
+Card is a composition primitive, not the default page container.
+
+Supports:
+
+```text
+default
+interactive
+selected
+quiet
+elevated
+```
+
+Cards should remain visually quiet.
+
+---
+
+# 60. Metric
+
+For dashboard KPIs.
+
+Structure:
+
+```text
+label
+value
+trend/status
+supporting context
+```
+
+Do not use metrics without meaningful data.
+
+---
+
+# 61. Table
+
+Table is for structured comparison.
+
+Required capabilities:
+
+- header
+- body
+- row
+- cell
+- sorting
+- selection where required
+- hover
+- empty
+- loading
+- error
+- pagination where needed
+
+---
+
+# 62. DataTable
+
+Composite table supporting:
+
+- server pagination
+- sorting
+- filtering
+- row selection
+- column visibility
+- responsive behavior
+- bulk actions
+- loading
+- empty
+- error
+
+Large datasets must not require rendering every row at once.
+
+---
+
+# 63. List
+
+Used when information is primarily sequential rather than tabular.
+
+Supports:
+
+- item
+- metadata
+- action
+- selected state
+- loading
+- empty
+
+---
+
+# 64. DescriptionList
+
+Used for resource metadata.
+
+Examples:
+
+```text
+Project Owner
+Lifecycle
+Created
+Last Updated
+Technology
+Repository
+```
+
+---
+
+# 65. Timeline
+
+Used for:
+
+- roadmap
+- activity
+- milestones
+- lifecycle
+- execution history
+
+Must distinguish chronological order from progress.
+
+---
+
+# 66. ActivityItem
+
+Structure:
+
+```text
+actor
+action
+resource
+timestamp
+status
+optional detail
+```
+
+Activity is derived representation and must not become a canonical state store.
+
+---
+
+# 67. Avatar
+
+Sizes:
+
+```text
+24
+32
+40
+48
+64
+```
+
+Supports:
+
+- image
+- initials
+- fallback
+- status indicator
+- group composition
+
+---
+
+# 68. FilterBar
+
+Supports:
+
+- search
+- filters
+- sort
+- reset
+- active-filter indicators
+
+Filters should be represented in URL/query state when they materially affect a page view.
+
+---
+
+# 69. Dashboard Components
+
+Required:
+
+- DashboardGrid
+- MetricGroup
+- MetricCard
+- ChartContainer
+- TrendIndicator
+- HealthIndicator
+- ActivitySummary
+- ProgressSummary
+- RiskSummary
+- ExecutionSummary
+
+Dashboards must remain data-driven.
+
+---
+
+# 70. ChartContainer
+
+Provides:
+
+- title
+- context
+- legend
+- chart
+- loading
+- empty
+- error
+
+Charts must not become decorative wallpaper.
+
+---
+
+# 71. TrendIndicator
+
+Supports:
+
+```text
+positive
+negative
+neutral
+```
+
+Trend meaning must be explicitly defined.
+
+Do not assume upward always means good.
+
+---
+
+# 72. HealthIndicator
+
+Supports:
+
+```text
+healthy
+attention
+atRisk
+critical
+unknown
+```
+
+Health is distinct from task completion.
+
+---
+
+# 73. Document Components
+
+Required:
+
+- DocumentViewer
+- DocumentHeader
+- MarkdownRenderer
+- MarkdownHeading
+- MarkdownParagraph
+- MarkdownList
+- MarkdownTable
+- CodeBlock
+- InlineCode
+- DocumentVersionSelector
+- DocumentMetadata
+- DocumentToolbar
+- DocumentStatus
+
+---
+
+# 74. DocumentViewer
+
+Provides a consistent reading environment.
+
+Must support:
+
+- readable width
+- headings
+- navigation where appropriate
+- version context
+- loading
+- processing
+- error
+- generated state
+
+---
+
+# 75. MarkdownRenderer
+
+Must safely render Markdown.
+
+Rules:
+
+- sanitize unsafe content
+- preserve heading hierarchy
+- consistent spacing
+- accessible links
+- consistent code blocks
+- predictable tables
+
+---
+
+# 76. CodeBlock
+
+Supports:
+
+- language
+- copy action
+- line wrapping or horizontal scroll
+- loading
+- long-code usability
+
+Copy action should provide confirmation.
+
+---
+
+# 77. DocumentVersionSelector
+
+Documents are versioned.
+
+Selector must communicate:
+
+- current version
+- previous versions
+- created time
+- status where relevant
+
+---
+
+# 78. AI Components
+
+Required:
+
+- AIExecutionIndicator
+- AIStatus
+- AIMessage
+- AIMessageList
+- AIInput
+- AIStreamingResponse
+- AIToolExecution
+- AIContextIndicator
+- AISourceList
+- AIArtifactPreview
+- AIErrorState
+- AIApprovalState
+- AIJudgeResult
+- AIExecutionTimeline
+
+---
+
+# 79. AIExecutionIndicator
+
+Represents actual execution state:
+
+```text
+queued
+running
+streaming
+validating
+reviewing
+completed
+failed
+retrying
+cancelled
+```
+
+Must not imply progress that backend does not provide.
+
+---
+
+# 80. AIMessage
+
+Supports:
+
+```text
+user
+assistant
+system
+tool
+```
+
+AI output should visually remain distinguishable from canonical persisted artifacts.
+
+---
+
+# 81. AIStreamingResponse
+
+Streaming UI must:
+
+- show actual streaming state
+- allow cancellation where supported
+- handle disconnect
+- reconcile final server state
+- avoid fake typing animation
+
+A browser disconnect must not terminate the underlying job.
+
+---
+
+# 82. AIToolExecution
+
+Displays tool execution when the product chooses to expose it.
+
+Should show:
+
+- tool purpose
+- state
+- result summary
+- failure where relevant
+
+Avoid exposing sensitive internal information.
+
+---
+
+# 83. AIContextIndicator
+
+Shows the relevant context used by AI where useful.
+
+Examples:
+
+```text
+Project context
+Assessment
+Blueprint
+Documents
+Repository
+```
+
+Do not expose secrets or unauthorized project data.
+
+---
+
+# 84. AISourceList
+
+Used when AI responses contain traceable sources/context.
+
+Sources must be:
+
+- authorized
+- relevant
+- clearly attributed
+- safely rendered
+
+---
+
+# 85. AIArtifactPreview
+
+For generated:
+
+- blueprint
+- README
+- project documents
+- plans
+- structured outputs
+
+Must distinguish:
+
+```text
+Generated
+Validated
+Approved
+Persisted
+```
+
+---
+
+# 86. AIJudgeResult
+
+QA/Judge output must be presented as a quality/validation result, not merely another chat message.
+
+Possible categories:
+
+```text
+passed
+passedWithWarnings
+needsRevision
+failed
+```
+
+---
+
+# 87. Workflow Components
+
+Required:
+
+- Stepper
+- WorkflowHeader
+- WorkflowProgress
+- WorkflowState
+- WorkflowActions
+- ConfirmationStep
+- RecoveryPanel
+- ExecutionTimeline
+
+---
+
+# 88. Stepper
+
+Used for explicit multi-stage workflows.
+
+Examples:
+
+```text
+Assessment
+Blueprint
+Project Change
+Investigation
+```
+
+Stepper should show current stage and completed stages.
+
+---
+
+# 89. WorkflowState
+
+Canonical presentation states may include:
+
+```text
+notStarted
+queued
+running
+reviewing
+completed
+failed
+cancelled
+```
+
+The exact state must come from backend/application state.
+
+---
+
+# 90. RecoveryPanel
+
+For recoverable failures.
+
+Should communicate:
+
+- what failed
+- whether work was saved
+- retry
+- resume
+- alternative action
+
+---
+
+# 91. Project-Domain Components
+
+Required reusable project components:
+
+- ProjectHeader
+- ProjectLifecycle
+- ProjectSummary
+- ProjectHealth
+- ProjectProgress
+- ProjectMetadata
+- ProjectDefinitionSummary
+- ProjectInstanceSummary
+- TaskList
+- TaskItem
+- TaskStatus
+- TaskDetail
+- MilestoneList
+- MilestoneItem
+- MilestoneDetail
+- RiskList
+- RiskItem
+- RiskDetail
+- Roadmap
+- ProjectChangeSummary
+- ImpactSummary
+
+---
+
+# 92. ProjectHeader
+
+Contains contextual identity:
+
+- project name
+- lifecycle
+- status
+- owner/context
+- primary actions
+
+It must not become a giant decorative hero in operational workspace pages.
+
+---
+
+# 93. ProjectLifecycle
+
+Visualizes:
+
+```text
+IDEA
+→ ASSESSMENT
+→ BLUEPRINT
+→ PLANNING
+→ IMPLEMENTATION
+→ TESTING
+→ DEPLOYMENT
+→ COMPLETED
+```
+
+Must distinguish:
+
+- current
+- completed
+- upcoming
+- blocked/at-risk where applicable
+
+---
+
+# 94. Task Components
+
+Task components support:
+
+- title
+- status
+- assignee
+- due date
+- milestone
+- priority where defined
+- dependency where defined
+
+Do not collapse task, milestone, phase, and health into one status.
+
+---
+
+# 95. Milestone Components
+
+Milestones aggregate project delivery.
+
+Must show:
+
+- milestone identity
+- state
+- progress
+- associated tasks
+- dates
+- risk where applicable
+
+---
+
+# 96. Risk Components
+
+Risk presentation supports:
+
+- severity
+- likelihood where defined
+- status
+- description
+- mitigation
+- owner
+- related resources
+
+Color must not be the only risk signal.
+
+---
+
+# 97. Roadmap Component
+
+Supports:
+
+- lifecycle stages
+- milestones
+- task groups
+- dates
+- dependencies where available
+
+Must remain readable on mobile.
+
+---
+
+# 98. Project Change Components
+
+Required:
+
+- ChangeRequestSummary
+- ImpactAnalysis
+- ImpactAreaList
+- ChangeDiff
+- RegenerationProgress
+- ValidationResult
+- ChangeApproval
+- ChangeHistory
+
+Supported flow:
+
+```text
+Change Requested
+    ↓
+Impact Analysis
+    ↓
+Impact Review
+    ↓
+Regeneration
+    ↓
+Validation / QA
+    ↓
+Persisted Change
+```
+
+---
+
+# 99. People / Group Components
+
+Required:
+
+- PersonCard
+- PersonRow
+- StudentSummary
+- MentorSummary
+- GroupSummary
+- GroupMemberList
+- AssignmentControl
+- RoleBadge
+
+Role badges describe context; they do not create role-based themes.
+
+---
+
+# 100. System Components
+
+Required:
+
+- NetworkStatus
+- SessionExpired
+- PermissionDenied
+- NotFound
+- ApplicationError
+- AIUnavailable
+- ProcessingState
+- MaintenanceBanner
+- SystemHealthSummary
+
+---
+
+# 101. Component State Contract
+
+Every interactive or data-bearing component must define applicable states.
+
+Minimum state vocabulary:
+
+```text
+default
+hover
+active
+focus
+selected
+disabled
+loading
+empty
+error
+success
+```
+
+Domain components may add:
+
+```text
+queued
+running
+blocked
+atRisk
+completed
+cancelled
+```
+
+---
+
+# 102. Loading Contract
+
+Loading strategy depends on operation duration.
+
+## Short interaction
+
+Use:
+
+```text
+spinner
+button loading
+inline progress
+```
+
+## Page/resource fetch
+
+Use:
+
+```text
+skeleton
+loading state
+```
+
+## Long-running job
+
+Use:
+
+```text
+persistent execution state
+progress/stage
+notification
+activity/event
+```
+
+---
+
+# 103. Error Contract
+
+Every data mutation must have a recoverable UI path where appropriate.
+
+Error UI should include:
+
+```text
+Problem
+Context
+Recovery
+```
+
+Examples:
+
+```text
+Retry
+Resume
+Refresh
+Contact mentor
+Request access
+```
+
+---
+
+# 104. Empty Contract
+
+Every collection component must define an empty state.
+
+Empty states should distinguish:
+
+- no data exists
+- no search results
+- no permission
+- data still processing
+- data failed to load
+
+These are not interchangeable.
+
+---
+
+# 105. Accessibility Contract
+
+Every component must document:
+
+- semantic HTML
+- keyboard behavior
+- focus behavior
+- accessible name
+- ARIA requirements where needed
+- screen-reader behavior
+- contrast
+- touch target
+- reduced-motion behavior
+
+Do not add ARIA where native HTML already provides the correct semantics.
+
+---
+
+# 106. Keyboard Interaction Standards
+
+At minimum:
+
+```text
+Tab
+Shift+Tab
+Enter
+Space
+Escape
+Arrow keys where appropriate
+Home/End where appropriate
+```
+
+Complex widgets must follow predictable keyboard conventions.
+
+---
+
+# 107. Focus Management
+
+Required for:
+
+- modal
+- drawer
+- menu
+- popover
+- command palette
+- combobox
+
+Pattern:
+
+```text
+Open
+ ↓
+Move focus into component
+ ↓
+Interact
+ ↓
+Close
+ ↓
+Restore focus
+```
+
+---
+
+# 108. Responsive Component Contract
+
+Components must define behavior for:
+
+```text
+desktop
+tablet
+mobile
+```
+
+Examples:
+
+- table → horizontal scroll/collapse
+- sidebar → drawer
+- button group → wrap/stack
+- tabs → scroll
+- metadata → stack
+- modal → mobile full/near-full sheet where appropriate
+
+---
+
+# 109. Component Composition Rules
+
+Prefer composition:
+
+```text
+Card
+ ├── Header
+ ├── Body
+ └── Footer
+```
+
+over giant configuration components with dozens of unrelated props.
+
+Prefer:
+
+```text
+Table
+ ├── TableHeader
+ ├── TableBody
+ └── TableRow
+```
+
+when advanced control is needed.
+
+---
+
+# 110. Props and API Design
+
+Component APIs should:
+
+- be explicit
+- be typed
+- avoid boolean-prop explosion
+- use semantic variants
+- provide controlled/uncontrolled patterns intentionally
+- avoid exposing implementation details
+
+Bad:
+
+```text
+<Button green rounded2 shadow3 special />
+```
+
+Good:
+
+```text
+<Button variant="primary" size="standard" />
+```
+
+---
+
+# 111. Controlled vs Uncontrolled
+
+Use controlled state when:
+
+- parent/application state matters
+- URL state matters
+- server state matters
+- workflow state matters
+
+Use uncontrolled state when:
+
+- interaction is purely local
+- state does not need external synchronization
+
+---
+
+# 112. Data Fetching Boundary
+
+Presentational components should not directly call backend APIs unless they are explicitly designated data-aware domain containers.
+
+Preferred:
+
+```text
+Page
+ ↓
+Feature/Data Layer
+ ↓
+Domain Component
+ ↓
+Presentational Components
+```
+
+---
+
+# 113. Authorization Boundary
+
+Components may receive authorization-aware capabilities.
+
+They must not be the security boundary.
+
+Correct:
+
+```text
+Backend authorization
+    ↓
+API response/capability
+    ↓
+Frontend rendering
+```
+
+Incorrect:
+
+```text
+Hidden button = security
+```
+
+---
+
+# 114. Routing Boundary
+
+Reusable components should not invent routes.
+
+Pages/domain containers provide canonical navigation destinations.
+
+Navigation components may consume route objects or URLs.
+
+---
+
+# 115. Server State Boundary
+
+Server state includes:
+
+- project data
+- tasks
+- milestones
+- risks
+- documents
+- users
+- groups
+- AI execution records
+
+Components render server state but do not become the canonical store.
+
+---
+
+# 116. UI State Boundary
+
+UI state includes:
+
+- modal open
+- filter expansion
+- selected tab
+- expanded row
+- temporary form values
+
+Keep local unless broader coordination is required.
+
+---
+
+# 117. Streaming State Boundary
+
+Streaming state includes:
+
+- SSE connection
+- AI progress
+- live execution updates
+- notification delivery
+- processing updates
+
+Components subscribe to streaming state through the frontend state architecture.
+
+---
+
+# 118. Event Reconciliation
+
+After streaming events:
+
+```text
+SSE
+ ↓
+validate event
+ ↓
+update streaming state
+ ↓
+invalidate/reconcile server state
+ ↓
+render
+```
+
+Components must not assume SSE is the canonical source of truth.
+
+---
+
+# 119. Optimistic UI
+
+Use optimistic updates only when:
+
+- failure is easy to recover
+- result is predictable
+- rollback is well-defined
+- security/authorization does not depend on optimistic state
+
+Prefer confirmed server state for:
+
+- project lifecycle
+- permissions
+- AI execution
+- blueprint persistence
+- project changes
+- high-impact mutations
+
+---
+
+# 120. Component Error Boundaries
+
+Recommended hierarchy:
+
+```text
+Application
+  ↓
+Role
+  ↓
+Feature
+  ↓
+Page
+  ↓
+Component
+```
+
+A failure in one component should not unnecessarily destroy the entire application.
+
+---
+
+# 121. Performance Requirements
+
+Components should:
+
+- avoid unnecessary rerenders
+- virtualize very large lists
+- lazy-load heavy visualizations
+- avoid shipping unnecessary dependencies
+- avoid excessive DOM depth
+- avoid perpetual animation
+- clean up subscriptions
+
+---
+
+# 122. SSE-Aware Components
+
+SSE-consuming components must:
+
+- subscribe only when relevant
+- unsubscribe when unmounted
+- tolerate reconnects
+- tolerate duplicate events
+- reconcile server state
+- expose meaningful disconnected state when user action is affected
+
+---
+
+# 123. AI Component Performance
+
+AI components must support:
+
+- streaming updates
+- long responses
+- cancellation
+- reconnection
+- partial rendering
+- final reconciliation
+- failure recovery
+
+Avoid rendering thousands of independent nodes for long AI output when a more efficient representation is possible.
+
+---
+
+# 124. Security Requirements
+
+Components must not expose:
+
+- API keys
+- provider credentials
+- internal secrets
+- unauthorized project context
+- hidden administrative data
+
+Sensitive information should be controlled by backend authorization and response shaping.
+
+---
+
+# 125. Component Naming Convention
+
+Recommended:
+
+```text
+PascalCase
+```
+
+Examples:
+
+```text
+Button
+DataTable
+ProjectHeader
+AIExecutionIndicator
+WorkflowStepper
+```
+
+Use domain prefixes only when they improve clarity.
+
+---
+
+# 126. File Organization
+
+Recommended:
+
+```text
+frontend/
+└── design-system/
+    ├── foundations/
+    ├── controls/
+    ├── forms/
+    ├── navigation/
+    ├── feedback/
+    ├── overlays/
+    ├── data/
+    ├── dashboards/
+    ├── documents/
+    ├── ai/
+    ├── workflow/
+    ├── project/
+    ├── people/
+    └── system/
+```
+
+Feature-specific components that are not reusable belong in the feature layer rather than the global design system.
+
+---
+
+# 127. Component Documentation
+
+Every reusable component should document:
+
+1. Purpose
+2. When to use
+3. When not to use
+4. Anatomy
+5. Variants
+6. Sizes
+7. States
+8. Accessibility
+9. Responsive behavior
+10. Data requirements
+11. Events/actions
+12. Composition examples
+13. Related components
+14. Known constraints
+
+---
+
+# 128. Storybook / Component Catalog
+
+A component catalog is strongly recommended.
+
+Each component should provide examples for:
+
+- default
+- variants
+- sizes
+- states
+- dark theme
+- responsive behavior
+- accessibility
+
+Complex domain components should include realistic representative data.
+
+---
+
+# 129. Visual Regression
+
+Critical components should have visual regression coverage.
+
+Priority:
+
+```text
+TopNav
+WorkplaceSelector
+Sidebar
+Button
+Input
+Modal
+Drawer
+Table
+DataTable
+StatusIndicator
+AI components
+DocumentViewer
+ProjectHeader
+Roadmap
+```
+
+---
+
+# 130. Component Testing
+
+## Unit
+
+Test:
+
+- token resolution
+- pure logic
+- formatting
+
+## Component
+
+Test:
+
+- rendering
+- variants
+- state transitions
+- accessibility
+
+## Integration
+
+Test:
+
+- API integration
+- server state
+- streaming state
+- permission-aware behavior
+
+## E2E
+
+Test:
+
+- complete user workflows
+
+---
+
+# 131. Critical Component Workflows
+
+Must eventually be covered:
+
+1. Student navigation.
+2. Workplace switching.
+3. Login flow.
+4. Project creation.
+5. Assessment.
+6. Blueprint generation.
+7. Blueprint recovery.
+8. Task mutation.
+9. Milestone updates.
+10. Risk handling.
+11. Document processing.
+12. AI Mentor streaming.
+13. Project change.
+14. Mentor inspection.
+15. Admin observability.
+16. Mobile navigation.
+
+---
+
+# 132. Dark Theme Validation
+
+Every shared component must be reviewed in:
+
+```text
+Light
+Dark
+```
+
+Check:
+
+- contrast
+- border visibility
+- selected state
+- disabled state
+- focus
+- semantic status
+- AI layer
+- elevation
+
+Do not simply invert colors.
+
+---
+
+# 133. Reduced Motion Validation
+
+Components with motion must provide reduced-motion behavior.
+
+Test:
+
+- drawer
+- modal
+- dropdown
+- tooltip
+- progress
+- AI streaming state
+- notifications
+- page transitions
+
+---
+
+# 134. Stitch Integration
+
+Stitch should consume the component language established here.
+
+Stitch prompts should describe:
+
+- component intent
+- hierarchy
+- variant
+- state
+- responsive behavior
+
+rather than inventing unrelated controls.
+
+---
+
+# 135. Stitch Component Rules
+
+When generating a page in Stitch:
+
+1. Use existing GrowFlow controls.
+2. Use the canonical typography.
+3. Use canonical spacing.
+4. Use canonical radii.
+5. Use semantic colors.
+6. Use existing navigation patterns.
+7. Reuse table/data patterns.
+8. Reuse AI patterns.
+9. Avoid introducing a second component language.
+10. Treat visual references as inspiration rather than literal templates.
+
+---
+
+# 136. Public Website Components
+
+Public pages may compose:
+
+- Hero
+- FeatureSection
+- EditorialMedia
+- CTA
+- Testimonial/statement where justified
+- DocumentationPreview
+- Footer
+- InteractiveStory
+
+These should still use the same primitives and tokens.
+
+---
+
+# 137. Authentication Components
+
+Required reusable auth components:
+
+- AuthLayout
+- AuthCard
+- AuthHeader
+- AuthFieldGroup
+- PasswordField
+- PasswordRecovery
+- RoleEntry
+- OAuth/ProviderButton if adopted
+- VerificationState
+- AuthError
+- SessionExpired
+
+Authentication page composition can be visually distinct without creating a separate design system.
+
+---
+
+# 138. Dashboard Components
+
+Student, Mentor, and Admin dashboards should share primitives:
+
+```text
+Metric
+Chart
+Activity
+Status
+Progress
+Table
+Filter
+```
+
+Their differences should come from data and composition.
+
+---
+
+# 139. Admin Components
+
+Admin interfaces require stronger information density.
+
+Components should support:
+
+- dense tables
+- filtering
+- trace inspection
+- audit records
+- health states
+- execution timelines
+- cost summaries
+
+Avoid decorative dashboards.
+
+---
+
+# 140. Mentor Components
+
+Mentor interfaces require:
+
+- student summaries
+- project comparisons
+- at-risk indicators
+- group views
+- notes
+- help requests
+- activity
+
+Private mentor notes must remain visually and semantically distinct where confidentiality matters.
+
+---
+
+# 141. Student Components
+
+Student interfaces prioritize:
+
+- project understanding
+- task execution
+- milestones
+- roadmap
+- risks
+- documents
+- GitHub
+- AI Mentor
+- help requests
+- feedback
+
+The visual system remains identical.
+
+---
+
+# 142. Document and AI Relationship
+
+Generated documents may originate from AI but become product artifacts only after:
+
+```text
+Generation
+ ↓
+Validation
+ ↓
+QA/Judge
+ ↓
+Persistence
+ ↓
+Document Rendering
+```
+
+The UI should make these stages understandable.
+
+---
+
+# 143. Generated vs Canonical UI
+
+Always distinguish:
+
+```text
+AI-generated proposal
+```
+
+from:
+
+```text
+validated / approved / persisted project state
+```
+
+This is a critical trust rule.
+
+---
+
+# 144. Component State Matrix
+
+For major components:
+
+| Component | Loading | Empty | Error | Focus | Disabled | Dark |
+|---|---|---|---|---|---|---|
+| Button | ✓ | — | optional | ✓ | ✓ | ✓ |
+| Input | — | — | ✓ | ✓ | ✓ | ✓ |
+| DataTable | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Modal | — | — | ✓ | ✓ | — | ✓ |
+| AI Execution | ✓ | — | ✓ | — | — | ✓ |
+| DocumentViewer | ✓ | ✓ | ✓ | ✓ | — | ✓ |
+| Roadmap | ✓ | ✓ | ✓ | ✓ | — | ✓ |
+
+---
+
+# 145. Component Dependency Rule
+
+Components may depend downward:
+
+```text
+Domain
+ ↓
+Composite
+ ↓
+Primitive
+ ↓
+Tokens
+```
+
+They must not create circular dependencies.
+
+Example:
+
+```text
+Button
+```
+
+must not depend on:
+
+```text
+ProjectWorkspace
+```
+
+---
+
+# 146. Domain Isolation
+
+Project-specific components may consume:
+
+- project domain models
+- canonical statuses
+- domain permissions
+
+Generic components must not import project-specific models.
+
+---
+
+# 147. No Page-Specific Global Components
+
+Do not put one-off page components into the global design system merely for convenience.
+
+A component belongs globally when:
+
+- reused
+- semantically stable
+- broadly useful
+- independently testable
+
+---
+
+# 148. No CSS Escape Hatch Culture
+
+Global component usage should not devolve into:
+
+```text
+className="make-it-like-this"
+```
+
+for every page.
+
+If a repeated styling need exists, evolve the component/token system.
+
+---
+
+# 149. Component Variants Governance
+
+Variants should represent meaningful semantic differences.
+
+Good:
+
+```text
+Button variant="primary"
+Button variant="destructive"
+```
+
+Bad:
+
+```text
+Button variant="greenLargeRoundedShadow"
+```
+
+---
+
+# 150. Responsive Governance
+
+Do not create separate desktop and mobile components unless interaction models genuinely differ.
+
+Prefer:
+
+```text
+same semantic component
++
+responsive composition
+```
+
+---
+
+# 151. Accessibility Governance
+
+Accessibility failures in shared components must be treated as system-level defects because one defect can propagate across many pages.
+
+Fix the component once rather than patching dozens of pages.
+
+---
+
+# 152. Visual Governance
+
+If a component visually violates Soft Intelligence:
+
+- do not compensate on every page
+- fix the component
+- validate against tokens
+- update component documentation
+- run visual regression
+
+---
+
+# 153. Component Review Checklist
+
+Before accepting a new component:
+
+### Architecture
+
+- [ ] Correct layer.
+- [ ] Clear responsibility.
+- [ ] No unnecessary domain coupling.
+- [ ] No direct security boundary assumptions.
+
+### Design
+
+- [ ] Uses tokens.
+- [ ] Follows Soft Intelligence.
+- [ ] Light/dark defined.
+- [ ] Variants justified.
+
+### Interaction
+
+- [ ] States defined.
+- [ ] Keyboard behavior defined.
+- [ ] Focus behavior defined.
+- [ ] Loading defined.
+- [ ] Error defined.
+
+### Responsive
+
+- [ ] Desktop.
+- [ ] Tablet.
+- [ ] Mobile.
+
+### Accessibility
+
+- [ ] Semantic HTML.
+- [ ] Accessible name.
+- [ ] Focus.
+- [ ] Contrast.
+- [ ] Touch target.
+
+### Engineering
+
+- [ ] Typed API.
+- [ ] Tests.
+- [ ] Documentation.
+- [ ] No unnecessary dependency.
+- [ ] No duplicated component logic.
+
+---
+
+# 154. Anti-Patterns
+
+Prohibited:
+
+- one giant universal component
+- page components masquerading as design-system components
+- arbitrary colors
+- arbitrary spacing
+- arbitrary radii
+- role-specific themes
+- neon AI components
+- fake AI typing
+- direct API calls from primitive components
+- authorization implemented only by hiding controls
+- duplicate button/input systems
+- multiple icon families
+- excessive card wrappers
+- excessive modal usage
+- giant configuration prop objects
+- untested accessibility behavior
+
+---
+
+# 155. Component System Definition of Done
+
+Phase 06D is complete when:
+
+- [ ] Foundation components defined.
+- [ ] Controls defined.
+- [ ] Forms defined.
+- [ ] Navigation defined.
+- [ ] Feedback defined.
+- [ ] Overlays defined.
+- [ ] Data components defined.
+- [ ] Dashboard components defined.
+- [ ] Document components defined.
+- [ ] AI components defined.
+- [ ] Workflow components defined.
+- [ ] Project-domain components defined.
+- [ ] People/group components defined.
+- [ ] System-state components defined.
+- [ ] Component states defined.
+- [ ] Accessibility contracts defined.
+- [ ] Responsive contracts defined.
+- [ ] Dark-theme requirements defined.
+- [ ] Reduced-motion requirements defined.
+- [ ] State/data boundaries defined.
+- [ ] API/security boundaries defined.
+- [ ] Testing requirements defined.
+- [ ] Storybook/catalog expectations defined.
+- [ ] Stitch integration defined.
+- [ ] Governance rules defined.
+- [ ] Anti-patterns defined.
+- [ ] Cross-phase relationships documented.
+
+---
+
+# 156. Cross-Phase Traceability
+
+## Phase 03
+
+Provides:
+
+- visual philosophy
+- typography
+- palette
+- motion
+- density
+- role consistency
+
+## Phase 05
+
+Provides:
+
+- frontend/backend boundary
+- canonical state ownership
+- authorization architecture
+- AI architecture
+- SSE behavior
+- document/RAG architecture
+
+## Phase 06A
+
+Provides:
+
+- Stitch design foundation
+
+## Phase 06B
+
+Provides:
+
+- GrowFlow brand identity
+- Connected Flow + Abstract G
+- brand assets
+
+## Phase 06C
+
+Provides:
+
+- tokens consumed by all components
+
+## Phase 06D
+
+Provides:
+
+- reusable component layer
+
+---
+
+# 157. Canonical Component Stack
+
+The final frontend design-system stack is:
+
+```text
+BRAND
+  ↓
+TOKENS
+  ↓
+FOUNDATIONS
+  ↓
+PRIMITIVES
+  ↓
+COMPOSITES
+  ↓
+DOMAIN COMPONENTS
+  ↓
+WORKFLOW COMPONENTS
+  ↓
+APPLICATION SHELL
+  ↓
+PAGES
+```
+
+---
+
+# 158. Non-Negotiable Invariants
+
+1. One GrowFlow component language.
+2. All components consume Phase 06C tokens.
+3. Manrope remains canonical.
+4. Soft Intelligence remains canonical.
+5. Light/dark remain one system.
+6. No role-specific color themes.
+7. AI remains deeper but restrained.
+8. Accessibility is part of every component contract.
+9. Responsive behavior is part of every applicable component contract.
+10. Shared components must not become security boundaries.
+11. SSE is not canonical state.
+12. Primitive components do not directly own business workflows.
+13. Canonical backend state remains authoritative.
+14. No fake AI state.
+15. No silent design-system divergence.
+16. No page-specific duplicate versions of shared components without explicit justification.
+
+---
+
+# 159. Final Freeze Statement
+
+**Phase 06D establishes the canonical GrowFlow Core Component System.**
+
+It converts the frozen design-token foundation into a reusable system spanning:
+
+```text
+PUBLIC
+AUTH
+BUILD
+SUPERVISE
+GOVERN
+DOCUMENTS
+DASHBOARDS
+AI
+WORKFLOWS
+SYSTEM STATES
+```
+
+Future page designs must compose this system rather than independently inventing visual controls.
+
+Future implementation may add genuinely necessary components, but additions must pass the component governance process defined here.
+
+**Phase 06D status: FROZEN / AUTHORITATIVE.**
+
+---
+
+# 160. Next Phase
+
+The next phase is:
+
+## 06E — Application Shell
+
+06E will define the implementation-grade shell consisting of:
+
+- global top navigation
+- GrowFlow brand placement
+- Workplace selector
+- Login/Sign Up behavior
+- profile
+- notifications
+- global search
+- authenticated sidebar
+- collapsed sidebar
+- mobile navigation drawer
+- breadcrumbs
+- shell layout
+- independent content scrolling
+- responsive shell behavior
+- shell state management
+- shell permissions
+- shell accessibility
+- shell integration with routing
+- shell integration with server/UI/streaming state
+
+The shell will become the structural frame in which every subsequent GrowFlow page is rendered.

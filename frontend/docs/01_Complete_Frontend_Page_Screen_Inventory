@@ -1,0 +1,1596 @@
+# GrowFlow — Phase 01: Complete Frontend Page & Screen Inventory
+
+**Project:** GrowFlow  
+**Phase:** 01 — Complete Frontend Page & Screen Inventory  
+**Status:** 🟡 DRAFT — AWAITING REVIEW
+
+## 1. Phase Objective
+
+Phase 01 establishes the complete user-facing frontend surface of GrowFlow before frontend architecture, visual design, and page-by-page implementation.
+
+It answers:
+
+> **What is the complete frontend surface of GrowFlow?**
+
+This inventory is intentionally exhaustive. It documents meaningful pages, screens, workspaces, workflows, contextual views, global interactions, and system states. Exact routes and visual implementation are deferred to later phases.
+
+## 2. Frontend Surface Model
+
+A “page” means a meaningful user-facing frontend surface and does not necessarily mean one unique URL.
+
+A surface may eventually be implemented as:
+
+```text
+PAGE
+ ├── Sub-page / Detail
+ ├── Workspace View
+ ├── Workflow Screen
+ ├── Tabbed View
+ ├── Drawer / Modal
+ └── System State
+```
+
+This allows complete documentation without unnecessary route fragmentation.
+
+---
+
+# 3. Public Website
+
+## P01 — Landing / Hero
+
+**Purpose:** Primary public entry point and first impression.
+
+**Main question:** What is GrowFlow and why should I care?
+
+**Shows:**
+- Hero statement
+- GrowFlow introduction
+- Product value proposition
+- Student / Mentor / Admin overview
+- Major capabilities
+- AI/agentic system concept
+- Project lifecycle
+- Architecture highlights
+- Technology highlights
+- Reliability/security highlights
+- Visual product previews
+- Interactive diagrams
+- CTA sections
+- Footer
+
+**Primary actions:**
+- Explore GrowFlow
+- View Features
+- View Documentation
+- Contact
+- Student Sign In
+- Mentor Sign In
+- Enter Dashboard
+- Talk to AI Mentor
+
+**Visual importance:** Highest visual-impact page. Use motion, interactive diagrams, animated architecture, transitions, sophisticated typography, product mockups, and visual storytelling.
+
+## P02 — Features
+
+**Purpose:** Complete feature explanation.
+
+**Main question:** What can GrowFlow actually do?
+
+**Student features:** Project creation, Mentor project selection, assessment, AI assessment, Blueprint, tasks, milestones, risks, roadmap/timeline, documents, GitHub monitoring, activity, AI Mentor, human Mentor interaction, notifications.
+
+**Mentor features:** Overview, groups, student supervision, Project Definitions, Student Project Instances, At-Risk monitoring, activity, Mentor Notes, Help Requests, GitHub monitoring, Mentor AI.
+
+**Admin features:** Platform overview, user/group/project monitoring, AI Observatory, Cost & Usage, System Health, Documents & RAG, Security & Audit, Platform Analytics.
+
+## P03 — Documentation
+
+**Purpose:** Public technical documentation and engineering showcase.
+
+**Main question:** How is GrowFlow actually built?
+
+**Categories:** Introduction, product overview, system architecture, frontend architecture, backend architecture, API architecture, database architecture, authentication, security, authorization, AI architecture, agent architecture, LangGraph orchestration, RAG architecture, document intelligence, event architecture, worker architecture, GitHub integration, observability, reliability, cross-role architecture, project lifecycle, data flows, technology stack, engineering decisions.
+
+**Visual elements:** Architecture diagrams, flowcharts, sequence diagrams, tables, component relationships, data-flow diagrams, decision records.
+
+This is a documentation system, not one giant text page.
+
+## P04 — Contact
+
+**Purpose:** Allow visitors to contact the project owner.
+
+**Shows:** Name, email, message, contact context, submit.
+
+**States:** Empty, validation error, submitting, success, failure.
+
+```text
+Visitor → Contact Form → Backend → Email delivery → Success
+```
+
+## P05 — Public Project / Architecture Showcase
+
+**Status:** Proposed; requires final review.
+
+**Purpose:** Deeper interactive technical showcase.
+
+**Could show:** System architecture, 12-agent architecture, project lifecycle, role architecture, AI pipeline, RAG pipeline, event flow, security boundaries, observability flow.
+
+For V1, this can either remain separate or be incorporated into Landing + Documentation. With limited time, Landing + Documentation is recommended unless a separate showcase is specifically desired.
+
+---
+
+# 4. Public Entry / Authentication
+
+## A01 — Student Sign In
+
+Email, password, Google OAuth, GitHub OAuth, forgot password, registration link.
+
+States: validation, loading, invalid credentials, OAuth failure, suspended/inactive account, success.
+
+## A02 — Student Registration
+
+Name, student identity information, email, password, confirmation, OAuth where applicable.
+
+```text
+Registration → Authentication → Student Account → Onboarding
+```
+
+## A03 — Student Password Recovery
+
+```text
+Forgot Password → Email → Recovery → New Password → Student Login
+```
+
+## A04 — Mentor Sign In
+
+Email, password, Google OAuth, GitHub OAuth, forgot password, registration.
+
+## A05 — Mentor Registration
+
+Identity, email, password, expertise/context, OAuth.
+
+## A06 — Mentor Password Recovery
+
+Separate Mentor recovery experience.
+
+## A07 — Student Onboarding
+
+**Identity:** Name, Student ID, required identity information.
+
+**Technologies:** Known technologies, previously used technologies, technologies interested in learning.
+
+**Goals:** Project interests, project goals, learning goals.
+
+## A08 — Mentor Onboarding
+
+Identity, institution/context, expertise, technologies, mentorship information.
+
+Completion can proceed toward group creation and Mentor application usage.
+
+## A09 — Protected Admin Entry
+
+Not public.
+
+```text
+Authentication → ADMIN role verification → Authorization → Admin Application
+```
+
+No public Admin registration or normal public Admin login option.
+
+---
+
+# 5. Authenticated Shared Application Surfaces
+
+## X01 — Global Search
+
+Global interaction surface; not necessarily a standalone page.
+
+**Student:** Projects, tasks, milestones, documents, project content.
+
+**Mentor:** Students, groups, projects.
+
+**Admin:** Students, mentors, groups, projects, execution IDs, permitted operational identifiers.
+
+Search remains authorization-scoped.
+
+## X02 — Notifications Center
+
+**Student:** Mentor notes, help requests, risks, deadlines, milestones, Blueprint generation, document regeneration, GitHub warnings, recommended actions.
+
+**Mentor:** Help requests, student/project risks, important activity.
+
+**Admin:** AI failures, infrastructure failures, cost thresholds, security events, system health.
+
+Globally accessed through the top navigation.
+
+## X03 — Profile
+
+Shared account-management surface. Located at the bottom of the left navigation.
+
+## X04 — Settings
+
+Shared settings surface. Located at the bottom of the left navigation.
+
+## X05 — Share Interaction
+
+Global action, not standalone page.
+
+```text
+Share → Copy URL / Share Action → Recipient → Authentication → Authorization → Resource Access
+```
+
+A URL is never itself a permission token.
+
+---
+
+# 6. Student Application
+
+The Student experience is centered around:
+
+> **BUILD**
+
+The Student owns execution of their project.
+
+## S01 — Student Dashboard
+
+**Purpose:** Action-oriented command center.
+
+**Main question:** What should I do next?
+
+**Shows:** Project summary, active projects, progress, current phase, health, upcoming milestones, blocked tasks, risks, recent activity, GitHub signals, recommended action, Mentor activity, help-request status, relevant AI activity.
+
+**Special element:** Next Recommended Action.
+
+## S02 — Student Projects
+
+**Purpose:** Central project collection.
+
+Each project can show project name, type, Mentor if applicable, progress, health, phase, deadline, activity, status.
+
+**Actions:** Open, create project, select Mentor project.
+
+## S03 — Create Your Own Project
+
+**Inputs:** Project name, complexity, problem statement, proposed solution, preferred technology stack, duration, deadline, optional GitHub repository.
+
+Draft persistence should support interrupted workflows.
+
+## S04 — Mentor Project Catalog
+
+Browse Mentor-created Project Definitions.
+
+**Shows:** Project name, complexity, description, Mentor, relevant project information.
+
+**Actions:** View details, select project.
+
+Selecting creates an independent Student Project Instance.
+
+## S05 — Mentor Project Detail / Selection
+
+Shows Project Definition information, Mentor, complexity, description, expected context, relevant technologies/details.
+
+Primary action: Select Project.
+
+## S06 — Project Information / Profile
+
+Structured project context:
+
+- Idea
+- Problem
+- Proposed solution
+- Complexity
+- Technologies
+- Goals
+- Duration
+- Deadline
+- GitHub
+- Project context
+
+Foundation for assessment and downstream planning.
+
+## S07 — Assessment Introduction
+
+Explains purpose, 15-question structure, 10 core + 5 adaptive, estimated progress, instructions.
+
+## S08 — Assessment Question Interface
+
+```text
+Question X of 15
+Progress
+Question
+Answer
+Back
+Next
+```
+
+One question at a time.
+
+## S09 — Adaptive Assessment
+
+```text
+Dynamic Q1 → Answer → Analyze → Dynamic Q2 → ... → Dynamic Q5
+```
+
+Next question depends on accumulated relevant context and previous answers.
+
+## S10 — Assessment Completion
+
+```text
+Assessment Complete ✓
+
+GrowFlow is analyzing your
+project and technical context.
+```
+
+## S11 — Assessment Result / Project Understanding
+
+Shows Skill Level, Project Complexity, Alignment, Technical Confidence, Learning Depth, Recommended Focus.
+
+Assessment is guidance, not an absolute judgment.
+
+## S12 — Blueprint Generation
+
+Meaningful AI generation workflow:
+
+```text
+Generating Project Blueprint
+
+✓ Project Profile
+✓ Technology Stack
+✓ Features
+✓ Specifications
+✓ MVP
+⟳ Duration
+○ Risks
+○ Tasks
+○ Milestones
+○ README
+```
+
+## S13 — Blueprint Generation Failure / Recovery
+
+Shows successful outputs, failed output, failure explanation, retry, recovery state.
+
+Prefer targeted retry over unnecessary full regeneration.
+
+## S14 — Blueprint QA / Approval
+
+```text
+Generation → Validation → QA / Judge → PASS / FAIL
+```
+
+Failure:
+
+```text
+Affected Output → Targeted Regeneration → Validation → QA
+```
+
+Success: Approved Blueprint.
+
+---
+
+# 7. Student Project Workspace
+
+Core workspace:
+
+```text
+Project
+├── Overview
+├── Blueprint
+├── Tasks
+├── Milestones
+├── Risks
+├── Roadmap / Timeline
+├── Documents
+├── GitHub
+├── Activity
+└── AI Mentor
+```
+
+Communication workflows and project-change workflows connect to this workspace.
+
+## S15 — Project Overview
+
+Shows project name, health, idea score, progress, current phase, technologies, duration, deadline, days remaining, current milestone, blocked tasks, risks, GitHub activity, last activity, Next Recommended Action.
+
+## S16 — Blueprint Workspace
+
+Central structured planning/documentation experience.
+
+```text
+Idea
+Scope
+Technology Stack
+Specification
+Features
+MVP
+Duration
+README
+```
+
+First document opens automatically.
+
+## S17 — Blueprint Document Viewer
+
+Modes: View, Preview, Raw Markdown/code view, Download.
+
+**No document editing.**
+
+Mini-navigation:
+
+```text
+Idea | Scope | Tech Stack | Specification |
+Features | MVP | Duration | README
+```
+
+Tasks, Milestones, and Risks do not appear in this Blueprint mini-navigation.
+
+## S18 — Tasks
+
+Shows task, status, due date, milestone, blocker information, relevant context.
+
+Filters:
+
+```text
+All
+TODO
+IN_PROGRESS
+BLOCKED
+COMPLETED
+```
+
+Actions: View, update state, get AI help, ask Mentor if blocked.
+
+## S19 — Task Detail
+
+Task title, description, status, due date, milestone, blockers, dependencies/context, activity.
+
+## S20 — Milestones
+
+Higher-level project checkpoints.
+
+Example:
+
+```text
+✓ Foundation
+✓ Authentication
+● Core Implementation
+○ Testing
+○ Deployment
+```
+
+Selecting reveals purpose, related tasks, target date, completion criteria, progress, blockers.
+
+## S21 — Milestone Detail
+
+Milestone objective, progress, target date, tasks, completion criteria, blockers, related risks.
+
+## S22 — Risks
+
+Dedicated risk-management page.
+
+Shows risk, probability, impact, reason, early warning, prevention, mitigation, recommended action.
+
+## S23 — Risk Detail
+
+Risk description, probability, impact, cause, warning indicators, mitigation, prevention, recommended action, related tasks/milestones.
+
+## S24 — Roadmap / Timeline
+
+**Main question:** Where is my project going, and when should things happen?
+
+```text
+Project
+│
+├── Phase 1
+│   ├── Milestones
+│   └── Tasks
+│
+├── Phase 2
+│   ├── Milestones
+│   └── Tasks
+│
+├── Phase 3
+│
+└── Deployment
+```
+
+Shows current phase, upcoming phase, milestones, target dates, task clusters, deadlines, delays, progress, projected completion.
+
+The roadmap is a presentation of canonical project planning/state, not a second source of truth.
+
+## S25 — Documents
+
+Shows uploaded documents, generated documents, metadata, versions, processing/indexing status, project-relevant files.
+
+Actions: View, preview, raw content where supported, download.
+
+Distinct from Blueprint Viewer.
+
+## S26 — Document Detail / Preview
+
+Shows document information, version, content preview, metadata, indexing status, provenance where applicable.
+
+## S27 — GitHub
+
+Monitoring only.
+
+Shows repository, connection status, commits, recent commits, last meaningful activity, activity trends.
+
+Excluded: editing, issues management, PR management, CI/CD management, repository administration, code editing.
+
+## S28 — Activity
+
+Chronological project timeline.
+
+Shows task completion, milestone events, Blueprint generation, document generation, regeneration, GitHub activity, risk events, Mentor Notes, Help Requests, project changes, technology/scope changes.
+
+Example:
+
+```text
+Today
+✓ OAuth task completed
+
+Yesterday
+⚠ Risk updated
+
+Sep 8
+✓ Milestone completed
+
+Sep 7
+📄 Blueprint regenerated
+```
+
+## S29 — AI Mentor
+
+Project-context-aware AI assistant.
+
+Context includes project state, Blueprint, tasks, milestones, risks, documents, RAG, GitHub, authorized tools.
+
+Student should not repeatedly explain the project.
+
+Streaming behavior:
+
+```text
+Response begins
+ ↓
+Viewport initially focuses on response
+ ↓
+User scrolls away
+ ↓
+Auto-follow stops
+ ↓
+Generation continues
+```
+
+## S30 — Help Requests
+
+Shows open, in-progress, resolved requests, subject, project, status, response/activity.
+
+Lifecycle:
+
+```text
+OPEN → IN_PROGRESS → RESOLVED
+```
+
+## S31 — Mentor Notes / Mentor Feedback
+
+Shows note title, message, Mentor, date, related project/context.
+
+Mentor Notes are communication and do not automatically modify task, progress, health, or project state.
+
+## S32 — Project Change / Impact Review
+
+For meaningful project changes.
+
+```text
+Change Requested
+ ↓
+Impact Analysis
+ ↓
+Affected Components
+ ↓
+Student Review
+ ↓
+Confirmation
+ ↓
+Regeneration
+ ↓
+Validation
+ ↓
+QA / Judge
+ ↓
+Persist
+```
+
+## S33 — Project Change Review / Regeneration Result
+
+Shows requested change, affected Blueprint components, affected planning components, proposed changes, validation, QA status, accept/reject.
+
+---
+
+# 8. Mentor Application
+
+The Mentor experience is centered around:
+
+> **SUPERVISE**
+
+The Mentor supervises students/projects without taking ownership of Student execution.
+
+## M01 — Mentor Overview
+
+**Main question:** Who needs my attention?
+
+Shows students/projects needing attention, at-risk projects, group health, top performers, scoped statistics, recent activity.
+
+## M02 — Groups Directory
+
+Global view of all Mentor-authorized groups.
+
+Shows group name, status, student count, project count, health, recent activity, relevant alerts.
+
+Controls: Search, Filter, Sort.
+
+## M03 — Group Creation
+
+Shows group name, description/context, relevant setup information.
+
+Group management remains intentionally minimal.
+
+## M04 — Group Workspace
+
+Focused supervision environment.
+
+```text
+Students
+Projects
+At Risk
+Activity
+AI Mentor
+```
+
+## M05 — Group Students View
+
+Shows students, progress, health, project, current phase, last activity, blockers.
+
+Controls: Search, Filter, Sort.
+
+## M06 — Group Projects View
+
+Shows projects, student, progress, health, phase, deadline, risk, activity.
+
+Controls: Search, Filter, Sort.
+
+## M07 — Group At-Risk View
+
+Shows at-risk students/projects, reason, category, impact, recommended action.
+
+## M08 — Group Activity
+
+Group-level chronological activity:
+
+```text
+Group
+ ↓
+Student
+ ↓
+Project
+ ↓
+Event
+```
+
+## M09 — Group AI Mentor
+
+AI analysis scoped to one group.
+
+Examples: How is this group performing? Which students need attention? Which projects are behind? Who has been inactive? Why is Student A at risk?
+
+## M10 — Students Directory
+
+All Mentor-authorized students.
+
+Controls:
+
+```text
+Search students
+Group
+Health
+Status
+Progress
+```
+
+Table: Student, Group, Project, Progress, Health, Current phase, Last activity.
+
+## M11 — Student Detail
+
+Shows identity, Student ID, Group, Projects, Progress, Health, Phase, Deadlines, Risks, Tasks/blockers, GitHub, Last activity.
+
+## M12 — Student Projects
+
+View all projects belonging to the selected Student.
+
+Important because a Student may have multiple project instances.
+
+## M13 — Student Activity
+
+Chronological activity for selected Student.
+
+## M14 — Student Mentor Notes
+
+Existing notes and note-creation workflow.
+
+Notes do not directly mutate Student project execution state.
+
+## M15 — Student Help Requests
+
+Shows open, in-progress, resolved, request subject, project, request history.
+
+Actions: View, Respond, Change request status.
+
+## M16 — Projects Directory
+
+Mentor global project area.
+
+```text
+Projects
+├── Project Definitions
+└── Student Project Instances
+```
+
+## M17 — Project Definitions
+
+Shows definition name, description, complexity, creation/update, assignment count, status, owning Mentor.
+
+Controls: Search, Filter, Sort.
+
+## M18 — Project Definition Detail
+
+Shows project foundation, description, technology expectations, project context, assignment information, version information, students using definition.
+
+## M19 — Create Project Definition
+
+Create reusable Mentor Project Definition.
+
+## M20 — Edit Project Definition
+
+Modify reusable definition.
+
+**Critical rule:** Editing does not mutate existing Student Project Instances. New students receive the updated definition; existing students remain unchanged and receive a notification.
+
+## M21 — Definition Assignment View
+
+```text
+Project Definition
+       ↓
+Student A → Instance
+Student B → Instance
+Student C → Instance
+```
+
+## M22 — Student Project Instances
+
+Global authorized view of actual Student projects.
+
+Shows Student, Project, Definition, Progress, Health, Phase, Deadline, Risks, Last activity.
+
+Controls: Search, Filter, Sort.
+
+## M23 — Student Project Instance Detail
+
+Detailed observation.
+
+Shows Project Overview, Project Profile, Blueprint, Tasks, Milestones, Risks, Documents, GitHub, Activity, project-related AI information.
+
+This is a supervision view, not an execution-control interface.
+
+## M24 — Instance Blueprint
+
+Inspect Student Blueprint.
+
+## M25 — Instance Tasks
+
+Observe task state and blockers.
+
+Mentor does not complete Student tasks.
+
+## M26 — Instance Milestones
+
+Observe milestone progress.
+
+## M27 — Instance Risks
+
+Detailed risk inspection.
+
+## M28 — Instance Documents
+
+Authorized project document inspection.
+
+## M29 — Instance GitHub
+
+Monitoring-only.
+
+Shows repository status, commits, activity, trends.
+
+No repository management.
+
+## M30 — Instance Activity
+
+Project-specific activity timeline.
+
+## M31 — At Risk Directory
+
+Global Mentor at-risk view.
+
+Shows Student/project, reason, category, impact, recommended action, severity/health, timing/activity context.
+
+Transparent deterministic Top 5 where applicable.
+
+## M32 — At Risk Detail
+
+Shows why risk exists, underlying signals, impact, related tasks, related milestones, recommended Mentor action.
+
+## M33 — Mentor Help Requests
+
+Global Mentor request queue.
+
+Controls: Search, Status filter, Group filter, Student filter, Project filter, Sort.
+
+## M34 — Mentor Notes
+
+Global/authorized Mentor Note history and creation workflow.
+
+## M35 — Mentor Activity
+
+Cross-scope activity:
+
+```text
+Group Activity
+Student Activity
+Project Activity
+```
+
+Uses the same canonical activity model.
+
+## M36 — Mentor AI
+
+Global Mentor AI:
+
+```text
+Observe
+ ↓
+Analyze
+ ↓
+Explain
+ ↓
+Recommend
+```
+
+Does not directly modify Student project state.
+
+---
+
+# 9. Admin Application
+
+The Admin experience is centered around:
+
+> **GOVERN**
+
+Admin responsibilities:
+
+- Observe
+- Analyze
+- Govern
+- Investigate
+- Intervene Carefully
+
+Admin is not a super-Mentor and does not take ownership of Student execution.
+
+## AD01 — Admin Overview
+
+Shows critical alerts, system health, AI/infrastructure, platform statistics, recent activity.
+
+Platform statistics may include users, groups, projects, AI requests, documents, GitHub-connected projects, and other operational metrics.
+
+## AD02 — Mentor Directory
+
+Controls: Search, Filter, Sort.
+
+Shows account status, groups, student/project associations, activity metadata, platform usage.
+
+## AD03 — Mentor Detail
+
+Shows identity, status, groups, student count, project count, activity, AI usage, recent events, alerts.
+
+## AD04 — Student Directory
+
+Controls: Search, Filter, Sort.
+
+Shows status, group, project relationships, activity metadata.
+
+## AD05 — Student Detail
+
+Shows identity, account status, group, Mentor, project count, current project, project status, activity metadata, alerts, AI usage metadata.
+
+## AD06 — Groups Directory
+
+Shows group, status, Mentor, student count, project count, active projects, at-risk projects, activity.
+
+Controls: Search, Filter, Sort.
+
+## AD07 — Group Detail
+
+Shows Mentor, students, Project Definitions, Project Instances, activity, health, AI usage, alerts.
+
+## AD08 — Projects Directory
+
+```text
+Project Definitions
+Student Project Instances
+```
+
+## AD09 — Project Definition Monitoring
+
+Shows definition metadata, Mentor, assignment count, associated instances, creation/update, usage.
+
+Admin does not become Project Definition owner.
+
+## AD10 — Student Project Instance Monitoring
+
+Shows Project Overview, Profile, Blueprint, Tasks, Milestones, Risks, Documents, GitHub, Activity, authorized AI metadata.
+
+Mode: **Read-only + platform monitoring.**
+
+Admin cannot execute Student project operations.
+
+## AD11 — AI Observatory Overview
+
+Contains:
+
+```text
+AI Usage
+Agent Executions
+AI Traces
+AI Quality
+```
+
+## AD12 — AI Usage
+
+Shows requests, requests over time, users, projects, agents, models, providers, tokens, latency, failures, retries, regeneration.
+
+Controls can include time range, role/user, project, agent, model, provider.
+
+## AD13 — Agent Executions
+
+Shows execution ID, agent, project, user, start, duration, status, success/failure, retries, model/provider, tokens, errors, regeneration trigger.
+
+## AD14 — AI Trace Detail
+
+Shows execution ID, timestamp, orchestrator, agent sequence, dependencies, status, validation, retries, provider/model, tokens, latency, errors, regeneration.
+
+## AD15 — AI Quality
+
+Shows generation success/failure, validation failures, QA/Judge results, targeted regeneration, full regeneration, agent disagreement, repeated failures, feedback, hallucination reports, quality warnings, incomplete documents.
+
+Core question:
+
+> **Is GrowFlow's agentic system producing reliable outputs?**
+
+## AD16 — Cost & Usage Overview
+
+Shows daily, weekly, monthly usage; tokens; models; providers; agents; projects; students; mentors.
+
+## AD17 — Cost Breakdown
+
+Dimensions: model, provider, agent, project, user, time.
+
+## AD18 — API Key Pool Monitoring
+
+Shows metadata only:
+
+- Key alias
+- Provider
+- Status
+- Request count
+- Failures
+- Rate-limit events
+- Last success
+- Last failure
+- Health
+
+Never shows actual API secrets.
+
+## AD19 — System Health Overview
+
+Systems:
+
+- API
+- Database
+- Storage
+- Workers
+- Queues
+- AI Gateway
+- Providers
+- RAG
+- Vector store
+- Embeddings
+- Document processing
+- GitHub
+- OAuth
+- External APIs
+
+## AD20 — System Component Detail
+
+For each subsystem: health, latency, throughput, failures, incidents, backlog, dependency status.
+
+## AD21 — Documents & RAG Overview
+
+Shows uploaded documents, generated documents, processing status, parsing failures, generation failures, latency, counts, storage metadata.
+
+## AD22 — RAG Monitoring
+
+Shows indexed documents, indexing failures, parsing, chunking, embedding, retrieval failures, retrieval latency, vector-store health, queue backlog, knowledge-base size.
+
+## AD23 — Document Generation Monitoring
+
+Shows generation attempts, success/failure, duration, failure categories, regeneration frequency, document type, project, execution.
+
+## AD24 — Security & Audit Overview
+
+Shows security events, authorization failures, sensitive actions, account changes, investigations, suspicious activity, audit activity.
+
+## AD25 — Audit Log
+
+Shows timestamp, actor, role, action, resource, result, correlation ID, relevant security metadata.
+
+## AD26 — Investigation Requests
+
+Controlled Admin investigation workflow:
+
+```text
+Request
+ ↓
+Authorization
+ ↓
+Minimum Required Data
+ ↓
+Inspection
+ ↓
+Audit
+```
+
+## AD27 — Investigation Detail / Inspection
+
+Shows reason, requester, approved scope, resource, inspected information, result, audit record.
+
+Must not become unrestricted Admin browsing.
+
+## AD28 — Platform Analytics
+
+Shows user growth, Student activity, Mentor activity, group trends, project trends, completion, risk trends, AI usage, platform usage.
+
+## AD29 — Platform Analytics Detail
+
+Drill-down dimensions: role, group, project, time, activity, lifecycle, AI.
+
+---
+
+# 10. System / Error / Special Screens
+
+## SYS01 — 404 / Not Found
+
+Unknown route or unavailable resource.
+
+## SYS02 — 403 / Unauthorized
+
+Authenticated user lacks permission.
+
+## SYS03 — 401 / Authentication Required
+
+Protected resource requires authentication.
+
+## SYS04 — Suspended / Inactive Account
+
+Authenticated identity cannot currently use the application because account status is not active.
+
+## SYS05 — Generic Application Error
+
+Unexpected application failure.
+
+## SYS06 — Network / API Failure
+
+Frontend cannot reach or communicate with backend.
+
+## SYS07 — AI Service Unavailable
+
+AI capabilities unavailable while core deterministic functionality should remain usable where possible.
+
+## SYS08 — AI Execution Failed
+
+Shows execution failure, error category, retry where appropriate, execution status.
+
+## SYS09 — AI Execution In Progress
+
+Persistent asynchronous AI execution:
+
+```text
+QUEUED
+ ↓
+RUNNING
+ ↓
+COMPLETED / FAILED
+```
+
+Browser disconnection must not destroy the underlying execution.
+
+## SYS10 — RAG / Document Processing State
+
+```text
+UPLOADED
+PROCESSING
+INDEXING
+READY
+FAILED
+```
+
+---
+
+# 11. Global Application Shell
+
+Student, Mentor, and Admin are role-specific applications inside **one GrowFlow product**, not three unrelated websites.
+
+## 11.1 Top Bar
+
+Constant visual structure across Student, Mentor, and Admin.
+
+Same:
+
+- Height
+- Typography
+- Icon sizing
+- Spacing
+- Search treatment
+- Notification treatment
+- Share treatment
+- Logo treatment
+
+Only role-appropriate actions may differ.
+
+## 11.2 Left Navigation
+
+Consistent across roles.
+
+Same:
+
+- Width
+- Collapsed width
+- Typography
+- Icon size
+- Item height
+- Spacing
+- Active state
+- Hover state
+- Selected state
+- Scroll behavior
+- Bottom Profile placement
+- Bottom Settings placement
+
+Actual navigation items change according to role.
+
+```text
+Student → Student navigation
+Mentor  → Mentor navigation
+Admin   → Admin navigation
+```
+
+The shell itself should not arbitrarily resize or redesign.
+
+## 11.3 Main Content
+
+Shared global rules:
+
+- Page padding
+- Content max-width strategy
+- Heading hierarchy
+- Body typography
+- Cards
+- Tables
+- Controls
+- Spacing
+- Responsive behavior
+
+## 11.4 Project Workspace
+
+Student, Mentor, and Admin may see different information/actions, but underlying project concepts remain recognizable because all consume shared canonical project state with different permissions/perspectives.
+
+---
+
+# 12. Global Design Consistency Principle
+
+> ## **GrowFlow has one application shell and one design language, with role-specific navigation and content—not three independent UI systems.**
+
+```text
+                 GROWFLOW DESIGN SYSTEM
+                         │
+              ┌──────────┼──────────┐
+              ↓          ↓          ↓
+           STUDENT     MENTOR     ADMIN
+              │          │          │
+              └──────────┼──────────┘
+                         ↓
+                  SAME VISUAL DNA
+```
+
+Roles differ in:
+
+- Information
+- Permissions
+- Actions
+- Density
+
+They should not arbitrarily differ in:
+
+- Basic visual language
+- Shell
+- Typography
+- Spacing
+- Interaction principles
+- Component behavior
+
+---
+
+# 13. Public Experience vs Application Experience
+
+GrowFlow intentionally has two visual modes within one design language.
+
+## Public Experience
+
+```text
+HIGH VISUAL IMPACT
+HIGH MOTION
+HIGH STORYTELLING
+INTERACTIVE
+SHOWCASE-ORIENTED
+```
+
+Applies especially to Landing, Features, Documentation, and any retained public architecture showcase.
+
+## Application Experience
+
+```text
+INFORMATION DENSITY
+CLARITY
+PRODUCTIVITY
+CONSISTENCY
+LOW-FRICTION INTERACTION
+CONTROLLED MOTION
+```
+
+Applies to Student, Mentor, and Admin.
+
+The Dashboard should not behave like a marketing website. The Landing page can use dramatic architecture animations, while Project Workspace should remain precise, stable, and information-dense.
+
+Goal:
+
+> **Beautiful without sacrificing usability.**
+
+---
+
+# 14. GrowFlow as an Engineering Showcase
+
+Because GrowFlow is intended to demonstrate scalable and reliable engineering ability, the public experience should communicate the engineering beneath the UI.
+
+A major Landing-page concept can be:
+
+## “Built Like a Real System”
+
+```text
+                    GrowFlow
+                       │
+          ┌────────────┼────────────┐
+          ↓            ↓            ↓
+      Frontend       API Layer    AI Layer
+          │            │            │
+          ↓            ↓            ↓
+       State       Application    LangGraph
+                       │            │
+                       ↓            ↓
+                   Domain       12 Agents
+                       │            │
+                       └─────┬──────┘
+                             ↓
+                       PostgreSQL
+                             │
+                ┌────────────┼────────────┐
+                ↓            ↓            ↓
+              RAG         GitHub       Events
+```
+
+Supporting concepts:
+
+**Security • Authorization • Validation • QA • Observability • Reliability**
+
+This demonstrates that GrowFlow is not merely a polished frontend; it is a complete engineered system.
+
+---
+
+# 15. Page Count Interpretation
+
+The inventory contains frontend surfaces, not a final route count.
+
+## Public Website
+
+**4 core pages**, plus optional P05:
+
+- P01 Landing
+- P02 Features
+- P03 Documentation
+- P04 Contact
+- P05 optional Architecture Showcase
+
+## Authentication / Onboarding
+
+**9 surfaces:**
+
+- A01 Student Sign In
+- A02 Student Registration
+- A03 Student Recovery
+- A04 Mentor Sign In
+- A05 Mentor Registration
+- A06 Mentor Recovery
+- A07 Student Onboarding
+- A08 Mentor Onboarding
+- A09 Protected Admin Entry
+
+## Student
+
+**33 meaningful surfaces/workflows**, covering Dashboard, Projects, project creation, Mentor catalog/selection, project profile, assessment, adaptive assessment, results, Blueprint generation/QA, Overview, Blueprint, Tasks, Task Detail, Milestones, Milestone Detail, Risks, Risk Detail, Roadmap, Documents, Document Detail, GitHub, Activity, AI Mentor, Help Requests, Mentor Notes, Project Change, Project Change Review, and related workflow states.
+
+## Mentor
+
+**36 meaningful surfaces/views**, covering Overview, Groups, Group Workspace, Group Students, Group Projects, Group At Risk, Group Activity, Group AI, Students, Student Detail, Student Projects, Student Activity, Mentor Notes, Help Requests, Projects, Definitions, Definition Detail, Definition creation/editing, Definition assignment, Student Project Instances, instance views, At Risk, Activity, AI Mentor, and related communication/monitoring views.
+
+## Admin
+
+**29 meaningful surfaces/views**, covering Overview, Mentors, Students, Groups, Projects, AI Observatory, AI Usage, Agent Executions, AI Traces, AI Quality, Cost & Usage, Cost Breakdown, API Key Pool Monitoring, System Health, Component Details, Documents & RAG, RAG Monitoring, Document Generation Monitoring, Security & Audit, Audit Log, Investigation Requests, Investigation Detail, Platform Analytics, and Analytics Detail.
+
+## System
+
+**10 special/system surfaces.**
+
+These numbers must not be interpreted as 120 routes.
+
+Many surfaces can be implemented as:
+
+```text
+one route
++
+tabs
++
+contextual details
++
+drawers
++
+modals
++
+workflow states
+```
+
+For example, `/projects/:projectId` may contain Overview, Blueprint, Tasks, Milestones, Risks, Roadmap, Documents, GitHub, Activity, and AI Mentor.
+
+Exact routing is deferred to Phase 02.
+
+---
+
+# 16. Design Reference Philosophy
+
+External products may be used as visual and UX references.
+
+Useful reference categories include:
+
+- Modern project-management applications
+- AI products
+- Documentation platforms
+- Developer platforms
+- Modern SaaS dashboards
+- Data/observability products
+- Design systems
+
+## Reference Inspiration May Influence
+
+- Typography approaches
+- Spacing principles
+- Card patterns
+- Table patterns
+- Navigation patterns
+- Interaction patterns
+- Motion principles
+- Empty states
+- Loading states
+- AI visualization patterns
+- Dashboard composition
+- Visual hierarchy
+
+## GrowFlow Remains Custom In
+
+- Information architecture
+- Role architecture
+- Student workflow
+- Mentor supervision model
+- Admin governance model
+- Project lifecycle
+- Project Definition vs Student Project Instance
+- Assessment model
+- Blueprint model
+- Task/Milestone/Risk relationship
+- Roadmap
+- AI agent workflow
+- AI Observatory
+- Controlled investigation
+- RAG/document model
+- Notification/activity model
+- Authorization boundaries
+- Data presentation
+- Business workflows
+- Canonical state relationships
+
+References influence **how GrowFlow looks and communicates**, not **what GrowFlow structurally is**.
+
+---
+
+# 17. Phase 01 Scope Boundary
+
+## Established in Phase 01
+
+- Complete page inventory
+- Frontend surface categories
+- Page responsibilities
+- Major information displayed
+- Major actions
+- Important workflows
+- Page/detail/workspace distinctions
+- Public vs authenticated experiences
+- Student surfaces
+- Mentor surfaces
+- Admin surfaces
+- System states
+- Global shell consistency
+- Public-vs-application visual behavior
+- Design-reference philosophy
+
+## Not Yet Established
+
+- Exact route tree
+- Exact component hierarchy
+- Final design tokens
+- Final typography
+- Final colors
+- Final spacing scale
+- Final animation language
+- Exact responsive breakpoints
+- Exact frontend state architecture
+- Exact API/query implementation
+- Stitch prompts
+- Individual page visual designs
+
+---
+
+# 18. Phase 01 Review and Freeze Mechanism
+
+Current status:
+
+```text
+PHASE 01 — COMPLETE FRONTEND PAGE / SCREEN INVENTORY
+
+Status: 🟡 DRAFT — AWAITING REVIEW
+```
+
+Review should identify:
+
+- Pages to add
+- Pages to remove
+- Pages to merge
+- Pages to split
+- Naming changes
+- Missing workflows
+- Missing views
+- Missing filters/search surfaces
+- Missing Student functionality
+- Missing Mentor functionality
+- Missing Admin functionality
+- Public-site additions
+- Additional page ideas
+- Page-specific concepts
+
+After feedback is incorporated, the final version can become:
+
+```text
+PHASE 01 — FROZEN
+```
+
+It then becomes the canonical frontend page map for the remaining frontend design journey.
+
+If a later phase reveals a genuine dependency requiring a change, that change should be explicitly identified rather than silently modifying the frozen inventory.
+
+---
+
+# 19. Next Phase
+
+After Phase 01 is reviewed and frozen:
+
+# PHASE 02 — INFORMATION ARCHITECTURE & NAVIGATION MAP
+
+Phase 02 will establish:
+
+- Complete route tree
+- Public navigation
+- Student navigation
+- Mentor navigation
+- Admin navigation
+- Hierarchy
+- Parent/child relationships
+- Project workspace navigation
+- Detail-page relationships
+- Tabs vs pages
+- Drawers vs pages
+- Modals vs workflows
+- Entry points
+- Exit paths
+- Authentication redirects
+- Role resolution
+- Protected route structure
+- Deep-link behavior
+- Navigation consistency
+
+The output will answer:
+
+> **WHERE EVERYTHING LIVES + HOW USERS MOVE THROUGH GROWFLOW**
+
+Only after that will the frontend architecture/design phases proceed.
+
+---
+
+# 20. Phase 01 Decision Summary
+
+```text
+                    GROWFLOW
+                       │
+        ┌──────────────┼──────────────┐
+        ↓              ↓              ↓
+     PUBLIC          AUTH          APPLICATION
+        │              │              │
+        │              │       ┌──────┼──────┐
+        │              │       ↓      ↓      ↓
+        │              │    STUDENT MENTOR ADMIN
+        │              │       │      │      │
+        │              │       └──────┼──────┘
+        │              │              ↓
+        │              │       SHARED SHELL
+        │              │
+        └──────────────┴──────────────┘
+```
+
+GrowFlow remains one coherent product.
+
+```text
+ONE DESIGN LANGUAGE
+ONE APPLICATION SHELL
+ROLE-SPECIFIC NAVIGATION
+ROLE-SPECIFIC INFORMATION
+ROLE-SPECIFIC PERMISSIONS
+CUSTOM GROWFLOW WORKFLOWS
+```
+
+The public website is the showcase and entry layer.
+
+The authenticated application is the actual product.
+
+The Documentation experience is the technical engineering showcase.
+
+The three application roles remain:
+
+```text
+Student → BUILD
+Mentor  → SUPERVISE
+Admin   → GOVERN
+```
+
+This document is the working Phase 01 source of truth until the user's review is incorporated and the phase is frozen.
