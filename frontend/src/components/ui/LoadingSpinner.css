@@ -1,0 +1,84 @@
+/* ==========================================================================
+   LoadingSpinner Styles — GrowFlow Soft Intelligence
+   ========================================================================== */
+
+.gf-loading-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gf-color-accent);
+}
+
+.gf-loading-spinner--inline {
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+.gf-loading-spinner__circle {
+  box-sizing: border-box;
+  border-radius: var(--gf-radius-full, 9999px);
+  border-style: solid;
+  border-color: var(--gf-color-border-subtle);
+  border-top-color: var(--gf-color-accent);
+  animation: gf-spinner-rotate 0.75s linear infinite;
+}
+
+/* Sizes */
+.gf-loading-spinner--sm .gf-loading-spinner__circle {
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
+}
+
+.gf-loading-spinner--md .gf-loading-spinner__circle {
+  width: 28px;
+  height: 28px;
+  border-width: 2.5px;
+}
+
+.gf-loading-spinner--lg .gf-loading-spinner__circle {
+  width: 44px;
+  height: 44px;
+  border-width: 3.5px;
+}
+
+/* Visually hidden label for assistive technologies */
+.gf-loading-spinner__sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+@keyframes gf-spinner-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Reduced motion accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .gf-loading-spinner__circle {
+    animation: gf-spinner-pulse 1.6s ease-in-out infinite;
+    border-top-color: var(--gf-color-accent);
+  }
+
+  @keyframes gf-spinner-pulse {
+    0%, 100% {
+      opacity: 0.35;
+      transform: scale(0.95);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+}

@@ -1,0 +1,80 @@
+/* ==========================================================================
+   InlineErrorState Styles — GrowFlow Soft Intelligence
+   ========================================================================== */
+
+.gf-inline-error {
+  display: flex;
+  align-items: center;
+  gap: var(--gf-space-3, 0.75rem);
+  padding: var(--gf-space-3, 0.75rem) var(--gf-space-4, 1rem);
+  background-color: var(--gf-color-danger-soft, #f6e8e6);
+  border: 1px solid var(--gf-color-border-standard, #d9d9d2);
+  border-left: 3px solid var(--gf-color-danger, #a6534d);
+  border-radius: var(--gf-radius-md, 8px);
+  color: var(--gf-color-text-primary, #1c1c1a);
+  font-family: var(--gf-font-family);
+  font-size: var(--gf-text-body-size, 0.875rem);
+  line-height: var(--gf-text-body-lh, 1.4);
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.gf-inline-error__icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--gf-color-danger, #a6534d);
+}
+
+.gf-inline-error__icon {
+  width: 18px;
+  height: 18px;
+}
+
+.gf-inline-error__content {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.gf-inline-error__title {
+  margin: 0 0 2px 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--gf-color-text-primary, #1c1c1a);
+}
+
+.gf-inline-error__message {
+  margin: 0;
+  color: var(--gf-color-text-secondary, #5f625d);
+  word-break: break-word;
+}
+
+.gf-inline-error__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--gf-space-2, 0.5rem);
+  flex-shrink: 0;
+}
+
+.gf-inline-error__retry-btn {
+  min-height: var(--gf-touch-min, 36px);
+  padding: 0 var(--gf-space-3, 0.75rem);
+  font-size: 0.8125rem;
+}
+
+/* 390px Mobile viewports */
+@media (max-width: 480px) {
+  .gf-inline-error {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--gf-space-2, 0.5rem);
+    padding: var(--gf-space-3, 0.75rem);
+  }
+
+  .gf-inline-error__actions {
+    width: 100%;
+    margin-top: var(--gf-space-2, 0.5rem);
+    justify-content: flex-end;
+  }
+}

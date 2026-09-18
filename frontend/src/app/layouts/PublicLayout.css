@@ -1,0 +1,9 @@
+.gf-public-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.gf-public-layout__content {
+  flex: 1;
+}

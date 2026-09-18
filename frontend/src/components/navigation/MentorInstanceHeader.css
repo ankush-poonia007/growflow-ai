@@ -1,0 +1,198 @@
+.gf-mentor-instance-header {
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: var(--radius-lg, 12px);
+  padding: 1.25rem 1.5rem 0 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.gf-mentor-instance-header__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.gf-mentor-instance-header__breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--text-xs, 0.8125rem);
+}
+
+.gf-mentor-instance-header__back-link {
+  color: var(--color-primary, #0284c7);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.15s ease;
+}
+
+.gf-mentor-instance-header__back-link:hover {
+  color: var(--color-primary-hover, #0369a1);
+  text-decoration: underline;
+}
+
+.gf-mentor-instance-header__breadcrumb-divider {
+  color: var(--color-text-muted, #94a3b8);
+}
+
+.gf-mentor-instance-header__breadcrumb-current {
+  color: var(--color-text-muted, #64748b);
+  max-width: 250px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gf-mentor-instance-header__supervision-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #0369a1;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+}
+
+.gf-mentor-instance-header__tag-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #0284c7;
+}
+
+.gf-mentor-instance-header__hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.gf-mentor-instance-header__title-section {
+  flex: 1;
+  min-width: 280px;
+}
+
+.gf-mentor-instance-header__title {
+  font-size: var(--text-2xl, 1.5rem);
+  font-weight: 700;
+  color: var(--color-text, #0f172a);
+  margin: 0 0 0.5rem 0;
+  line-height: 1.3;
+}
+
+.gf-mentor-instance-header__meta-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  font-size: var(--text-xs, 0.8125rem);
+  color: var(--color-text-muted, #64748b);
+}
+
+.gf-mentor-instance-header__meta-divider {
+  color: var(--color-border, #cbd5e1);
+}
+
+.gf-mentor-instance-header__student-pill,
+.gf-mentor-instance-header__group-pill,
+.gf-mentor-instance-header__version-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.gf-mentor-instance-header__version-pill {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 0.125rem 0.5rem;
+  border-radius: 6px;
+  color: #334155;
+}
+
+.gf-mentor-instance-header__version-highlight {
+  color: #0369a1;
+}
+
+.gf-mentor-instance-header__badges {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.gf-mentor-instance-header__badge-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.gf-mentor-instance-header__badge-label {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--color-text-muted, #94a3b8);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.gf-mentor-instance-header__nav-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-top: 1px solid var(--color-border, #e2e8f0);
+  padding-top: 0.25rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.gf-mentor-instance-header__nav-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.gf-mentor-instance-header__nav-tab {
+  padding: 0.625rem 1rem;
+  font-size: var(--text-sm, 0.875rem);
+  font-weight: 500;
+  color: var(--color-text-muted, #64748b);
+  text-decoration: none;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s ease;
+}
+
+.gf-mentor-instance-header__nav-tab:hover {
+  color: var(--color-text, #0f172a);
+}
+
+.gf-mentor-instance-header__nav-tab--active {
+  color: var(--color-primary, #0284c7);
+  font-weight: 600;
+  border-bottom-color: var(--color-primary, #0284c7);
+}
+
+@media (max-width: 768px) {
+  .gf-mentor-instance-header {
+    padding: 1rem 1rem 0 1rem;
+  }
+
+  .gf-mentor-instance-header__hero {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .gf-mentor-instance-header__badges {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}

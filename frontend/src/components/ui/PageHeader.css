@@ -1,0 +1,93 @@
+.gf-page-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-4);
+  margin-bottom: var(--gf-space-8);
+  padding-bottom: var(--gf-space-6);
+  border-bottom: 1px solid var(--gf-color-border-subtle);
+}
+
+.gf-page-header__breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: var(--gf-space-2);
+  font-size: var(--gf-text-caption-size);
+  color: var(--gf-color-text-tertiary);
+  margin-bottom: var(--gf-space-1);
+}
+
+.gf-page-header__breadcrumb-link {
+  color: var(--gf-color-text-secondary);
+  text-decoration: none;
+  transition: color var(--gf-duration-fast) var(--gf-ease-default);
+}
+
+.gf-page-header__breadcrumb-link:hover {
+  color: var(--gf-color-accent);
+}
+
+.gf-page-header__breadcrumb-sep {
+  color: var(--gf-color-border-strong);
+  user-select: none;
+}
+
+.gf-page-header__main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-4);
+}
+
+@media (min-width: 768px) {
+  .gf-page-header__main {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+}
+
+.gf-page-header__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.gf-page-header__eyebrow {
+  display: inline-block;
+  font-size: var(--gf-text-metadata-size);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gf-color-accent);
+  margin-bottom: var(--gf-space-2);
+}
+
+.gf-page-header__title-row {
+  display: flex;
+  align-items: center;
+  gap: var(--gf-space-3);
+  flex-wrap: wrap;
+}
+
+.gf-page-header__title {
+  font-size: var(--gf-text-h2-size);
+  font-weight: 700;
+  line-height: var(--gf-text-h2-lh);
+  color: var(--gf-color-text-primary);
+  letter-spacing: -0.015em;
+  margin: 0;
+}
+
+.gf-page-header__description {
+  font-size: var(--gf-text-body-size);
+  color: var(--gf-color-text-secondary);
+  line-height: var(--gf-text-body-lh);
+  margin: var(--gf-space-2) 0 0;
+  max-width: 680px;
+}
+
+.gf-page-header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--gf-space-3);
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}

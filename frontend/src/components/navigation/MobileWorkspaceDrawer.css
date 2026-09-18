@@ -1,0 +1,174 @@
+.gf-mobile-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  pointer-events: none;
+  visibility: hidden;
+  transition: visibility var(--gf-duration-normal) var(--gf-ease-default);
+}
+
+.gf-mobile-drawer--open {
+  pointer-events: auto;
+  visibility: visible;
+}
+
+@media (min-width: 768px) {
+  .gf-mobile-drawer {
+    display: none !important;
+  }
+}
+
+.gf-mobile-drawer__backdrop {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  transition: opacity var(--gf-duration-normal) var(--gf-ease-default);
+}
+
+.gf-mobile-drawer--open .gf-mobile-drawer__backdrop {
+  opacity: 1;
+}
+
+.gf-mobile-drawer__panel {
+  position: relative;
+  width: min(300px, 80vw);
+  height: 100%;
+  background-color: var(--gf-color-surface);
+  box-shadow: var(--gf-shadow-lg);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(-100%);
+  transition: transform var(--gf-duration-normal) var(--gf-ease-out);
+  z-index: 1;
+  overflow-y: auto;
+}
+
+.gf-mobile-drawer--open .gf-mobile-drawer__panel {
+  transform: translateX(0);
+}
+
+.gf-mobile-drawer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--gf-space-4) var(--gf-space-5);
+  border-bottom: 1px solid var(--gf-color-border-subtle);
+  min-height: 64px;
+}
+
+.gf-mobile-drawer__title-group {
+  display: flex;
+  align-items: center;
+  gap: var(--gf-space-3);
+}
+
+.gf-mobile-drawer__tag {
+  font-size: var(--gf-text-metadata-size);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gf-color-accent);
+  background-color: var(--gf-color-accent-soft);
+  padding: 3px 8px;
+  border-radius: var(--gf-radius-sm);
+}
+
+.gf-mobile-drawer__title {
+  font-size: var(--gf-text-h5-size);
+  font-weight: 600;
+  color: var(--gf-color-text-primary);
+  margin: 0;
+}
+
+.gf-mobile-drawer__close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--gf-radius-md);
+  border: 1px solid var(--gf-color-border-subtle);
+  background: transparent;
+  color: var(--gf-color-text-secondary);
+  cursor: pointer;
+  padding: 0;
+  transition:
+    background-color var(--gf-duration-fast) var(--gf-ease-default),
+    color var(--gf-duration-fast) var(--gf-ease-default);
+}
+
+.gf-mobile-drawer__close-btn:hover {
+  background-color: var(--gf-color-secondary);
+  color: var(--gf-color-text-primary);
+}
+
+.gf-mobile-drawer__close-btn:focus-visible {
+  outline: 2px solid var(--gf-color-accent);
+  outline-offset: 1px;
+}
+
+.gf-mobile-drawer__nav {
+  padding: var(--gf-space-4) var(--gf-space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-2);
+  flex: 1;
+}
+
+.gf-mobile-drawer__item {
+  display: flex;
+  align-items: center;
+  gap: var(--gf-space-3);
+  padding: var(--gf-space-3) var(--gf-space-4);
+  border-radius: var(--gf-radius-md);
+  color: var(--gf-color-text-secondary);
+  text-decoration: none;
+  font-size: var(--gf-text-body-size);
+  font-weight: 500;
+  min-height: 48px;
+  transition:
+    background-color var(--gf-duration-fast) var(--gf-ease-default),
+    color var(--gf-duration-fast) var(--gf-ease-default);
+}
+
+.gf-mobile-drawer__item:hover {
+  background-color: var(--gf-color-secondary);
+  color: var(--gf-color-text-primary);
+}
+
+.gf-mobile-drawer__item:focus-visible {
+  outline: 2px solid var(--gf-color-accent);
+  outline-offset: 1px;
+}
+
+.gf-mobile-drawer__item--active {
+  background-color: var(--gf-color-accent-soft);
+  color: var(--gf-color-accent);
+  font-weight: 600;
+}
+
+.gf-mobile-drawer__divider {
+  height: 1px;
+  background-color: var(--gf-color-border-subtle);
+  margin: var(--gf-space-2) 0;
+}
+
+.gf-mobile-drawer__footer {
+  padding: var(--gf-space-4) var(--gf-space-5);
+  border-top: 1px solid var(--gf-color-border-subtle);
+}
+
+.gf-mobile-drawer__user {
+  font-size: var(--gf-text-caption-size);
+  color: var(--gf-color-text-secondary);
+  margin-bottom: var(--gf-space-3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gf-mobile-drawer__backdrop,
+  .gf-mobile-drawer__panel {
+    transition: none !important;
+  }
+}

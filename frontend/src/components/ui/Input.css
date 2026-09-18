@@ -1,0 +1,130 @@
+/* ==========================================================================
+   GrowFlow Shared Input Component Styles
+   ========================================================================== */
+
+.gf-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-2);
+}
+
+.gf-form-field--full {
+  width: 100%;
+}
+
+.gf-form-field--disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.gf-form-label {
+  font-size: var(--gf-text-body-sm-size);
+  font-weight: 600;
+  color: var(--gf-color-text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--gf-space-1);
+}
+
+.gf-form-required {
+  color: var(--gf-color-danger);
+  font-weight: 700;
+}
+
+.gf-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.gf-input {
+  width: 100%;
+  height: var(--gf-input-height-lg, 44px);
+  padding: 0 var(--gf-space-4);
+  font-family: var(--gf-font-family);
+  font-size: var(--gf-text-body-size);
+  color: var(--gf-color-text-primary);
+  background-color: var(--gf-color-bg);
+  border: 1px solid var(--gf-color-border-standard);
+  border-radius: var(--gf-radius-md);
+  outline: none;
+  transition:
+    border-color var(--gf-duration-fast) var(--gf-ease-default),
+    box-shadow var(--gf-duration-fast) var(--gf-ease-default);
+}
+
+.gf-input::placeholder {
+  color: var(--gf-color-text-tertiary);
+}
+
+.gf-input:hover:not(:disabled) {
+  border-color: var(--gf-color-border-strong);
+}
+
+.gf-input:focus {
+  border-color: var(--gf-color-accent);
+  box-shadow: 0 0 0 3px var(--gf-focus-ring);
+}
+
+.gf-input--error {
+  border-color: var(--gf-color-danger) !important;
+  background-color: var(--gf-color-danger-soft) !important;
+}
+
+.gf-input--error:focus {
+  box-shadow: 0 0 0 3px var(--gf-color-danger-soft) !important;
+}
+
+.gf-form-error {
+  font-size: var(--gf-text-caption-size);
+  color: var(--gf-color-danger);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: var(--gf-space-1);
+}
+
+.gf-form-helper {
+  font-size: var(--gf-text-caption-size);
+  color: var(--gf-color-text-secondary);
+  line-height: 1.4;
+}
+
+.gf-input-addon {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gf-color-text-tertiary);
+  pointer-events: none;
+}
+
+.gf-input-addon button,
+.gf-input-addon a,
+.gf-input-addon [role="button"],
+.gf-input-addon input {
+  pointer-events: auto;
+}
+
+.gf-input-addon--left {
+  left: var(--gf-space-3);
+}
+
+.gf-input-addon--right {
+  right: var(--gf-space-3);
+}
+
+.gf-input--with-left-addon {
+  padding-left: var(--gf-space-9);
+}
+
+.gf-input--with-right-addon {
+  padding-right: var(--gf-space-9);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gf-input {
+    transition: none !important;
+  }
+}

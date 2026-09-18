@@ -1,0 +1,102 @@
+/* ==========================================================================
+   GrowFlow Typography Utility Classes
+   Maps directly to Phase 06C typography tokens
+   ========================================================================== */
+
+.gf-text-display-xl {
+  font-size: var(--gf-text-display-xl-size);
+  line-height: var(--gf-text-display-xl-lh);
+  font-weight: var(--gf-text-display-xl-weight);
+  letter-spacing: var(--gf-text-display-xl-ls);
+}
+
+.gf-text-display-l {
+  font-size: var(--gf-text-display-l-size);
+  line-height: var(--gf-text-display-l-lh);
+  font-weight: var(--gf-text-display-l-weight);
+  letter-spacing: var(--gf-text-display-l-ls);
+}
+
+.gf-text-display-m {
+  font-size: var(--gf-text-display-m-size);
+  line-height: var(--gf-text-display-m-lh);
+  font-weight: var(--gf-text-display-m-weight);
+  letter-spacing: var(--gf-text-display-m-ls);
+}
+
+.gf-text-h1 {
+  font-size: var(--gf-text-h1-size);
+  line-height: var(--gf-text-h1-lh);
+  font-weight: var(--gf-text-h1-weight);
+  letter-spacing: var(--gf-text-h1-ls);
+}
+
+.gf-text-h2 {
+  font-size: var(--gf-text-h2-size);
+  line-height: var(--gf-text-h2-lh);
+  font-weight: var(--gf-text-h2-weight);
+  letter-spacing: var(--gf-text-h2-ls);
+}
+
+.gf-text-h3 {
+  font-size: var(--gf-text-h3-size);
+  line-height: var(--gf-text-h3-lh);
+  font-weight: var(--gf-text-h3-weight);
+  letter-spacing: var(--gf-text-h3-ls);
+}
+
+.gf-text-h4 {
+  font-size: var(--gf-text-h4-size);
+  line-height: var(--gf-text-h4-lh);
+  font-weight: var(--gf-text-h4-weight);
+  letter-spacing: var(--gf-text-h4-ls);
+}
+
+.gf-text-h5 {
+  font-size: var(--gf-text-h5-size);
+  line-height: var(--gf-text-h5-lh);
+  font-weight: var(--gf-text-h5-weight);
+  letter-spacing: var(--gf-text-h5-ls);
+}
+
+.gf-text-h6 {
+  font-size: var(--gf-text-h6-size);
+  line-height: var(--gf-text-h6-lh);
+  font-weight: var(--gf-text-h6-weight);
+}
+
+.gf-text-body-lg {
+  font-size: var(--gf-text-body-lg-size);
+  line-height: var(--gf-text-body-lg-lh);
+  font-weight: var(--gf-text-body-lg-weight);
+}
+
+.gf-text-body {
+  font-size: var(--gf-text-body-size);
+  line-height: var(--gf-text-body-lh);
+  font-weight: var(--gf-text-body-weight);
+}
+
+.gf-text-body-sm {
+  font-size: var(--gf-text-body-sm-size);
+  line-height: var(--gf-text-body-sm-lh);
+  font-weight: var(--gf-text-body-sm-weight);
+}
+
+.gf-text-caption {
+  font-size: var(--gf-text-caption-size);
+  line-height: var(--gf-text-caption-lh);
+  font-weight: var(--gf-text-caption-weight);
+}
+
+.gf-text-overline {
+  font-size: var(--gf-text-overline-size);
+  line-height: var(--gf-text-overline-lh);
+  font-weight: var(--gf-text-overline-weight);
+  letter-spacing: var(--gf-text-overline-ls);
+  text-transform: var(--gf-text-overline-transform);
+}
+
+.gf-font-mono {
+  font-family: var(--gf-font-mono);
+}

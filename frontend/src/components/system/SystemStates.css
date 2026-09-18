@@ -1,0 +1,253 @@
+/* ==========================================================================
+   GrowFlow Canonical System-State Components Stylesheet (SYS06–SYS10)
+   Design System: Soft Intelligence
+   ========================================================================== */
+
+/* Shared System State Container */
+.gf-system-card {
+  background: var(--gf-color-surface, #ffffff);
+  border: 1px solid var(--gf-color-border-subtle, #e5e5df);
+  border-radius: var(--gf-radius-lg, 12px);
+  padding: var(--gf-space-6, 24px);
+  max-width: 640px;
+  width: 100%;
+  margin: var(--gf-space-6, 24px) auto;
+  box-sizing: border-box;
+}
+
+.gf-system-card--compact {
+  padding: var(--gf-space-4, 16px);
+  margin: var(--gf-space-3, 12px) 0;
+}
+
+/* Badge */
+.gf-system-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gf-space-2, 8px);
+  padding: 3px 10px;
+  border-radius: var(--gf-radius-full, 9999px);
+  font-size: var(--gf-text-label-sm-size, 11px);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--gf-space-3, 12px);
+}
+
+.gf-system-badge--neutral {
+  background: var(--gf-color-secondary, #f2f2ee);
+  color: var(--gf-color-text-secondary, #5f625d);
+  border: 1px solid var(--gf-color-border-subtle, #e5e5df);
+}
+
+.gf-system-badge--warning {
+  background: var(--gf-color-warning-soft, #f5eddd);
+  color: var(--gf-color-warning, #9a7135);
+  border: 1px solid rgba(154, 113, 53, 0.25);
+}
+
+.gf-system-badge--danger {
+  background: var(--gf-color-danger-soft, #f6e8e6);
+  color: var(--gf-color-danger, #a6534d);
+  border: 1px solid rgba(166, 83, 77, 0.25);
+}
+
+.gf-system-badge--ai {
+  background: var(--gf-color-ai-surface, #eceef1);
+  color: var(--gf-color-ai-emphasis, #424d5a);
+  border: 1px solid var(--gf-color-ai-border, #d4d8dd);
+}
+
+.gf-system-badge--success {
+  background: var(--gf-color-success-soft, #e7f0e9);
+  color: var(--gf-color-success, #477a5a);
+  border: 1px solid rgba(71, 122, 90, 0.25);
+}
+
+/* Title & Description */
+.gf-system-title {
+  font-size: var(--gf-text-h3-size, 20px);
+  font-weight: 700;
+  color: var(--gf-color-text-primary, #1c1c1a);
+  margin: 0 0 var(--gf-space-2, 8px) 0;
+  letter-spacing: -0.015em;
+}
+
+.gf-system-desc {
+  font-size: var(--gf-text-body-md-size, 14px);
+  color: var(--gf-color-text-secondary, #5f625d);
+  line-height: var(--gf-leading-relaxed, 1.6);
+  margin: 0 0 var(--gf-space-4, 16px) 0;
+}
+
+/* Reassurance & Info Notes */
+.gf-system-note {
+  background: var(--gf-color-secondary, #f2f2ee);
+  border: 1px solid var(--gf-color-border-subtle, #e5e5df);
+  border-radius: var(--gf-radius-md, 8px);
+  padding: var(--gf-space-3, 12px) var(--gf-space-4, 16px);
+  font-size: var(--gf-text-body-sm-size, 13px);
+  color: var(--gf-color-text-secondary, #5f625d);
+  line-height: 1.5;
+  margin: var(--gf-space-4, 16px) 0;
+}
+
+.gf-system-note strong {
+  color: var(--gf-color-text-primary, #1c1c1a);
+}
+
+/* Metadata Rows */
+.gf-system-meta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-2, 8px);
+  margin: var(--gf-space-4, 16px) 0;
+}
+
+.gf-system-meta-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--gf-space-2, 8px);
+  font-size: var(--gf-text-body-sm-size, 13px);
+}
+
+.gf-system-meta-label {
+  color: var(--gf-color-text-tertiary, #858780);
+  font-weight: 500;
+  min-width: 110px;
+}
+
+.gf-system-meta-value {
+  color: var(--gf-color-text-primary, #1c1c1a);
+  font-weight: 600;
+}
+
+.gf-system-code {
+  font-family: var(--gf-font-mono, monospace);
+  font-size: 12px;
+  background: var(--gf-color-secondary, #f2f2ee);
+  padding: 2px 6px;
+  border-radius: var(--gf-radius-sm, 4px);
+  border: 1px solid var(--gf-color-border-subtle, #e5e5df);
+}
+
+/* Actions Row */
+.gf-system-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--gf-space-3, 12px);
+  flex-wrap: wrap;
+  margin-top: var(--gf-space-4, 16px);
+}
+
+/* Progress Bar (SYS09) */
+.gf-system-progress-wrapper {
+  margin: var(--gf-space-4, 16px) 0;
+}
+
+.gf-system-progress-track {
+  width: 100%;
+  height: 6px;
+  background: var(--gf-color-secondary, #f2f2ee);
+  border-radius: var(--gf-radius-full, 9999px);
+  overflow: hidden;
+  position: relative;
+}
+
+.gf-system-progress-fill {
+  height: 100%;
+  background: var(--gf-color-accent, #6f7f63);
+  border-radius: var(--gf-radius-full, 9999px);
+  transition: width 0.3s ease;
+}
+
+.gf-system-progress-indeterminate {
+  width: 40%;
+  height: 100%;
+  background: var(--gf-color-accent, #6f7f63);
+  border-radius: var(--gf-radius-full, 9999px);
+  animation: gf-progress-indeterminate 1.8s infinite ease-in-out;
+}
+
+@keyframes gf-progress-indeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(300%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gf-system-progress-indeterminate {
+    animation: none;
+    width: 100%;
+    opacity: 0.6;
+  }
+}
+
+/* Stepper (SYS10) */
+.gf-system-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: var(--gf-space-5, 20px) 0;
+  position: relative;
+}
+
+.gf-system-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gf-space-1, 4px);
+  z-index: 1;
+  flex: 1;
+}
+
+.gf-system-step-indicator {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--gf-radius-full, 9999px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  border: 2px solid var(--gf-color-border-subtle, #e5e5df);
+  background: var(--gf-color-surface, #ffffff);
+  color: var(--gf-color-text-tertiary, #858780);
+}
+
+.gf-system-step--active .gf-system-step-indicator {
+  border-color: var(--gf-color-accent, #6f7f63);
+  background: var(--gf-color-accent-soft, #e9ede5);
+  color: var(--gf-color-accent, #6f7f63);
+}
+
+.gf-system-step--completed .gf-system-step-indicator {
+  border-color: var(--gf-color-accent, #6f7f63);
+  background: var(--gf-color-accent, #6f7f63);
+  color: #ffffff;
+}
+
+.gf-system-step--failed .gf-system-step-indicator {
+  border-color: var(--gf-color-danger, #a6534d);
+  background: var(--gf-color-danger-soft, #f6e8e6);
+  color: var(--gf-color-danger, #a6534d);
+}
+
+.gf-system-step-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--gf-color-text-tertiary, #858780);
+}
+
+.gf-system-step--active .gf-system-step-label {
+  color: var(--gf-color-text-primary, #1c1c1a);
+}
+
+.gf-system-step--failed .gf-system-step-label {
+  color: var(--gf-color-danger, #a6534d);
+}

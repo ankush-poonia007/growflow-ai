@@ -1,0 +1,84 @@
+.gf-card {
+  position: relative;
+  background-color: var(--gf-color-surface);
+  border: 1px solid var(--gf-color-border-subtle);
+  border-radius: var(--gf-radius-lg);
+  padding: var(--gf-space-6);
+  box-shadow: var(--gf-shadow-sm);
+  transition:
+    transform var(--gf-interaction-duration) var(--gf-interaction-ease),
+    box-shadow var(--gf-interaction-duration) var(--gf-interaction-ease),
+    border-color var(--gf-interaction-duration) var(--gf-interaction-ease);
+}
+
+.gf-card--bordered {
+  border-color: var(--gf-color-border-standard);
+}
+
+.gf-card--subtle {
+  background-color: var(--gf-color-secondary);
+  border-color: transparent;
+}
+
+/* Interactive Float -> Settle (ONLY when interactive) */
+.gf-card--interactive {
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.gf-card--interactive:hover {
+  transform: translateY(var(--gf-interaction-translate-y-subtle));
+  border-color: var(--gf-interaction-border-subtle);
+  box-shadow: var(--gf-shadow-md);
+}
+
+.gf-card--interactive:focus-visible {
+  outline: 2px solid var(--gf-color-accent);
+  outline-offset: 2px;
+  border-color: var(--gf-color-accent);
+}
+
+.gf-card__header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gf-space-1);
+  margin-bottom: var(--gf-space-4);
+}
+
+.gf-card__title {
+  font-size: var(--gf-text-h5-size);
+  font-weight: 600;
+  line-height: var(--gf-text-h5-lh);
+  color: var(--gf-color-text-primary);
+  margin: 0;
+}
+
+.gf-card__description {
+  font-size: var(--gf-text-body-sm-size);
+  color: var(--gf-color-text-secondary);
+  line-height: var(--gf-text-body-sm-lh);
+  margin: 0;
+}
+
+.gf-card__content {
+  color: var(--gf-color-text-primary);
+}
+
+.gf-card__footer {
+  display: flex;
+  align-items: center;
+  gap: var(--gf-space-3);
+  margin-top: var(--gf-space-6);
+  padding-top: var(--gf-space-4);
+  border-top: 1px solid var(--gf-color-border-subtle);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gf-card,
+  .gf-card--interactive:hover {
+    transition: none !important;
+    transform: none !important;
+  }
+}
