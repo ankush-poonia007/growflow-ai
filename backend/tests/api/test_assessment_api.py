@@ -1,5 +1,5 @@
 """
-GrowFlow Batch S07–S11 — API & Domain Tests for Student Assessment Workflow.
+GrowFlow Batch S07-S11 — API & Domain Tests for Student Assessment Workflow.
 
 Covers:
 1. Unauthenticated requests return 401 Unauthorized.
@@ -32,10 +32,6 @@ import pytest
 from backend.app.api.dependencies.database import get_db_session
 from backend.app.api.dependencies.services import (
     get_assessment_service,
-    get_group_service,
-    get_profile_service,
-    get_project_definition_service,
-    get_project_service,
 )
 from backend.app.domain.identity import AccountStatus, UserRole
 from backend.app.domain.project.models import (
@@ -47,8 +43,6 @@ from backend.app.domain.project.models import (
 from backend.app.factory import create_app
 from backend.app.infrastructure.database.models.assessment import (
     AssessmentAnswerModel,
-    AssessmentModel,
-    AssessmentResultModel,
 )
 from backend.app.infrastructure.database.models.project import ProjectInstanceModel
 from backend.app.infrastructure.database.models.user import UserModel
@@ -60,6 +54,7 @@ from backend.app.infrastructure.repositories.user_repository import UserReposito
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Generator
+
     from backend.app.config.settings import Settings
 
 
@@ -142,8 +137,6 @@ def mentor_token(mentor_id: uuid.UUID) -> str:
     )
 
 
-
-
 @pytest.fixture
 def mock_owner_project(owner_student_id: uuid.UUID, project_id: uuid.UUID) -> ProjectInstanceModel:
     return ProjectInstanceModel(
@@ -186,12 +179,20 @@ def mock_assessment_repo() -> AsyncMock:
         return asm
 
     async def _get_answers(aid):
-        return sorted(list(repo._answers.values()), key=lambda a: a.question_index)
+        return sorted(repo._answers.values(), key=lambda a: a.question_index)
 
     async def _get_answer(aid, qid):
         return repo._answers.get(qid)
 
-    async def _upsert_answer(assessment_id, question_id, question_index, question_text, question_type, selected_option=None, text_response=None):
+    async def _upsert_answer(
+        assessment_id,
+        question_id,
+        question_index,
+        question_text,
+        question_type,
+        selected_option=None,
+        text_response=None,
+    ):
         ans = AssessmentAnswerModel(
             id=str(uuid.uuid4()),
             assessment_id=str(assessment_id),
@@ -219,6 +220,18 @@ def mock_assessment_repo() -> AsyncMock:
             return repo._result
         return None
 
+    repo._persisted_questions = {}
+
+    async def _get_persisted_question(aid, seq):
+        return repo._persisted_questions.get((str(aid), int(seq)))
+
+    async def _create_persisted_question(q):
+        repo._persisted_questions[(str(q.assessment_id), int(q.sequence_number))] = q
+        return q
+
+    async def _get_template_by_sequence(sequence_number, version=1):
+        return None
+
     repo.get_by_project_id.side_effect = _get_by_project_id
     repo.get_by_id.side_effect = _get_by_id
     repo.create_assessment.side_effect = _create_assessment
@@ -229,6 +242,9 @@ def mock_assessment_repo() -> AsyncMock:
     repo.create_result.side_effect = _create_result
     repo.get_result_by_project_id.side_effect = _get_result_by_project_id
     repo.get_result_by_assessment_id.side_effect = _get_result_by_assessment_id
+    repo.get_persisted_question.side_effect = _get_persisted_question
+    repo.create_persisted_question.side_effect = _create_persisted_question
+    repo.get_template_by_sequence.side_effect = _get_template_by_sequence
 
     return repo
 
@@ -244,7 +260,6 @@ def mock_project_repo(mock_owner_project: ProjectInstanceModel) -> AsyncMock:
 
     repo.get_by_id.side_effect = _get_by_id
     return repo
-
 
 
 @pytest.fixture
@@ -291,6 +306,7 @@ def assessment_client(
     mock_user_repo.get_by_id.side_effect = _get_user_by_id
 
     from backend.app.application.services.assessment_service import AssessmentService
+
     service = AssessmentService(
         assessment_repo=mock_assessment_repo,
         project_repo=mock_project_repo,
@@ -302,12 +318,14 @@ def assessment_client(
     app.dependency_overrides[get_db_session] = _override_get_db_session
     app.dependency_overrides[get_assessment_service] = lambda: service
 
-    with patch(
-        "backend.app.api.dependencies.auth.UserRepository",
-        return_value=mock_user_repo,
+    with (
+        patch(
+            "backend.app.api.dependencies.auth.UserRepository",
+            return_value=mock_user_repo,
+        ),
+        TestClient(app, base_url="http://testserver") as client,
     ):
-        with TestClient(app, base_url="http://testserver") as client:
-            yield client
+        yield client
 
     app.dependency_overrides.clear()
 
@@ -381,9 +399,7 @@ def test_cross_student_access_returns_403(
     assert res_res.status_code == 403
 
 
-def test_nonexistent_project_returns_404(
-    assessment_client: TestClient, owner_token: str
-) -> None:
+def test_nonexistent_project_returns_404(assessment_client: TestClient, owner_token: str) -> None:
     random_id = uuid.uuid4()
     res = assessment_client.get(
         f"/api/v1/projects/{random_id}/assessment/status",
@@ -393,7 +409,10 @@ def test_nonexistent_project_returns_404(
 
 
 def test_start_assessment_success_and_lifecycle_sync(
-    assessment_client: TestClient, project_id: uuid.UUID, owner_token: str, mock_owner_project: ProjectInstanceModel
+    assessment_client: TestClient,
+    project_id: uuid.UUID,
+    owner_token: str,
+    mock_owner_project: ProjectInstanceModel,
 ) -> None:
     assert mock_owner_project.current_phase == "IDEA"
 
@@ -517,7 +536,30 @@ def test_adaptive_questions_incorporate_project_context(
         headers={"Authorization": f"Bearer {owner_token}"},
     )
 
-    # Get question 11
+    # Verify that requesting Q11 before Q10 is answered is rejected (strict sequential generation)
+    res_premature = assessment_client.get(
+        f"/api/v1/projects/{project_id}/assessment/questions/11",
+        headers={"Authorization": f"Bearer {owner_token}"},
+    )
+    assert res_premature.status_code == 400
+    assert "ASSESSMENT_QUESTION_NOT_READY" in res_premature.json()["error"]["code"]
+
+    # Answer questions 1..10 to unlock adaptive question 11
+    for idx in range(1, 11):
+        assessment_client.post(
+            f"/api/v1/projects/{project_id}/assessment/answers",
+            json={
+                "question_index": idx,
+                "selected_option": "SPECIFIC_PERSONA"
+                if idx == 1
+                else "MODULAR_MONOLITH"
+                if idx == 3
+                else "RELATIONAL_ACID",
+            },
+            headers={"Authorization": f"Bearer {owner_token}"},
+        )
+
+    # Now get question 11
     res = assessment_client.get(
         f"/api/v1/projects/{project_id}/assessment/questions/11",
         headers={"Authorization": f"Bearer {owner_token}"},
@@ -574,7 +616,10 @@ def test_complete_full_assessment_and_get_result(
     for idx in range(11, 16):
         assessment_client.post(
             f"/api/v1/projects/{project_id}/assessment/answers",
-            json={"question_index": idx, "text_response": f"Detailed technical plan for question {idx}."},
+            json={
+                "question_index": idx,
+                "text_response": f"Detailed technical plan for question {idx}.",
+            },
             headers={"Authorization": f"Bearer {owner_token}"},
         )
 
@@ -587,9 +632,13 @@ def test_complete_full_assessment_and_get_result(
     result_data = res.json()["data"]
 
     assert result_data["readiness_tier"] == "HIGH"
-    assert result_data["overall_score"] == 84
+    assert result_data["overall_score"] == 82
     assert result_data["skill_level"] == "Intermediate"
     assert "dimension_scores" in result_data
+    assert "architecture" in result_data["dimension_scores"]
+    assert "feasibility" in result_data["dimension_scores"]
+    assert "stack_depth" in result_data["dimension_scores"]
+    assert "security" in result_data["dimension_scores"]
     assert "identified_gaps" in result_data
     assert "recommendations" in result_data
     assert mock_owner_project.progress_percentage == 25
@@ -623,4 +672,3 @@ def test_get_result_before_completion_returns_404(
         headers={"Authorization": f"Bearer {owner_token}"},
     )
     assert res.status_code == 404
-

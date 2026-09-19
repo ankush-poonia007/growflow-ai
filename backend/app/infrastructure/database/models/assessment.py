@@ -22,6 +22,7 @@ from uuid import UUID
 
 from sqlalchemy import (
     JSON,
+    Boolean,
     DateTime,
     ForeignKey,
     Integer,
@@ -34,6 +35,9 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from backend.app.domain.assessment.models import (
     AssessmentAnswer,
+    AssessmentQuestionOption,
+    AssessmentQuestionRecord,
+    AssessmentQuestionTemplate,
     AssessmentReadinessTier,
     AssessmentResult,
     AssessmentSession,
@@ -43,6 +47,91 @@ from backend.app.domain.assessment.models import (
 from backend.app.infrastructure.database.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
 
 JSON_TYPE = JSON().with_variant(postgresql.JSONB(), "postgresql")
+
+
+class AssessmentQuestionTemplateModel(Base, UUIDPrimaryKeyMixin, TimestampMixin):
+    """SQLAlchemy model for assessment_question_templates table."""
+
+    __tablename__ = "assessment_question_templates"
+    __table_args__ = (
+        UniqueConstraint("version", "sequence_number", name="uq_template_version_seq"),
+    )
+
+    version: Mapped[int] = mapped_column(Integer, default=1, nullable=False, index=True)
+    sequence_number: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
+    question_text: Mapped[str] = mapped_column(Text, nullable=False)
+    active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    category: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    help_text: Mapped[str | None] = mapped_column(Text, nullable=True)
+    question_type: Mapped[str] = mapped_column(
+        String(50), default=QuestionType.MULTIPLE_CHOICE.value, nullable=False
+    )
+    options: Mapped[list[dict[str, Any]]] = mapped_column(JSON_TYPE, default=list, nullable=False)
+
+    def to_domain(self) -> AssessmentQuestionTemplate:
+        opts = [
+            AssessmentQuestionOption(
+                value=o.get("value", ""),
+                label=o.get("label", ""),
+                description=o.get("description", ""),
+            )
+            for o in (self.options or [])
+        ]
+        return AssessmentQuestionTemplate(
+            id=UUID(str(self.id)),
+            version=self.version,
+            sequence_number=self.sequence_number,
+            question_text=self.question_text,
+            active=self.active,
+            category=self.category or "",
+            help_text=self.help_text or "",
+            question_type=QuestionType(self.question_type)
+            if self.question_type in QuestionType._value2member_map_
+            else QuestionType.MULTIPLE_CHOICE,
+            options=opts,
+            created_at=self.created_at,
+        )
+
+
+class AssessmentQuestionModel(Base, UUIDPrimaryKeyMixin, TimestampMixin):
+    """SQLAlchemy model for assessment_questions table representing persisted generated questions."""
+
+    __tablename__ = "assessment_questions"
+    __table_args__ = (
+        UniqueConstraint("assessment_id", "sequence_number", name="uq_assessment_question_seq"),
+    )
+
+    assessment_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("assessments.id", ondelete="CASCADE"),
+        index=True,
+        nullable=False,
+    )
+    sequence_number: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
+    question_type: Mapped[str] = mapped_column(String(50), nullable=False)  # "CORE" or "DYNAMIC"
+    question_text: Mapped[str] = mapped_column(Text, nullable=False)
+    generation_metadata: Mapped[dict[str, Any]] = mapped_column(
+        JSON_TYPE, default=dict, nullable=False
+    )
+    generated_from_question_id: Mapped[str | None] = mapped_column(
+        String(36),
+        ForeignKey("assessment_questions.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+
+    def to_domain(self) -> AssessmentQuestionRecord:
+        return AssessmentQuestionRecord(
+            id=UUID(str(self.id)),
+            assessment_id=UUID(self.assessment_id),
+            sequence_number=self.sequence_number,
+            question_type=self.question_type,
+            question_text=self.question_text,
+            generation_metadata=self.generation_metadata or {},
+            generated_from_question_id=UUID(self.generated_from_question_id)
+            if self.generated_from_question_id
+            else None,
+            created_at=self.created_at,
+        )
 
 
 class AssessmentModel(Base, UUIDPrimaryKeyMixin, TimestampMixin):
@@ -176,7 +265,9 @@ class AssessmentResultModel(Base, UUIDPrimaryKeyMixin, TimestampMixin):
         default=AssessmentReadinessTier.MODERATE.value,
         nullable=False,
     )
-    dimension_scores: Mapped[dict[str, Any]] = mapped_column(JSON_TYPE, default=dict, nullable=False)
+    dimension_scores: Mapped[dict[str, Any]] = mapped_column(
+        JSON_TYPE, default=dict, nullable=False
+    )
     identified_gaps: Mapped[list[Any]] = mapped_column(JSON_TYPE, default=list, nullable=False)
     recommendations: Mapped[list[Any]] = mapped_column(JSON_TYPE, default=list, nullable=False)
 

@@ -20,13 +20,15 @@ Architecture ref:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime
-from enum import Enum
-from typing import Any
-from uuid import UUID
+from enum import StrEnum
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from datetime import datetime
+    from uuid import UUID
 
 
-class AssessmentStatus(str, Enum):
+class AssessmentStatus(StrEnum):
     """Lifecycle status of a student project assessment session."""
 
     NOT_STARTED = "NOT_STARTED"
@@ -34,14 +36,14 @@ class AssessmentStatus(str, Enum):
     COMPLETED = "COMPLETED"
 
 
-class QuestionType(str, Enum):
+class QuestionType(StrEnum):
     """Permissible answer input paradigms for assessment questions."""
 
     MULTIPLE_CHOICE = "MULTIPLE_CHOICE"
     TEXT = "TEXT"
 
 
-class AssessmentReadinessTier(str, Enum):
+class AssessmentReadinessTier(StrEnum):
     """Evaluated readiness tier for proceeding to Blueprint generation."""
 
     HIGH = "HIGH"
@@ -106,10 +108,40 @@ class AssessmentSession:
 
 
 @dataclass(frozen=True)
+class AssessmentQuestionTemplate:
+    """Versioned template for standardized core assessment questions."""
+
+    id: UUID
+    version: int
+    sequence_number: int
+    question_text: str
+    active: bool
+    category: str = ""
+    help_text: str = ""
+    question_type: QuestionType = QuestionType.MULTIPLE_CHOICE
+    options: list[AssessmentQuestionOption] = field(default_factory=list)
+    created_at: datetime | None = None
+
+
+@dataclass(frozen=True)
+class AssessmentQuestionRecord:
+    """Persisted question entity instantiated or synthesized for an assessment session."""
+
+    id: UUID
+    assessment_id: UUID
+    sequence_number: int
+    question_type: str  # "CORE" or "DYNAMIC"
+    question_text: str
+    generation_metadata: dict[str, Any] = field(default_factory=dict)
+    generated_from_question_id: UUID | None = None
+    created_at: datetime | None = None
+
+
+@dataclass(frozen=True)
 class AssessmentResult:
     """
     Enriched Project Understanding synthesized upon assessment completion.
-    Serves as structured project context for future Blueprint generation (S12–S14).
+    Serves as structured project context for future Blueprint generation (S12-S14).
     """
 
     id: UUID
