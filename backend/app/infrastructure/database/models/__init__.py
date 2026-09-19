@@ -7,6 +7,8 @@ Registers all SQLAlchemy ORM models with Base.metadata.
 from backend.app.infrastructure.database.models.assessment import (
     AssessmentAnswerModel,
     AssessmentModel,
+    AssessmentQuestionModel,
+    AssessmentQuestionTemplateModel,
     AssessmentResultModel,
 )
 from backend.app.infrastructure.database.models.blueprint import (
@@ -59,6 +61,8 @@ __all__ = [
     "AIMentorMessageModel",
     "AssessmentAnswerModel",
     "AssessmentModel",
+    "AssessmentQuestionModel",
+    "AssessmentQuestionTemplateModel",
     "AssessmentResultModel",
     "BlueprintJobModel",
     "BlueprintModel",
