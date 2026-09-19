@@ -60,7 +60,11 @@ from backend.app.infrastructure.database.models.project import (
 )
 from backend.app.infrastructure.database.models.user import UserModel
 from backend.app.infrastructure.repositories.user_repository import UserRepository
-from backend.app.shared.exceptions import ConflictException, NotFoundException
+from backend.app.shared.exceptions import (
+    AuthorizationException,
+    ConflictException,
+    NotFoundException,
+)
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Generator
@@ -990,3 +994,49 @@ def test_project_instance_creation_and_phase_transition(
         assert ov["current_phase"] == "ASSESSMENT"
         assert ov["health"] == "HEALTHY"
         assert ov["profile"]["objective"] == "Zero-loss power distribution"
+
+
+def test_cross_student_project_operations_forbidden(test_env: dict) -> None:
+    """Verifies that cross-student access, modification, and lifecycle transitions return 403."""
+    client: TestClient = test_env["client"]
+    proj_svc: AsyncMock = test_env["proj_svc"]
+
+    other_student_id = uuid.uuid4()
+    other_student_token = _make_jwt(other_student_id, role="STUDENT")
+    other_user = UserModel(
+        id=str(other_student_id),
+        email="other.student@example.com",
+        role=UserRole.STUDENT.value,
+        status=AccountStatus.ACTIVE.value,
+    )
+
+    proj_id = uuid.uuid4()
+
+    with patch.object(UserRepository, "get_by_id", new_callable=AsyncMock) as mock_user:
+        mock_user.return_value = other_user
+        proj_svc.get_project.side_effect = AuthorizationException("Access to this project is denied.")
+        proj_svc.update_project.side_effect = AuthorizationException("Only the project owner may modify this project.")
+        proj_svc.transition_phase.side_effect = AuthorizationException("Access to this project is denied.")
+
+        # 1. Cross-student GET project details -> 403
+        res_get = client.get(
+            f"/api/v1/projects/{proj_id}",
+            headers={"Authorization": f"Bearer {other_student_token}"},
+        )
+        assert res_get.status_code == 403
+
+        # 2. Cross-student PATCH project details -> 403
+        res_patch = client.patch(
+            f"/api/v1/projects/{proj_id}",
+            headers={"Authorization": f"Bearer {other_student_token}"},
+            json={"name": "Tampered Name"},
+        )
+        assert res_patch.status_code == 403
+
+        # 3. Cross-student POST phase transition -> 403
+        res_phase = client.post(
+            f"/api/v1/projects/{proj_id}/phase",
+            headers={"Authorization": f"Bearer {other_student_token}"},
+            json={"target_phase": "ASSESSMENT", "reason": "Unauthorized jump attempt"},
+        )
+        assert res_phase.status_code == 403
