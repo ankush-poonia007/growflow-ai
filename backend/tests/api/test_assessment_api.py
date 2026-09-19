@@ -337,11 +337,48 @@ def test_non_student_role_returns_403(
 def test_cross_student_access_returns_403(
     assessment_client: TestClient, project_id: uuid.UUID, other_token: str
 ) -> None:
-    res = assessment_client.get(
+    # 1. GET assessment status
+    res_status = assessment_client.get(
         f"/api/v1/projects/{project_id}/assessment/status",
         headers={"Authorization": f"Bearer {other_token}"},
     )
-    assert res.status_code == 403
+    assert res_status.status_code == 403
+
+    # 2. POST assessment start (IDOR protection)
+    res_start = assessment_client.post(
+        f"/api/v1/projects/{project_id}/assessment/start",
+        headers={"Authorization": f"Bearer {other_token}"},
+    )
+    assert res_start.status_code == 403
+
+    # 3. GET question
+    res_q = assessment_client.get(
+        f"/api/v1/projects/{project_id}/assessment/questions/1",
+        headers={"Authorization": f"Bearer {other_token}"},
+    )
+    assert res_q.status_code == 403
+
+    # 4. POST answer
+    res_ans = assessment_client.post(
+        f"/api/v1/projects/{project_id}/assessment/answers",
+        json={"question_index": 1, "selected_option": "SPECIFIC_PERSONA"},
+        headers={"Authorization": f"Bearer {other_token}"},
+    )
+    assert res_ans.status_code == 403
+
+    # 5. POST complete
+    res_comp = assessment_client.post(
+        f"/api/v1/projects/{project_id}/assessment/complete",
+        headers={"Authorization": f"Bearer {other_token}"},
+    )
+    assert res_comp.status_code == 403
+
+    # 6. GET result
+    res_res = assessment_client.get(
+        f"/api/v1/projects/{project_id}/assessment/result",
+        headers={"Authorization": f"Bearer {other_token}"},
+    )
+    assert res_res.status_code == 403
 
 
 def test_nonexistent_project_returns_404(

@@ -24,7 +24,7 @@ class Environment(StrEnum):
 
 
 _SHARED_ENV_CONFIG = SettingsConfigDict(
-    env_file=(".env", "../.env"),
+    env_file=("backend/.env", ".env", "../.env"),
     env_file_encoding="utf-8",
     populate_by_name=True,
     extra="ignore",
