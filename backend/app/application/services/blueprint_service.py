@@ -411,6 +411,14 @@ class BlueprintService:
 
         blueprint = await self._blueprint_repo.approve_blueprint(blueprint)
 
+        # Gate 10: Canonical lifecycle transition BLUEPRINT -> PLANNING
+        await self._project_service.transition_phase(
+            project.id,
+            current_user,
+            ProjectPhase.PLANNING.value,
+            reason="Blueprint approved by student. Entering execution planning phase.",
+        )
+
         # Emit BlueprintApproved event
         await self._outbox_service.emit(
             event_type=DomainEventType.BLUEPRINT_APPROVED.value,
