@@ -9,10 +9,12 @@ Architecture ref:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
 from uuid import UUID  # noqa: TC003
 
 from fastapi import APIRouter, Query, status
+from fastapi.responses import (
+    JSONResponse,  # noqa: TC002 — evaluated at runtime by FastAPI route inspection
+)
 
 from backend.app.api.dependencies.auth import (  # noqa: TC001
     CurrentUserDep,
@@ -41,11 +43,6 @@ from backend.app.api.schemas.mentor_supervision import (
     MentorAIStatusResponse,
 )
 from backend.app.api.schemas.project import ProjectResponseSchema
-
-
-if TYPE_CHECKING:
-    from fastapi.responses import JSONResponse
-
 
 router = APIRouter(prefix="/groups", tags=["Groups"])
 

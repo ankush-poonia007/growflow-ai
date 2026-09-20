@@ -1,6 +1,6 @@
 """Gate 09: add generation_number, cancellation, and agent_executions provenance table.
 
-Revision ID: 0011_gate09_agent_executions_and_generation
+Revision ID: 0011_gate09_agent_executions
 Revises: 0010_gate08_question_templates
 Create Date: 2026-09-20 UTC
 
@@ -18,8 +18,8 @@ from __future__ import annotations
 from alembic import op
 import sqlalchemy as sa
 
-# revision identifiers, used by Alembic.
-revision: str = "0011_gate09_agent_executions_and_generation"
+# revision identifiers, used by Alembic (<= 32 chars for alembic_version column limit).
+revision: str = "0011_gate09_agent_executions"
 down_revision: str | None = "0010_gate08_question_templates"
 branch_labels: str | None = None
 depends_on: str | None = None

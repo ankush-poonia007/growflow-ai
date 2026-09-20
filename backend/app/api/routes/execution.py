@@ -15,10 +15,12 @@ Architecture ref:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
 from uuid import UUID
 
 from fastapi import APIRouter, Query, Response, status
+from fastapi.responses import (
+    JSONResponse,  # noqa: TC002 — evaluated at runtime by FastAPI route inspection
+)
 
 from backend.app.api.dependencies.auth import CurrentUserDep
 from backend.app.api.dependencies.services import ExecutionServiceDep
@@ -38,9 +40,6 @@ from backend.app.api.schemas.execution import (
     TaskResponse,
     TaskUpdatePayload,
 )
-
-if TYPE_CHECKING:
-    from fastapi.responses import JSONResponse
 
 router = APIRouter(prefix="/projects/{project_id}", tags=["Execution Management"])
 

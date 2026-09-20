@@ -22,11 +22,14 @@ from __future__ import annotations
 import asyncio
 from datetime import UTC, datetime
 import json
-from typing import TYPE_CHECKING, Any
+from typing import Any
 from uuid import UUID  # noqa: TC003
 
 from fastapi import APIRouter, Request, Response, status
-from fastapi.responses import StreamingResponse
+from fastapi.responses import (
+    JSONResponse,
+    StreamingResponse,
+)
 
 from backend.app.api.dependencies.auth import RequireStudent  # noqa: TC001
 from backend.app.api.dependencies.services import BlueprintServiceDep  # noqa: TC001
@@ -45,9 +48,6 @@ from backend.app.api.schemas.workspace import (
 )
 from backend.app.domain.ai.orchestration.events import WorkflowEvent, WorkflowEventType
 from backend.app.domain.blueprint.models import CANONICAL_BLUEPRINT_SECTION_ORDER
-
-if TYPE_CHECKING:
-    from fastapi.responses import JSONResponse
 
 router = APIRouter(prefix="/projects/{project_id}/blueprint", tags=["Blueprint"])
 

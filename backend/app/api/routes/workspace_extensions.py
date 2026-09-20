@@ -13,10 +13,12 @@ Implements workspace extensions under /api/v1/projects/{project_id}:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
 from uuid import UUID
 
 from fastapi import APIRouter, Query, status
+from fastapi.responses import (
+    JSONResponse,  # noqa: TC002 — evaluated at runtime by FastAPI route inspection
+)
 
 from backend.app.api.dependencies.auth import CurrentUserDep
 from backend.app.api.dependencies.services import (
@@ -36,9 +38,6 @@ from backend.app.api.schemas.workspace_extensions import (
     ProjectChangeAnalyzePayload,
     ProjectChangeConfirmPayload,
 )
-
-if TYPE_CHECKING:
-    from fastapi.responses import JSONResponse
 
 router = APIRouter(prefix="/projects/{project_id}", tags=["Workspace Extensions"])
 

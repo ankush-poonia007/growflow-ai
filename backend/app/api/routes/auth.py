@@ -13,9 +13,10 @@ Architecture ref:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from fastapi import APIRouter, status
+from fastapi.responses import (
+    JSONResponse,  # noqa: TC002 — evaluated at runtime by FastAPI route inspection
+)
 
 from backend.app.api.dependencies.auth import (  # noqa: TC001 — FastAPI runtime dependency injection
     CurrentUserDep,
@@ -25,9 +26,6 @@ from backend.app.api.dependencies.auth import (  # noqa: TC001 — FastAPI runti
 )
 from backend.app.api.responses.base import success_response
 from backend.app.domain.identity import verify_resource_ownership
-
-if TYPE_CHECKING:
-    from fastapi.responses import JSONResponse
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 

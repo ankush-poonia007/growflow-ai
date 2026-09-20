@@ -36,8 +36,14 @@ class AppSettings(BaseSettings):
 
     ENV: Environment = Field(default=Environment.DEVELOPMENT, alias="APP_ENV")
     NAME: str = Field(default="GrowFlow", alias="APP_NAME")
-    HOST: str = Field(default="127.0.0.1", alias="APP_HOST")
-    PORT: int = Field(default=8000, alias="APP_PORT")
+    HOST: str = Field(
+        default="127.0.0.1",
+        validation_alias=AliasChoices("APP_HOST", "HOST"),
+    )
+    PORT: int = Field(
+        default=8000,
+        validation_alias=AliasChoices("APP_PORT", "PORT"),
+    )
     LOG_LEVEL: str = Field(default="INFO", alias="APP_LOG_LEVEL")
     CORS_ORIGINS: list[str] | str = Field(
         default=["http://localhost:3000", "http://localhost:5173"],
