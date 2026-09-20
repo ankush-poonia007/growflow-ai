@@ -65,6 +65,8 @@ class BlueprintJobStatus(StrEnum):
 
     PENDING = "PENDING"
     RUNNING = "RUNNING"
+    CANCELLING = "CANCELLING"
+    CANCELLED = "CANCELLED"
     COMPLETED = "COMPLETED"
     FAILED = "FAILED"
 
@@ -138,6 +140,7 @@ class BlueprintSession:
     qa_score: int | None = None
     qa_feedback: BlueprintQAFeedback | None = None
     content: dict[str, Any] = field(default_factory=dict)
+    generation_number: int = 1
     approved_at: datetime | None = None
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: datetime = field(default_factory=datetime.utcnow)

@@ -22,6 +22,7 @@ from uuid import UUID
 
 from sqlalchemy import (
     JSON,
+    Boolean,
     DateTime,
     ForeignKey,
     Integer,
@@ -110,6 +111,11 @@ class BlueprintModel(Base, UUIDPrimaryKeyMixin, TimestampMixin):
         nullable=True,
         default=None,
     )
+    generation_number: Mapped[int] = mapped_column(
+        Integer,
+        default=1,
+        nullable=False,
+    )
     approved_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True),
         nullable=True,
@@ -150,10 +156,11 @@ class BlueprintModel(Base, UUIDPrimaryKeyMixin, TimestampMixin):
             progress_percent=self.progress_percent,
             error_message=self.error_message,
             failed_output_key=self.failed_output_key,
-            qa_status=BlueprintQAStatus(self.qa_status),
+            qa_status=BlueprintQAStatus(self.qa_status) if self.qa_status else BlueprintQAStatus.PENDING,
             qa_score=self.qa_score,
             qa_feedback=qa_feedback_domain,
             content=self.content or {},
+            generation_number=self.generation_number,
             approved_at=self.approved_at,
             created_at=self.created_at,
             updated_at=self.updated_at,
@@ -181,6 +188,26 @@ class BlueprintJobModel(Base, UUIDPrimaryKeyMixin, TimestampMixin):
         String(50),
         default=BlueprintJobType.FULL_GENERATION.value,
         nullable=False,
+    )
+    generation_number: Mapped[int] = mapped_column(
+        Integer,
+        default=1,
+        nullable=False,
+    )
+    cancellation_requested: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        nullable=False,
+    )
+    locked_by: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+        default=None,
+    )
+    locked_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+        default=None,
     )
     target_output: Mapped[str | None] = mapped_column(
         String(100),

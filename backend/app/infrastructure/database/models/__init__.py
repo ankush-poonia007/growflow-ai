@@ -4,6 +4,9 @@ GrowFlow — Database ORM Models Package.
 Registers all SQLAlchemy ORM models with Base.metadata.
 """
 
+from backend.app.infrastructure.database.models.agent_execution import (
+    AgentExecutionModel,
+)
 from backend.app.infrastructure.database.models.assessment import (
     AssessmentAnswerModel,
     AssessmentModel,
@@ -59,6 +62,7 @@ from backend.app.infrastructure.database.models.workspace_extensions import (
 __all__ = [
     "AIMentorConversationModel",
     "AIMentorMessageModel",
+    "AgentExecutionModel",
     "AssessmentAnswerModel",
     "AssessmentModel",
     "AssessmentQuestionModel",

@@ -11,7 +11,8 @@ export type BlueprintStatus =
   | 'READY_FOR_APPROVAL'
   | 'COMPLETED'
   | 'FAILED'
-  | 'APPROVED';
+  | 'APPROVED'
+  | 'CANCELLED';
 
 export type BlueprintQAStatus =
   | 'PENDING'
@@ -111,6 +112,19 @@ export interface BlueprintStatusResponse {
   active_job?: BlueprintJobSummary | null;
   created_at?: string | null;
   updated_at?: string | null;
+  // Enriched Unit 5 SSE & orchestration metadata
+  event_id?: string | null;
+  event_type?: string | null;
+  event_version?: string | null;
+  job_id?: string | null;
+  generation_number?: number | null;
+  current_step?: string | null;
+  progress_percent?: number | null;
+  regeneration_attempt?: number | null;
+  regeneration_target?: string | null;
+  qa_score?: number | null;
+  error_message?: string | null;
+  failed_output_key?: string | null;
 }
 
 export interface BlueprintContentResponse {

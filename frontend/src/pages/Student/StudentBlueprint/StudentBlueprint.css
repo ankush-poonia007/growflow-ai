@@ -844,17 +844,209 @@
 }
 
 /* --------------------------------------------------------------------------
-   Accessibility & Reduced Motion
+   Unit 6: Blueprint Cancellation Modal & Cancelled View
    -------------------------------------------------------------------------- */
-@media (prefers-reduced-motion: reduce) {
-  .gf-blueprint-progress-circle,
-  .gf-blueprint-spinner-dot {
-    animation: none !important;
-  }
-  .gf-blueprint-header__back,
-  .gf-blueprint-section-preview-item,
-  .gf-blueprint-tab {
-    transition: none !important;
-    transform: none !important;
-  }
+.gf-blueprint-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  padding: var(--gf-space-4, 1rem);
 }
+
+.gf-blueprint-modal-card {
+  background: var(--gf-color-surface, #ffffff);
+  border-radius: var(--gf-radius-xl, 16px);
+  width: 100%;
+  max-width: 520px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  border: 1px solid var(--gf-color-border-standard);
+  animation: gfModalIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.gf-blueprint-modal-header {
+  padding: var(--gf-space-6) var(--gf-space-6) var(--gf-space-3);
+  display: flex;
+  align-items: center;
+  gap: var(--gf-space-3);
+}
+
+.gf-blueprint-modal-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background-color: rgba(220, 38, 38, 0.08);
+  color: var(--gf-color-error, #dc2626);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.gf-blueprint-modal-title {
+  margin: 0;
+  font-size: var(--gf-text-h4-size, 1.25rem);
+  font-weight: 700;
+  color: var(--gf-color-text-primary);
+}
+
+.gf-blueprint-modal-body {
+  padding: 0 var(--gf-space-6) var(--gf-space-5);
+}
+
+.gf-blueprint-modal-desc {
+  margin: 0;
+  font-size: var(--gf-text-body-size, 0.9375rem);
+  color: var(--gf-color-text-secondary);
+  line-height: 1.6;
+}
+
+.gf-blueprint-modal-footer {
+  padding: var(--gf-space-4) var(--gf-space-6);
+  background-color: var(--gf-color-secondary, #f8fafc);
+  border-top: 1px solid var(--gf-color-border-subtle);
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--gf-space-3);
+}
+
+.gf-btn--danger {
+  background-color: var(--gf-color-error, #dc2626) !important;
+  color: #ffffff !important;
+  border-color: var(--gf-color-error, #dc2626) !important;
+}
+
+.gf-btn--danger:hover:not(:disabled) {
+  background-color: #b91c1c !important;
+  border-color: #b91c1c !important;
+}
+
+.gf-blueprint-badge-muted {
+  display: inline-block;
+  font-size: var(--gf-text-metadata-size);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gf-color-text-tertiary);
+  background-color: var(--gf-color-secondary);
+  padding: 3px 8px;
+  border-radius: var(--gf-radius-sm);
+  margin-bottom: var(--gf-space-1);
+}
+
+.gf-blueprint-cancelled-card {
+  border-left: 4px solid var(--gf-color-border-standard);
+}
+
+.gf-blueprint-cancelled__top {
+  display: flex;
+  gap: var(--gf-space-4);
+  align-items: flex-start;
+}
+
+.gf-blueprint-cancelled__icon-wrap {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--gf-radius-md);
+  background-color: var(--gf-color-secondary);
+  color: var(--gf-color-text-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.gf-blueprint-cancelled__message {
+  margin: var(--gf-space-2) 0 0;
+  font-size: var(--gf-text-body-size);
+  color: var(--gf-color-text-secondary);
+  line-height: 1.6;
+  max-width: 720px;
+}
+
+/* Parallel synthesis card & sub-items */
+.gf-blueprint-checklist-item--parallel {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--gf-space-3);
+  padding: var(--gf-space-4);
+  background-color: var(--gf-color-secondary);
+  border: 1px solid var(--gf-color-border-standard);
+}
+
+.gf-blueprint-parallel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gf-space-3);
+}
+
+.gf-blueprint-parallel-badge {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gf-color-accent);
+  background-color: var(--gf-color-accent-soft);
+  padding: 2px 8px;
+  border-radius: var(--gf-radius-sm);
+}
+
+.gf-blueprint-parallel-subgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--gf-space-2);
+  margin-top: var(--gf-space-2);
+}
+
+.gf-blueprint-parallel-subitem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--gf-space-2) var(--gf-space-3);
+  background-color: var(--gf-color-surface);
+  border: 1px solid var(--gf-color-border-subtle);
+  border-radius: var(--gf-radius-sm);
+  font-size: var(--gf-text-caption-size);
+}
+
+.gf-blueprint-refinement-banner {
+  border: 1px solid var(--gf-color-accent);
+  background-color: var(--gf-color-accent-soft);
+  border-radius: var(--gf-radius-md);
+  padding: var(--gf-space-4);
+  margin-bottom: var(--gf-space-4);
+  display: flex;
+  gap: var(--gf-space-3);
+  align-items: flex-start;
+}
+
+.gf-blueprint-refinement-banner__icon {
+  color: var(--gf-color-accent);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.gf-blueprint-refinement-banner__content {
+  font-size: var(--gf-text-body-size);
+  color: var(--gf-color-text-primary);
+  line-height: 1.5;
+}
+
+.gf-blueprint-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+

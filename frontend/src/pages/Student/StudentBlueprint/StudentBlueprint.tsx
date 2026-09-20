@@ -5,6 +5,7 @@ import {
   getBlueprintStatus,
   subscribeBlueprintEvents,
   startBlueprintGeneration,
+  cancelBlueprintGeneration,
   retryBlueprintGeneration,
   getBlueprintContent,
   approveBlueprint,
@@ -26,6 +27,8 @@ import {
   BlueprintFailureView,
   BlueprintReviewApproval,
   BlueprintApprovedView,
+  BlueprintCancelModal,
+  BlueprintCancelledView,
 } from './components';
 import './StudentBlueprint.css';
 
@@ -40,6 +43,8 @@ export function StudentBlueprint() {
   const [isStarting, setIsStarting] = useState<boolean>(false);
   const [isRetrying, setIsRetrying] = useState<boolean>(false);
   const [isApproving, setIsApproving] = useState<boolean>(false);
+  const [isCancelling, setIsCancelling] = useState<boolean>(false);
+  const [showCancelModal, setShowCancelModal] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [isStaleGeneration, setIsStaleGeneration] = useState<boolean>(false);
 
@@ -84,7 +89,19 @@ export function StudentBlueprint() {
     async (pid: string) => {
       try {
         const updated = await getBlueprintStatus(pid);
-        setBlueprintStatus(updated);
+        setBlueprintStatus((prev) => {
+          // Honor terminal success if race occurs
+          if (
+            prev &&
+            (prev.status === 'READY_FOR_APPROVAL' ||
+              prev.status === 'COMPLETED' ||
+              prev.status === 'APPROVED') &&
+            updated.status === 'CANCELLED'
+          ) {
+            return prev;
+          }
+          return updated;
+        });
 
         if (updated.status === 'GENERATING' || updated.status === 'VALIDATING') {
           pollingTimerRef.current = window.setTimeout(() => {
@@ -97,9 +114,14 @@ export function StudentBlueprint() {
           updated.status === 'APPROVED' ||
           updated.status === 'QA_REJECTED'
         ) {
+          setIsCancelling(false);
           stopActiveStreams();
           void fetchContent(pid);
+        } else if (updated.status === 'CANCELLED') {
+          setIsCancelling(false);
+          stopActiveStreams();
         } else {
+          setIsCancelling(false);
           stopActiveStreams();
         }
       } catch (err: any) {
@@ -122,7 +144,20 @@ export function StudentBlueprint() {
           const cleanup = await subscribeBlueprintEvents(
             pid,
             (updated) => {
-              setBlueprintStatus(updated);
+              setBlueprintStatus((prev) => {
+                // Honor terminal success if race occurs
+                if (
+                  prev &&
+                  (prev.status === 'READY_FOR_APPROVAL' ||
+                    prev.status === 'COMPLETED' ||
+                    prev.status === 'APPROVED') &&
+                  updated.status === 'CANCELLED'
+                ) {
+                  return prev;
+                }
+                return updated;
+              });
+
               if (
                 updated.status === 'READY_FOR_APPROVAL' ||
                 updated.status === 'COMPLETED' ||
@@ -130,9 +165,11 @@ export function StudentBlueprint() {
                 updated.status === 'APPROVED' ||
                 updated.status === 'QA_REJECTED'
               ) {
+                setIsCancelling(false);
                 stopActiveStreams();
                 void fetchContent(pid);
-              } else if (updated.status === 'FAILED') {
+              } else if (updated.status === 'CANCELLED' || updated.status === 'FAILED') {
+                setIsCancelling(false);
                 stopActiveStreams();
               }
             },
@@ -282,6 +319,38 @@ export function StudentBlueprint() {
       setError(err.message || 'Failed to retry blueprint synthesis.');
     } finally {
       setIsRetrying(false);
+    }
+  };
+
+  // Cooperative cancellation handler
+  const handleConfirmCancel = async () => {
+    if (!projectId) return;
+    try {
+      setIsCancelling(true);
+      setShowCancelModal(false);
+      const res = await cancelBlueprintGeneration(projectId);
+      if (res) {
+        setBlueprintStatus((prev) => {
+          // If already completed or approved, keep terminal success
+          if (
+            prev &&
+            (prev.status === 'READY_FOR_APPROVAL' ||
+              prev.status === 'COMPLETED' ||
+              prev.status === 'APPROVED')
+          ) {
+            return prev;
+          }
+          return res;
+        });
+        if (res.status === 'CANCELLED') {
+          stopActiveStreams();
+          setIsCancelling(false);
+        }
+      }
+    } catch (err: unknown) {
+      console.error('Cancellation request error:', err);
+      setError((err as Error)?.message || 'Failed to cancel blueprint generation.');
+      setIsCancelling(false);
     }
   };
 
@@ -447,14 +516,33 @@ export function StudentBlueprint() {
           onRetry={handleRetry}
           isRetrying={isRetrying}
         />
+      ) : currentStatus === 'CANCELLED' ? (
+        <BlueprintCancelledView
+          projectId={projectId}
+          onStartNewGeneration={handleStartGeneration}
+          isStarting={isStarting}
+        />
       ) : isGenerating ? (
-        <BlueprintGeneratingProgress progress={blueprintStatus?.generation_progress} />
+        <BlueprintGeneratingProgress
+          progress={blueprintStatus?.generation_progress}
+          status={blueprintStatus}
+          onCancelRequest={() => setShowCancelModal(true)}
+          isCancelling={isCancelling}
+        />
       ) : (
         <BlueprintNotStarted
           onStartGeneration={handleStartGeneration}
           isStarting={isStarting}
         />
       )}
+
+      {/* Cancellation Confirmation Modal */}
+      <BlueprintCancelModal
+        isOpen={showCancelModal}
+        isCancelling={isCancelling}
+        onClose={() => setShowCancelModal(false)}
+        onConfirm={handleConfirmCancel}
+      />
     </div>
   );
 }

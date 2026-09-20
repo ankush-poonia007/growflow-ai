@@ -480,6 +480,21 @@ export async function retryBlueprintGeneration(
 }
 
 /**
+ * Cooperatively request cancellation of active blueprint generation.
+ * POST /api/v1/projects/:projectId/blueprint/cancel
+ */
+export async function cancelBlueprintGeneration(
+  projectId: string,
+): Promise<BlueprintStatusResponse> {
+  return apiFetch<BlueprintStatusResponse>(
+    `/api/v1/projects/${projectId}/blueprint/cancel`,
+    {
+      method: 'POST',
+    },
+  );
+}
+
+/**
  * Fetch full synthesized blueprint sections and QA feedback.
  * GET /api/v1/projects/:projectId/blueprint/content
  */
@@ -834,6 +849,7 @@ export const apiClient = {
   getBlueprintStatus,
   subscribeBlueprintEvents,
   startBlueprintGeneration,
+  cancelBlueprintGeneration,
   retryBlueprintGeneration,
   getBlueprintContent,
   approveBlueprint,
