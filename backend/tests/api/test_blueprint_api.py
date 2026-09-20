@@ -1,5 +1,5 @@
 """
-GrowFlow Batch S12–S14 — API & Domain Tests for Student Blueprint Workflow.
+GrowFlow Batch S12-S14 — API & Domain Tests for Student Blueprint Workflow.
 
 Covers:
 1. Unauthenticated requests return 401 Unauthorized.
@@ -35,6 +35,7 @@ import pytest
 from backend.app.api.dependencies.database import get_db_session
 from backend.app.api.dependencies.services import get_blueprint_service
 from backend.app.application.services.blueprint_service import BlueprintService
+from backend.app.domain.ai.orchestration.worker import BlueprintWorker
 from backend.app.domain.assessment.models import AssessmentStatus
 from backend.app.domain.blueprint.models import (
     CANONICAL_BLUEPRINT_SECTION_ORDER,
@@ -50,7 +51,10 @@ from backend.app.domain.project.models import (
     ProjectStatus,
 )
 from backend.app.factory import create_app
-from backend.app.infrastructure.database.models.assessment import AssessmentModel, AssessmentResultModel
+from backend.app.infrastructure.database.models.assessment import (
+    AssessmentModel,
+    AssessmentResultModel,
+)
 from backend.app.infrastructure.database.models.blueprint import BlueprintModel
 from backend.app.infrastructure.database.models.project import ProjectInstanceModel
 from backend.app.infrastructure.database.models.user import UserModel
@@ -61,6 +65,7 @@ from backend.app.infrastructure.repositories.user_repository import UserReposito
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Generator
+
     from backend.app.config.settings import Settings
 
 _TEST_SECRET = "gate-09-test-secret-at-least-32-chars-long-123"
@@ -262,6 +267,8 @@ def client(
 
     mock_blueprint_repo.get_by_id.side_effect = _bp_get_by_id
     mock_blueprint_repo.get_by_project_id.side_effect = _bp_get_by_proj
+    mock_blueprint_repo.get_by_project_id_for_update.side_effect = _bp_get_by_proj
+    mock_blueprint_repo.increment_generation_number.return_value = 1
     mock_blueprint_repo.create_or_get_blueprint.side_effect = _bp_create_or_get
     mock_blueprint_repo.update_status.side_effect = _bp_update_status
     mock_blueprint_repo.save_content_section.side_effect = _bp_save_content
@@ -280,12 +287,30 @@ def client(
         return None
     mock_outbox_service.emit.side_effect = _mock_emit
 
+    mock_worker = AsyncMock(spec=BlueprintWorker)
+    async def _mock_run_job(job_id, project_id, blueprint_id, **kwargs):
+        bp = blueprints_store.get(str(project_id))
+        if bp:
+            bp.status = BlueprintStatus.READY_FOR_APPROVAL.value
+            bp.qa_status = BlueprintQAStatus.PASS.value
+            bp.qa_score = 88
+            bp.qa_feedback = {
+                "overall_score": 88,
+                "overall_feedback": "Looks great",
+                "critical_issues": [],
+                "recommendations": [],
+            }
+            bp.content = {k.value: f"Section {k.value} content" for k in BlueprintSectionKey}
+            bp.updated_at = datetime.now(UTC)
+    mock_worker.run_generation_job.side_effect = _mock_run_job
+
     service = BlueprintService(
         blueprint_repo=mock_blueprint_repo,
         project_repo=mock_project_repo,
         assessment_repo=mock_assessment_repo,
         project_service=mock_project_service,
         outbox_service=mock_outbox_service,
+        worker=mock_worker,
     )
 
     orig_start = service.start_generation
@@ -338,9 +363,11 @@ def client(
     app.dependency_overrides[get_db_session] = _override_get_db_session
     app.dependency_overrides[get_blueprint_service] = lambda: service
 
-    with patch("backend.app.api.dependencies.auth.UserRepository", return_value=mock_user_repo):
-        with TestClient(app, base_url="http://testserver") as test_client:
-            yield test_client
+    with (
+        patch("backend.app.api.dependencies.auth.UserRepository", return_value=mock_user_repo),
+        TestClient(app, base_url="http://testserver") as test_client,
+    ):
+        yield test_client
 
     app.dependency_overrides.clear()
 

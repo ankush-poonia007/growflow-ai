@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 import re
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 import uuid
 
 from backend.app.api.schemas.execution import (
@@ -36,6 +36,10 @@ from backend.app.api.schemas.execution import (
     TaskResponse,
     TaskUpdatePayload,
 )
+from backend.app.application.services.authorization_helpers import (
+    verify_project_read_access,
+)
+from backend.app.domain.blueprint.models import BlueprintStatus
 from backend.app.infrastructure.database.models.execution import (
     ProjectDocumentModel,
     ProjectMilestoneModel,
@@ -45,11 +49,7 @@ from backend.app.infrastructure.database.models.execution import (
 from backend.app.shared.events.domain_event import DomainEventType
 from backend.app.shared.exceptions import (
     AuthorizationException,
-    BusinessRuleException,
     NotFoundException,
-)
-from backend.app.application.services.authorization_helpers import (
-    verify_project_read_access,
 )
 from backend.app.shared.logging import get_logger
 
@@ -144,6 +144,10 @@ class ExecutionService:
 
         latest_bp = await self._blueprint_repo.get_latest_by_project(project.id)
         if not latest_bp or not latest_bp.content:
+            return
+
+        # Gate 10: Execution structures must materialize ONLY from an APPROVED blueprint
+        if latest_bp.status != BlueprintStatus.APPROVED.value:
             return
 
         content = latest_bp.content or {}
