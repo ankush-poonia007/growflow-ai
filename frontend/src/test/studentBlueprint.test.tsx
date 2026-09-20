@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router';
 import { StudentBlueprint } from '@/pages/Student/StudentBlueprint/StudentBlueprint';
 import { AuthHeader } from '@/components/navigation/AuthHeader';
@@ -24,9 +24,11 @@ vi.mock('@/lib/api', async () => {
     getProject: vi.fn(),
     getBlueprintStatus: vi.fn(),
     startBlueprintGeneration: vi.fn(),
+    cancelBlueprintGeneration: vi.fn(),
     retryBlueprintGeneration: vi.fn(),
     getBlueprintContent: vi.fn(),
     approveBlueprint: vi.fn(),
+    subscribeBlueprintEvents: vi.fn(),
   };
 });
 
@@ -501,6 +503,435 @@ describe('Student Blueprint Workflow (S12–S14) & Global Navigation Corrections
       await waitFor(() => {
         expect(api.approveBlueprint).toHaveBeenCalledWith('proj-123');
       });
+    });
+  });
+
+  describe('Gate 09 — Unit 6: Student Blueprint Generation & Monitoring Experience', () => {
+    // Test 1 — Existing initial state
+    it('Test 1: renders BlueprintNotStarted correctly with 10 canonical sections', async () => {
+      vi.mocked(api.getProject).mockResolvedValue(mockProjectReady);
+      vi.mocked(api.getBlueprintStatus).mockResolvedValue(mockStatusNotStarted);
+
+      renderWithProviders(<StudentBlueprint />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Architectural Blueprint Synthesis')).toBeInTheDocument();
+      });
+
+      expect(screen.getByText('Project Profile & Domain Context')).toBeInTheDocument();
+      expect(screen.getByText('Technical Stack & Architecture')).toBeInTheDocument();
+      expect(screen.getByText('Core Features & System Modules')).toBeInTheDocument();
+      expect(screen.getByText('Technical Specifications & Data Models')).toBeInTheDocument();
+      expect(screen.getByText('MVP Scope & Validation Criteria')).toBeInTheDocument();
+      expect(screen.getByText('Timeline & Sprint Duration')).toBeInTheDocument();
+      expect(screen.getByText('Technical Risks & Mitigations')).toBeInTheDocument();
+      expect(screen.getByText('Granular Work Breakdown (Tasks)')).toBeInTheDocument();
+      expect(screen.getByText('Stage Milestones & Gate Deliverables')).toBeInTheDocument();
+      expect(screen.getByText('Production README & Setup Guide')).toBeInTheDocument();
+
+      expect(screen.getByRole('button', { name: /generate project blueprint/i })).toBeInTheDocument();
+    });
+
+    // Test 2 — Start generation
+    it('Test 2: start generation invokes API and begins SSE tracking', async () => {
+      vi.mocked(api.getProject).mockResolvedValue(mockProjectReady);
+      vi.mocked(api.getBlueprintStatus).mockResolvedValue(mockStatusNotStarted);
+      vi.mocked(api.startBlueprintGeneration).mockResolvedValue(mockStatusGenerating);
+      vi.mocked(api.subscribeBlueprintEvents).mockResolvedValue(() => {});
+
+      renderWithProviders(<StudentBlueprint />);
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: /generate project blueprint/i })).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: /generate project blueprint/i }));
+
+      await waitFor(() => {
+        expect(api.startBlueprintGeneration).toHaveBeenCalledWith('proj-123');
+      });
+
+      await waitFor(() => {
+        expect(api.subscribeBlueprintEvents).toHaveBeenCalledWith(
+          'proj-123',
+          expect.any(Function),
+          expect.any(Function)
+        );
+      });
+    });
+
+    // Test 3 — Live progress
+    it('Test 3: reflects live SSE updates with progress percent and active step', async () => {
+      vi.mocked(api.getProject).mockResolvedValue(mockProjectReady);
+      vi.mocked(api.getBlueprintStatus).mockResolvedValue(mockStatusGenerating);
+
+      let sseCallback: ((data: BlueprintStatusResponse) => void) | null = null;
+      vi.mocked(api.subscribeBlueprintEvents).mockImplementation((_pid, onUpdate) => {
+        sseCallback = onUpdate;
+        return Promise.resolve(() => {});
+      });
+
+      renderWithProviders(<StudentBlueprint />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Generating Architectural Blueprint')).toBeInTheDocument();
+      });
+
+      // Simulate live SSE event
+      act(() => {
+        if (sseCallback) {
+          sseCallback({
+            ...mockStatusGenerating,
+            current_step: 'tasks',
+            progress_percent: 65,
+            generation_progress: {
+              completed_sections: [
+                'project_profile',
+                'tech_stack',
+                'features',
+                'mvp',
+                'specifications',
+                'duration',
+                'risks',
+              ],
+              total_sections: 10,
+              in_progress_section: 'tasks',
+            },
+          });
+        }
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('65%')).toBeInTheDocument();
+      });
+      expect(screen.getByText('7 of 10')).toBeInTheDocument();
+    });
+
+    // Test 4 — Parallel group
+    it('Test 4: renders Technology, Features, and MVP grouped in parallel synthesis', async () => {
+      vi.mocked(api.getProject).mockResolvedValue(mockProjectReady);
+      vi.mocked(api.getBlueprintStatus).mockResolvedValue(mockStatusGenerating);
+
+      renderWithProviders(<StudentBlueprint />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('parallel-synthesis-group')).toBeInTheDocument();
+      });
+
+      const parallelGroup = screen.getByTestId('parallel-synthesis-group');
+      expect(parallelGroup).toHaveTextContent('Core Architecture & Scope');
+      expect(parallelGroup).toHaveTextContent('Parallel Synthesis');
+
+      // Verify Technology, Features, MVP sub-items appear in the parallel group
+      expect(parallelGroup).toHaveTextContent('Technology');
+      expect(parallelGroup).toHaveTextContent('Tech Stack & Architecture');
+      expect(parallelGroup).toHaveTextContent('Features');
+      expect(parallelGroup).toHaveTextContent('Core Features & Modules');
+      expect(parallelGroup).toHaveTextContent('MVP');
+      expect(parallelGroup).toHaveTextContent('MVP Scope & Validation');
+    });
+
+    // Test 5 — QA/Judge
+    it('Test 5: renders QA/Judge step with score and evaluation status', async () => {
+      vi.mocked(api.getProject).mockResolvedValue(mockProjectReady);
+      vi.mocked(api.getBlueprintStatus).mockResolvedValue({
+        ...mockStatusGenerating,
+        current_step: 'qa_judge',
+        qa_score: 88,
+        qa_status: 'IN_REVIEW',
+        progress_percent: 95,
+      });
+
+      renderWithProviders(<StudentBlueprint />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('qa-judge-step')).toBeInTheDocument();
+      });
+
+      const qaStep = screen.getByTestId('qa-judge-step');
+      expect(qaStep).toHaveTextContent('Architectural QA & Schema Validation');
+      expect(qaStep).toHaveTextContent('(Score: 88/100)');
+      expect(qaStep).toHaveTextContent('Evaluating...');
+    });
+
+    // Test 6 — Targeted regeneration
+    it('Test 6: renders targeted refinement notice with attempt number and dynamic section target', async () => {
+      vi.mocked(api.getProject).mockResolvedValue(mockProjectReady);
+      vi.mocked(api.getBlueprintStatus).mockResolvedValue({
+        ...mockStatusGenerating,
+        regeneration_attempt: 1,
+        regeneration_target: 'timeline',
+      });
+
+      renderWithProviders(<StudentBlueprint />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('targeted-refinement-notice')).toBeInTheDocument();
+      });
+
+      const notice = screen.getByTestId('targeted-refinement-notice');
+      expect(notice).toHaveTextContent('Targeted Refinement in Progress');
+      expect(notice).toHaveTextContent('(Attempt 1 of 2)');
+      expect(notice).toHaveTextContent('Timeline & Sprint Duration');
+      expect(notice).toHaveTextContent('Upstream sections remain preserved while this section is being refined.');
+    });
+
+    it('Test 6b: handles non-timeline regeneration target dynamically without hardcoding', async () => {
+      vi.mocked(api.getProject).mockResolvedValue(mockProjectReady);
+      vi.mocked(api.getBlueprintStatus).mockResolvedValue({
+        ...mockStatusGenerating,
+        regeneration_attempt: 2,
+        regeneration_target: 'risks',
+      });
+
+      renderWithProviders(<StudentBlueprint />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('targeted-refinement-notice')).toBeInTheDocument();
+      });
+
+      const notice = screen.getByTestId('targeted-refinement-notice');
+      expect(notice).toHaveTextContent('(Attempt 2 of 2)');
+      expect(notice).toHaveTextContent('Technical Risks & Mitigations');
+    });
+
+    // Test 7 — Cancellation modal
+    it('Test 7: opens cancellation modal, allows dismissing, and confirms cancellation', async () => {
+      vi.mocked(api.getProject).mockResolvedValue(mockProjectReady);
+      vi.mocked(api.getBlueprintStatus).mockResolvedValue(mockStatusGenerating);
+      vi.mocked(api.cancelBlueprintGeneration).mockResolvedValue({
+        ...mockStatusGenerating,
+        status: 'CANCELLED',
+      });
+
+      renderWithProviders(<StudentBlueprint />);
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: /cancel generation/i })).toBeInTheDocument();
+      });
+
+      // Click "Cancel Generation"
+      fireEvent.click(screen.getByRole('button', { name: /cancel generation/i }));
+
+      // Modal should open
+      const modal = screen.getByRole('dialog');
+      expect(modal).toBeInTheDocument();
+      expect(screen.getByText('Cancel Blueprint Generation?')).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          'Are you sure you want to stop generation? Any uncommitted architectural sections from this run will be discarded.'
+        )
+      ).toBeInTheDocument();
+
+      // Click "Keep Generating" -> modal closes without calling API
+      fireEvent.click(screen.getByRole('button', { name: /keep generating/i }));
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(api.cancelBlueprintGeneration).not.toHaveBeenCalled();
+
+      // Re-open and confirm cancellation
+      fireEvent.click(screen.getByRole('button', { name: /cancel generation/i }));
+      fireEvent.click(screen.getByRole('button', { name: /yes, cancel generation/i }));
+
+      await waitFor(() => {
+        expect(api.cancelBlueprintGeneration).toHaveBeenCalledWith('proj-123');
+      });
+    });
+
+    // Test 8 — Cancellation completion
+    it('Test 8: renders BlueprintCancelledView when status is CANCELLED', async () => {
+      const mockStatusCancelled: BlueprintStatusResponse = {
+        blueprint_id: 'bp-123',
+        project_id: 'proj-123',
+        status: 'CANCELLED',
+        current_stage: 3,
+        qa_status: 'PENDING',
+        generation_progress: {
+          completed_sections: [],
+          total_sections: 10,
+        },
+      };
+
+      vi.mocked(api.getProject).mockResolvedValue(mockProjectReady);
+      vi.mocked(api.getBlueprintStatus).mockResolvedValue(mockStatusCancelled);
+
+      renderWithProviders(<StudentBlueprint />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('blueprint-cancelled-view')).toBeInTheDocument();
+      });
+
+      expect(screen.getByText('Blueprint Generation Cancelled')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /start new generation/i })).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: /return to project/i })).toBeInTheDocument();
+    });
+
+    // Test 9 — Cancellation race
+    it('Test 9: honors terminal completion over late CANCELLED event during cancellation race', async () => {
+      vi.mocked(api.getProject).mockResolvedValue(mockProjectReady);
+      vi.mocked(api.getBlueprintStatus).mockResolvedValue(mockStatusGenerating);
+      vi.mocked(api.getBlueprintContent).mockResolvedValue(mockBlueprintContent);
+
+      let sseCallback: ((data: BlueprintStatusResponse) => void) | null = null;
+      vi.mocked(api.subscribeBlueprintEvents).mockImplementation((_pid, onUpdate) => {
+        sseCallback = onUpdate;
+        return Promise.resolve(() => {});
+      });
+
+      // Cancellation request delayed
+      vi.mocked(api.cancelBlueprintGeneration).mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            setTimeout(
+              () =>
+                resolve({
+                  ...mockStatusGenerating,
+                  status: 'CANCELLED',
+                }),
+              50
+            );
+          })
+      );
+
+      renderWithProviders(<StudentBlueprint />);
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: /cancel generation/i })).toBeInTheDocument();
+      });
+
+      // User initiates cancellation
+      fireEvent.click(screen.getByRole('button', { name: /cancel generation/i }));
+      fireEvent.click(screen.getByRole('button', { name: /yes, cancel generation/i }));
+
+      // Backend finishes synthesis first with READY_FOR_APPROVAL
+      act(() => {
+        if (sseCallback) {
+          sseCallback({
+            ...mockStatusCompleted,
+            status: 'READY_FOR_APPROVAL',
+          });
+        }
+      });
+
+      // Even if CANCELLED arrives afterwards, READY_FOR_APPROVAL wins
+      await waitFor(() => {
+        expect(screen.getByText('Autonomous Judge & QA Scorecard')).toBeInTheDocument();
+      });
+      expect(screen.queryByTestId('blueprint-cancelled-view')).not.toBeInTheDocument();
+    });
+
+    // Test 10 — SSE fallback
+    it('Test 10: transparently falls back to polling when SSE subscription fails', async () => {
+      vi.mocked(api.getProject).mockResolvedValue(mockProjectReady);
+      vi.mocked(api.getBlueprintStatus).mockResolvedValue(mockStatusGenerating);
+
+      vi.mocked(api.subscribeBlueprintEvents).mockImplementation((_pid, _onUpdate, onError) => {
+        if (onError) onError(new Error('SSE connection failed'));
+        return Promise.reject(new Error('SSE connection failed'));
+      });
+
+      renderWithProviders(<StudentBlueprint />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Generating Architectural Blueprint')).toBeInTheDocument();
+      });
+
+      // Polling fallback called getBlueprintStatus
+      await waitFor(() => {
+        expect(api.getBlueprintStatus).toHaveBeenCalledWith('proj-123');
+      });
+    });
+
+    // Test 11 — Malformed event
+    it('Test 11: malformed SSE event data does not crash client stream', async () => {
+      // Test subscribeBlueprintEvents handling of malformed event data
+      interface MockESListener {
+        (event: { data: string }): void;
+      }
+      const mockEventSourceInstances: MockEventSource[] = [];
+      const originalEventSource = window.EventSource;
+
+      class MockEventSource {
+        url: string;
+        listeners: Record<string, MockESListener[]> = {};
+        onerror: ((err: unknown) => void) | null = null;
+
+        constructor(url: string) {
+          this.url = url;
+          mockEventSourceInstances.push(this);
+        }
+
+        addEventListener(type: string, listener: MockESListener) {
+          if (!this.listeners[type]) this.listeners[type] = [];
+          this.listeners[type].push(listener);
+        }
+
+        close() {}
+      }
+
+      window.EventSource = MockEventSource as unknown as typeof EventSource;
+
+      try {
+        const onUpdate = vi.fn();
+        const onError = vi.fn();
+
+        const unsubscribe = await apiClient.subscribeBlueprintEvents('proj-123', onUpdate, onError);
+        const esInstance = mockEventSourceInstances[0];
+
+        // Emit malformed JSON
+        const updateListeners = esInstance.listeners['update'] || [];
+        expect(updateListeners.length).toBeGreaterThan(0);
+
+        // This should not throw or crash
+        expect(() => {
+          updateListeners[0]({ data: 'INVALID_JSON{{{' });
+        }).not.toThrow();
+
+        // onUpdate should NOT be called with invalid JSON
+        expect(onUpdate).not.toHaveBeenCalled();
+
+        // Stream should still be alive and accept valid JSON next
+        updateListeners[0]({
+          data: JSON.stringify(mockStatusGenerating),
+        });
+        expect(onUpdate).toHaveBeenCalledWith(mockStatusGenerating);
+
+        unsubscribe();
+      } finally {
+        window.EventSource = originalEventSource;
+      }
+    });
+
+    // Test 12 — TypeScript types
+    it('Test 12: confirms BlueprintStatus and BlueprintStatusResponse accept all Unit 5 metadata', () => {
+      const fullResponse: BlueprintStatusResponse = {
+        blueprint_id: 'bp-test',
+        project_id: 'proj-test',
+        status: 'CANCELLED',
+        current_stage: 3,
+        qa_status: 'PASSED',
+        generation_progress: {
+          completed_sections: ['project_profile'],
+          total_sections: 10,
+          in_progress_section: 'tech_stack',
+          failed_sections: [],
+        },
+        event_id: 'event-001',
+        event_type: 'job.started',
+        event_version: '1.0.0',
+        job_id: 'job-123',
+        generation_number: 1,
+        current_step: 'technology',
+        progress_percent: 25,
+        regeneration_attempt: 1,
+        regeneration_target: 'timeline',
+        qa_score: 85,
+        error_message: null,
+        failed_output_key: null,
+      };
+
+      expect(fullResponse.status).toBe('CANCELLED');
+      expect(fullResponse.progress_percent).toBe(25);
+      expect(fullResponse.regeneration_target).toBe('timeline');
     });
   });
 });

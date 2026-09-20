@@ -17,6 +17,7 @@ Covers:
 from __future__ import annotations
 
 import asyncio
+import contextlib
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -975,18 +976,9 @@ class TestBlueprintSSE:
             current_step="features",
             updated_at=now,
         )
-        bp_term = BlueprintSession(
-            id=uuid.uuid4(),
-            project_instance_id=project_id,
-            student_id=student_id,
-            status=BlueprintStatus.READY_FOR_APPROVAL,
-            progress_percent=100,
-            current_step="readme",
-            updated_at=now + timedelta(seconds=2),
-        )
 
         mock_service = AsyncMock(spec=BlueprintService)
-        mock_service.get_status.side_effect = [bp_stable, bp_stable, bp_term]
+        mock_service.get_status.return_value = bp_stable
 
         async def _override_get_db_session():
             yield AsyncMock()
@@ -1000,15 +992,46 @@ class TestBlueprintSSE:
             mock_user_repo.get_by_id.return_value = mock_user
             mock_user_repo_cls.return_value = mock_user_repo
 
-            with patch("asyncio.sleep", new_callable=AsyncMock):
-                with TestClient(app) as client:
-                    response = client.get(
-                        f"/api/v1/projects/{project_id}/blueprint/events",
-                        headers={"Authorization": f"Bearer {token}"},
-                    )
-                    assert response.status_code == 200
-                    assert ": keep-alive" in response.text
-                    assert "READY_FOR_APPROVAL" in response.text
+            from backend.app.domain.ai.orchestration.events import (
+                WorkflowEvent,
+                WorkflowEventType,
+                get_blueprint_event_manager,
+            )
+
+            manager = get_blueprint_event_manager()
+            mock_service.event_manager = manager
+
+            ev_term = WorkflowEvent(
+                event_type=WorkflowEventType.JOB_COMPLETED.value,
+                job_id="job-term",
+                project_id=str(project_id),
+                generation_number=1,
+                step="completed",
+            )
+
+            orig_wait_for = asyncio.wait_for
+
+            async def _fast_wait_for(fut, timeout):
+                if not hasattr(_fast_wait_for, "timed_out"):
+                    _fast_wait_for.timed_out = True
+                    # Await real queue.get() with a 0.05s timeout -> raises real asyncio.TimeoutError
+                    return await orig_wait_for(fut, timeout=0.05)
+                # After keepalive was emitted, publish real terminal event to real event manager
+                await manager.publish(ev_term)
+                # Await real queue.get() which now receives the published ev_term
+                return await orig_wait_for(fut, timeout=1.0)
+
+            with (
+                patch("asyncio.wait_for", side_effect=_fast_wait_for),
+                TestClient(app) as client,
+            ):
+                response = client.get(
+                    f"/api/v1/projects/{project_id}/blueprint/events",
+                    headers={"Authorization": f"Bearer {token}"},
+                )
+                assert response.status_code == 200
+                assert ": keep-alive" in response.text
+                assert "READY_FOR_APPROVAL" in response.text
 
         app.dependency_overrides.clear()
 
@@ -1025,6 +1048,8 @@ class TestBlueprintSSE:
         BlueprintService._active_tasks.add(bg_task)
 
         mock_request = AsyncMock()
+        mock_request.headers = {}
+        mock_request.query_params = {}
         mock_request.is_disconnected.return_value = True
 
         mock_service = AsyncMock(spec=BlueprintService)
@@ -1052,8 +1077,6 @@ class TestBlueprintSSE:
         assert not bg_task.done()
 
         bg_task.cancel()
-        try:
+        with contextlib.suppress(asyncio.CancelledError):
             await bg_task
-        except asyncio.CancelledError:
-            pass
         BlueprintService._active_tasks.discard(bg_task)

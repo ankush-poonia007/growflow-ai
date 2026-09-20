@@ -31,13 +31,13 @@ Architecture ref:
 from __future__ import annotations
 
 import asyncio
-from datetime import UTC, datetime
 import re
 from typing import TYPE_CHECKING, Any
 import uuid
 
 from sqlalchemy import select
 
+from backend.app.domain.ai.orchestration.worker import BlueprintWorker
 from backend.app.domain.assessment.models import AssessmentStatus
 from backend.app.domain.blueprint.models import (
     CANONICAL_BLUEPRINT_SECTION_ORDER,
@@ -50,6 +50,17 @@ from backend.app.domain.blueprint.models import (
     BlueprintSession,
     BlueprintStatus,
 )
+from backend.app.domain.project.models import ProjectPhase
+from backend.app.infrastructure.ai.gateway import AIProviderGateway
+from backend.app.infrastructure.database import lifecycle as db_lifecycle
+from backend.app.infrastructure.database.models.blueprint import BlueprintJobModel, BlueprintModel
+from backend.app.shared.events.domain_event import DomainEventType
+from backend.app.shared.exceptions import (
+    AuthorizationException,
+    BusinessRuleException,
+    NotFoundException,
+)
+from backend.app.shared.logging import get_logger
 
 CANONICAL_BLUEPRINT_SECTION_TITLES: dict[str, str] = {
     BlueprintSectionKey.PROJECT_PROFILE.value: "Project Profile & Domain Context",
@@ -64,23 +75,13 @@ CANONICAL_BLUEPRINT_SECTION_TITLES: dict[str, str] = {
     BlueprintSectionKey.README.value: "README & Setup Guide",
     "full": "Complete Master Blueprint",
 }
-from backend.app.domain.project.models import ProjectPhase
-from backend.app.infrastructure.ai.gateway import AIProviderGateway
-from backend.app.infrastructure.database import lifecycle as db_lifecycle
-from backend.app.infrastructure.database.models.blueprint import BlueprintJobModel, BlueprintModel
-from backend.app.shared.events.domain_event import DomainEventType
-from backend.app.shared.exceptions import (
-    AuthorizationException,
-    BusinessRuleException,
-    NotFoundException,
-)
-from backend.app.shared.logging import get_logger
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
     from backend.app.application.services.outbox_service import OutboxService
     from backend.app.application.services.project_service import ProjectService
+    from backend.app.domain.ai.orchestration.events import BlueprintEventManager
     from backend.app.domain.identity import CurrentUser
     from backend.app.infrastructure.database.models.project import ProjectInstanceModel
     from backend.app.infrastructure.repositories.assessment_repository import AssessmentRepository
@@ -104,7 +105,11 @@ class BlueprintService:
         outbox_service: OutboxService,
         ai_gateway: AIProviderGateway | None = None,
         session_factory: async_sessionmaker[AsyncSession] | None = None,
+        worker: BlueprintWorker | None = None,
+        event_manager: BlueprintEventManager | None = None,
     ) -> None:
+        from backend.app.domain.ai.orchestration.events import get_blueprint_event_manager
+
         self._blueprint_repo = blueprint_repo
         self._project_repo = project_repo
         self._assessment_repo = assessment_repo
@@ -112,6 +117,20 @@ class BlueprintService:
         self._outbox_service = outbox_service
         self._ai_gateway = ai_gateway or AIProviderGateway()
         self._session_factory = session_factory
+        self._event_manager = event_manager or get_blueprint_event_manager()
+        self._worker = worker or BlueprintWorker(
+            session_factory=session_factory,
+            ai_gateway=self._ai_gateway,
+            blueprint_repo=blueprint_repo,
+            project_repo=project_repo,
+            assessment_repo=assessment_repo,
+            event_publisher=self._event_manager,
+        )
+
+    @property
+    def event_manager(self) -> BlueprintEventManager:
+        """Return the event manager instance used by this service and worker."""
+        return self._event_manager
 
     async def _verify_project_ownership(
         self,
@@ -227,12 +246,19 @@ class BlueprintService:
                     reason="Student initiated Blueprint Generation",
                 )
             except Exception as exc:
-                logger.warning("Project phase transition to BLUEPRINT skipped or failed", error=str(exc))
+                logger.warning(
+                    "Project phase transition to BLUEPRINT skipped or failed", error=str(exc)
+                )
 
-        # 3. Create or retrieve blueprint session
-        blueprint = await self._blueprint_repo.create_or_get_blueprint(
-            project.id, current_user.user_id
-        )
+        # 3. Create or retrieve blueprint session with row-level locking
+        blueprint = await self._blueprint_repo.get_by_project_id_for_update(project.id)
+        if not blueprint:
+            blueprint = await self._blueprint_repo.create_or_get_blueprint(
+                project.id, current_user.user_id
+            )
+            blueprint = (
+                await self._blueprint_repo.get_by_project_id_for_update(project.id) or blueprint
+            )
 
         # Idempotency / in-progress guard
         if blueprint.status == BlueprintStatus.GENERATING.value and not force_regenerate:
@@ -240,11 +266,15 @@ class BlueprintService:
         if blueprint.status == BlueprintStatus.APPROVED.value and not force_regenerate:
             return blueprint.to_domain()
 
+        # Atomic generation number increment
+        new_gen_number = await self._blueprint_repo.increment_generation_number(blueprint.id)
+        blueprint.generation_number = new_gen_number
+
         # Update to GENERATING
         blueprint = await self._blueprint_repo.update_status(
             blueprint,
             BlueprintStatus.GENERATING,
-            current_step="project_profile",
+            current_step="idea",
             progress_percent=5,
             error_message=None,
             failed_output_key=None,
@@ -252,21 +282,50 @@ class BlueprintService:
 
         # Create persistent job
         job = await self._blueprint_repo.create_job(
-            blueprint.id, project.id, BlueprintJobType.FULL_GENERATION.value
+            blueprint.id,
+            project.id,
+            BlueprintJobType.FULL_GENERATION.value,
+            generation_number=new_gen_number,
         )
         if hasattr(self._blueprint_repo, "_session") and self._blueprint_repo._session:
-            await self._blueprint_repo._session.flush()
+            await self._blueprint_repo._session.commit()
 
-        # Execute generation pipeline in background asyncio Task decoupled from HTTP request
+        # Execute generation pipeline via durable BlueprintWorker decoupled from HTTP request
         task = asyncio.create_task(
-            self._run_generation_task(
+            self._worker.run_generation_job(
+                job_id=str(job.id),
                 project_id=str(project.id),
                 blueprint_id=str(blueprint.id),
-                job_id=str(job.id),
             )
         )
         self._active_tasks.add(task)
         task.add_done_callback(self._active_tasks.discard)
+
+        return blueprint.to_domain()
+
+    async def cancel_generation(
+        self,
+        project_id: uuid.UUID | str,
+        current_user: CurrentUser,
+    ) -> BlueprintSession:
+        """
+        Cooperatively request cancellation of an active blueprint generation job.
+        Idempotent: if generation is already terminal or cancelled, returns current state.
+        """
+        project = await self._verify_project_ownership(project_id, current_user)
+        blueprint = await self._blueprint_repo.get_by_project_id_for_update(project.id)
+        if not blueprint:
+            raise NotFoundException("Blueprint not found.", code="BLUEPRINT_NOT_FOUND")
+
+        # If not actively generating, idempotent no-op
+        if blueprint.status != BlueprintStatus.GENERATING.value:
+            return blueprint.to_domain()
+
+        active_job = await self._blueprint_repo.get_active_job(blueprint.id)
+        if active_job:
+            await self._blueprint_repo.request_cancellation(active_job.id)
+            if hasattr(self._blueprint_repo, "_session") and self._blueprint_repo._session:
+                await self._blueprint_repo._session.commit()
 
         return blueprint.to_domain()
 
@@ -337,10 +396,14 @@ class BlueprintService:
             raise NotFoundException("Blueprint not found.", code="BLUEPRINT_NOT_FOUND")
 
         # Approval verification rules
-        if blueprint.status not in [
-            BlueprintStatus.READY_FOR_APPROVAL.value,
-            BlueprintStatus.GENERATED.value,
-        ] or blueprint.qa_status != BlueprintQAStatus.PASS.value:
+        if (
+            blueprint.status
+            not in [
+                BlueprintStatus.READY_FOR_APPROVAL.value,
+                BlueprintStatus.GENERATED.value,
+            ]
+            or blueprint.qa_status != BlueprintQAStatus.PASS.value
+        ):
             raise BusinessRuleException(
                 "Blueprint is not eligible for approval. The blueprint must pass QA validation first.",
                 code="BLUEPRINT_NOT_READY_FOR_APPROVAL",
@@ -380,14 +443,26 @@ class BlueprintService:
         factory = self._session_factory or db_lifecycle.get_session_factory()
         if factory is not None:
             async with factory() as session:
-                from backend.app.application.services.notification_service import NotificationService
+                from backend.app.application.services.notification_service import (
+                    NotificationService,
+                )
                 from backend.app.application.services.outbox_service import OutboxService
-                from backend.app.infrastructure.repositories.assessment_repository import AssessmentRepository
-                from backend.app.infrastructure.repositories.blueprint_repository import BlueprintRepository
+                from backend.app.infrastructure.repositories.assessment_repository import (
+                    AssessmentRepository,
+                )
+                from backend.app.infrastructure.repositories.blueprint_repository import (
+                    BlueprintRepository,
+                )
                 from backend.app.infrastructure.repositories.group_repository import GroupRepository
-                from backend.app.infrastructure.repositories.notification_repository import NotificationRepository
-                from backend.app.infrastructure.repositories.outbox_repository import OutboxRepository
-                from backend.app.infrastructure.repositories.project_repository import ProjectRepository
+                from backend.app.infrastructure.repositories.notification_repository import (
+                    NotificationRepository,
+                )
+                from backend.app.infrastructure.repositories.outbox_repository import (
+                    OutboxRepository,
+                )
+                from backend.app.infrastructure.repositories.project_repository import (
+                    ProjectRepository,
+                )
 
                 bp_repo = BlueprintRepository(session)
                 p_repo = ProjectRepository(session)
@@ -435,7 +510,9 @@ class BlueprintService:
                         )
                         await session.commit()
                     except Exception as inner_exc:
-                        logger.error("Failed to commit background failure state", error=str(inner_exc))
+                        logger.error(
+                            "Failed to commit background failure state", error=str(inner_exc)
+                        )
                         await session.rollback()
         else:
             # Fallback for environments without session factory (e.g. unit mocks)
@@ -472,9 +549,15 @@ class BlueprintService:
         factory = self._session_factory or db_lifecycle.get_session_factory()
         if factory is not None:
             async with factory() as session:
-                from backend.app.infrastructure.repositories.assessment_repository import AssessmentRepository
-                from backend.app.infrastructure.repositories.blueprint_repository import BlueprintRepository
-                from backend.app.infrastructure.repositories.project_repository import ProjectRepository
+                from backend.app.infrastructure.repositories.assessment_repository import (
+                    AssessmentRepository,
+                )
+                from backend.app.infrastructure.repositories.blueprint_repository import (
+                    BlueprintRepository,
+                )
+                from backend.app.infrastructure.repositories.project_repository import (
+                    ProjectRepository,
+                )
 
                 bp_repo = BlueprintRepository(session)
                 p_repo = ProjectRepository(session)
@@ -496,7 +579,9 @@ class BlueprintService:
                     return
 
                 try:
-                    await bp_repo.update_job_progress(job, current_step=target_output_key, progress_percent=50)
+                    await bp_repo.update_job_progress(
+                        job, current_step=target_output_key, progress_percent=50
+                    )
                     context = await self._assemble_project_context(project, assessment_repo=a_repo)
                     new_section_data = self._synthesize_section(target_output_key, context)
                     blueprint = await bp_repo.save_content_section(
@@ -819,10 +904,26 @@ class BlueprintService:
             return {
                 "total_estimated_weeks": 6,
                 "timeline_phases": [
-                    {"phase": "Foundation & Telemetry Models", "duration_weeks": 1.5, "focus": "Schema, migrations, repository layer"},
-                    {"phase": "Core Navigation & Boundary Engine", "duration_weeks": 2.0, "focus": "FastAPI routes, waypoint validation, geofencing"},
-                    {"phase": "Diagnostic Reporting & Analysis", "duration_weeks": 1.5, "focus": "NDVI processing, report generation, API contracts"},
-                    {"phase": "Testing, Hardening & Verification", "duration_weeks": 1.0, "focus": "Integration test suite, latency benchmarks, edge recovery"},
+                    {
+                        "phase": "Foundation & Telemetry Models",
+                        "duration_weeks": 1.5,
+                        "focus": "Schema, migrations, repository layer",
+                    },
+                    {
+                        "phase": "Core Navigation & Boundary Engine",
+                        "duration_weeks": 2.0,
+                        "focus": "FastAPI routes, waypoint validation, geofencing",
+                    },
+                    {
+                        "phase": "Diagnostic Reporting & Analysis",
+                        "duration_weeks": 1.5,
+                        "focus": "NDVI processing, report generation, API contracts",
+                    },
+                    {
+                        "phase": "Testing, Hardening & Verification",
+                        "duration_weeks": 1.0,
+                        "focus": "Integration test suite, latency benchmarks, edge recovery",
+                    },
                 ],
                 "contingency_buffer_days": 5,
             }
@@ -854,23 +955,67 @@ class BlueprintService:
         if section_key == BlueprintSectionKey.TASKS.value:
             return {
                 "tasks_breakdown": [
-                    {"id": "T01", "name": "Implement MissionPlan and Telemetry ORM models with Alembic migration", "category": "Database"},
-                    {"id": "T02", "name": "Build geofence containment validator using Shapely / GeoJSON", "category": "Core Logic"},
-                    {"id": "T03", "name": "Implement /api/v1/missions endpoint with ownership isolation", "category": "API"},
-                    {"id": "T04", "name": "Develop simulated drone telemetry generator for QA load testing", "category": "Testing"},
-                    {"id": "T05", "name": "Create NDVI calculation utility with matrix image processing", "category": "Analytics"},
-                    {"id": "T06", "name": "Write end-to-end integration tests for mission execution flow", "category": "QA"},
+                    {
+                        "id": "T01",
+                        "name": "Implement MissionPlan and Telemetry ORM models with Alembic migration",
+                        "category": "Database",
+                    },
+                    {
+                        "id": "T02",
+                        "name": "Build geofence containment validator using Shapely / GeoJSON",
+                        "category": "Core Logic",
+                    },
+                    {
+                        "id": "T03",
+                        "name": "Implement /api/v1/missions endpoint with ownership isolation",
+                        "category": "API",
+                    },
+                    {
+                        "id": "T04",
+                        "name": "Develop simulated drone telemetry generator for QA load testing",
+                        "category": "Testing",
+                    },
+                    {
+                        "id": "T05",
+                        "name": "Create NDVI calculation utility with matrix image processing",
+                        "category": "Analytics",
+                    },
+                    {
+                        "id": "T06",
+                        "name": "Write end-to-end integration tests for mission execution flow",
+                        "category": "QA",
+                    },
                 ]
             }
 
         if section_key == BlueprintSectionKey.MILESTONES.value:
             return {
                 "milestones_schedule": [
-                    {"gate": "M1", "name": "Data Architecture Frozen", "deliverable": "Models, migrations, and tenant isolation verified."},
-                    {"gate": "M2", "name": "Mission Engine Operational", "deliverable": "Waypoint planning and boundary verification active."},
-                    {"gate": "M3", "name": "Telemetry Ingestion Live", "deliverable": "Streaming ingestion and fail-safe alerts verified."},
-                    {"gate": "M4", "name": "Diagnostics Complete", "deliverable": "NDVI processing and report export validated."},
-                    {"gate": "M5", "name": "Release Gate", "deliverable": "Full regression test suite passing with 0 errors."},
+                    {
+                        "gate": "M1",
+                        "name": "Data Architecture Frozen",
+                        "deliverable": "Models, migrations, and tenant isolation verified.",
+                    },
+                    {
+                        "gate": "M2",
+                        "name": "Mission Engine Operational",
+                        "deliverable": "Waypoint planning and boundary verification active.",
+                    },
+                    {
+                        "gate": "M3",
+                        "name": "Telemetry Ingestion Live",
+                        "deliverable": "Streaming ingestion and fail-safe alerts verified.",
+                    },
+                    {
+                        "gate": "M4",
+                        "name": "Diagnostics Complete",
+                        "deliverable": "NDVI processing and report export validated.",
+                    },
+                    {
+                        "gate": "M5",
+                        "name": "Release Gate",
+                        "deliverable": "Full regression test suite passing with 0 errors.",
+                    },
                 ]
             }
 
@@ -884,7 +1029,9 @@ class BlueprintService:
 
         return {"status": "generated", "key": section_key}
 
-    def _evaluate_qa_judge(self, project: ProjectInstanceModel, content: dict[str, Any]) -> BlueprintQAFeedback:
+    def _evaluate_qa_judge(
+        self, project: ProjectInstanceModel, content: dict[str, Any]
+    ) -> BlueprintQAFeedback:
         """Evaluate generated blueprint against quality criteria and assessment gaps."""
         # Verify all 10 canonical sections are present and non-empty
         missing_sections = [
@@ -946,7 +1093,9 @@ class BlueprintService:
     def compile_section_to_markdown(self, section_key: str, data: Any, project_name: str) -> str:
         """Deterministically compile a structured section into clean, readable Markdown."""
         if not data:
-            title = CANONICAL_BLUEPRINT_SECTION_TITLES.get(section_key, section_key.replace("_", " ").title())
+            title = CANONICAL_BLUEPRINT_SECTION_TITLES.get(
+                section_key, section_key.replace("_", " ").title()
+            )
             return f"# {title}\n\n*This section has not yet been generated.*"
 
         if isinstance(data, str):
@@ -966,8 +1115,14 @@ class BlueprintService:
         if section_key == BlueprintSectionKey.TECH_STACK.value:
             rows = []
             for t in data.get("stack", []):
-                rows.append(f"| {t.get('category', '')} | {t.get('technology', '')} | {t.get('purpose', '')} | {t.get('why_selected', '')} |")
-            rows_str = "\n".join(rows) if rows else "| Standard | Fullstack | Primary Framework | Architecture Default |"
+                rows.append(
+                    f"| {t.get('category', '')} | {t.get('technology', '')} | {t.get('purpose', '')} | {t.get('why_selected', '')} |"
+                )
+            rows_str = (
+                "\n".join(rows)
+                if rows
+                else "| Standard | Fullstack | Primary Framework | Architecture Default |"
+            )
             return (
                 f"# Technology Stack & System Architecture\n\n"
                 f"| Category | Technology | Purpose | Selection Rationale |\n"
@@ -1025,7 +1180,9 @@ class BlueprintService:
         if section_key == BlueprintSectionKey.DURATION.value:
             phases = []
             for p in data.get("timeline_phases", []):
-                phases.append(f"| {p.get('phase', '')} | {p.get('duration_weeks', '')} Weeks | {p.get('focus', '')} |")
+                phases.append(
+                    f"| {p.get('phase', '')} | {p.get('duration_weeks', '')} Weeks | {p.get('focus', '')} |"
+                )
             phases_str = "\n".join(phases) if phases else "| Initial | 1.0 Weeks | Setup |"
             return (
                 f"# Timeline & Sprint Duration\n\n"
@@ -1040,8 +1197,14 @@ class BlueprintService:
         if section_key == BlueprintSectionKey.RISKS.value:
             risks = []
             for r in data.get("technical_risks", []):
-                risks.append(f"| {r.get('id', 'R00')} | {r.get('title', '')} | `{r.get('severity', 'MEDIUM')}` | {r.get('mitigation', '')} |")
-            risks_str = "\n".join(risks) if risks else "| R01 | Execution Delay | `LOW` | Allocate sprint contingency |"
+                risks.append(
+                    f"| {r.get('id', 'R00')} | {r.get('title', '')} | `{r.get('severity', 'MEDIUM')}` | {r.get('mitigation', '')} |"
+                )
+            risks_str = (
+                "\n".join(risks)
+                if risks
+                else "| R01 | Execution Delay | `LOW` | Allocate sprint contingency |"
+            )
             return (
                 f"# Technical Risks & Mitigations\n\n"
                 f"| Risk ID | Title | Severity | Mitigation Strategy |\n"
@@ -1052,8 +1215,12 @@ class BlueprintService:
         if section_key == BlueprintSectionKey.TASKS.value:
             tasks = []
             for t in data.get("tasks", []):
-                tasks.append(f"| {t.get('id', 'T00')} | {t.get('name', '')} | {t.get('category', 'Engineering')} |")
-            tasks_str = "\n".join(tasks) if tasks else "| T01 | Initialize workspace repository | Setup |"
+                tasks.append(
+                    f"| {t.get('id', 'T00')} | {t.get('name', '')} | {t.get('category', 'Engineering')} |"
+                )
+            tasks_str = (
+                "\n".join(tasks) if tasks else "| T01 | Initialize workspace repository | Setup |"
+            )
             return (
                 f"# Granular Work Breakdown\n\n"
                 f"| Task ID | Task Description | Domain Category |\n"
@@ -1064,8 +1231,14 @@ class BlueprintService:
         if section_key == BlueprintSectionKey.MILESTONES.value:
             milestones = []
             for m in data.get("milestones_schedule", []):
-                milestones.append(f"| {m.get('gate', 'M0')} | {m.get('name', '')} | {m.get('deliverable', '')} |")
-            milestones_str = "\n".join(milestones) if milestones else "| M1 | Project Setup | Verified environment |"
+                milestones.append(
+                    f"| {m.get('gate', 'M0')} | {m.get('name', '')} | {m.get('deliverable', '')} |"
+                )
+            milestones_str = (
+                "\n".join(milestones)
+                if milestones
+                else "| M1 | Project Setup | Verified environment |"
+            )
             return (
                 f"# Stage Milestones & Gate Deliverables\n\n"
                 f"| Gate | Milestone Name | Gate Deliverable |\n"
@@ -1085,7 +1258,9 @@ class BlueprintService:
 
     def compile_master_blueprint(self, content: dict[str, Any], project_name: str) -> str:
         """Assemble all canonical sections into a coherent master Markdown document."""
-        chunks = [f"# Master Architectural Blueprint — {project_name}\n\n*Generated by GrowFlow Stage 3 Architectural Synthesis.*"]
+        chunks = [
+            f"# Master Architectural Blueprint — {project_name}\n\n*Generated by GrowFlow Stage 3 Architectural Synthesis.*"
+        ]
         for key in CANONICAL_BLUEPRINT_SECTION_ORDER:
             sec_data = content.get(key.value, {})
             sec_md = self.compile_section_to_markdown(key.value, sec_data, project_name)
@@ -1102,14 +1277,18 @@ class BlueprintService:
         project = await self._verify_project_ownership(project_id, current_user)
         valid_keys = [k.value for k in CANONICAL_BLUEPRINT_SECTION_ORDER] + ["full"]
         if section_key not in valid_keys:
-            raise NotFoundException(f"Blueprint section '{section_key}' not found.", code="SECTION_NOT_FOUND")
+            raise NotFoundException(
+                f"Blueprint section '{section_key}' not found.", code="SECTION_NOT_FOUND"
+            )
 
         blueprint = await self._blueprint_repo.get_by_project_id(project.id)
         if not blueprint:
             raise NotFoundException("Blueprint not found.", code="BLUEPRINT_NOT_FOUND")
 
         content = blueprint.content or {}
-        title = CANONICAL_BLUEPRINT_SECTION_TITLES.get(section_key, section_key.replace("_", " ").title())
+        title = CANONICAL_BLUEPRINT_SECTION_TITLES.get(
+            section_key, section_key.replace("_", " ").title()
+        )
 
         if section_key == "full":
             markdown = self.compile_master_blueprint(content, project.name)
@@ -1136,14 +1315,18 @@ class BlueprintService:
         project = await self._verify_project_ownership(project_id, current_user)
         valid_keys = [k.value for k in CANONICAL_BLUEPRINT_SECTION_ORDER] + ["full"]
         if document_key not in valid_keys:
-            raise NotFoundException(f"Blueprint document '{document_key}' not found.", code="DOCUMENT_NOT_FOUND")
+            raise NotFoundException(
+                f"Blueprint document '{document_key}' not found.", code="DOCUMENT_NOT_FOUND"
+            )
 
         blueprint = await self._blueprint_repo.get_by_project_id(project.id)
         if not blueprint:
             raise NotFoundException("Blueprint not found.", code="BLUEPRINT_NOT_FOUND")
 
         content = blueprint.content or {}
-        title = CANONICAL_BLUEPRINT_SECTION_TITLES.get(document_key, document_key.replace("_", " ").title())
+        title = CANONICAL_BLUEPRINT_SECTION_TITLES.get(
+            document_key, document_key.replace("_", " ").title()
+        )
 
         if document_key == "full":
             markdown = self.compile_master_blueprint(content, project.name)
@@ -1161,12 +1344,14 @@ class BlueprintService:
             }
             for idx, k in enumerate(CANONICAL_BLUEPRINT_SECTION_ORDER)
         ]
-        available_docs.append({
-            "key": "full",
-            "title": "Complete Master Blueprint",
-            "format": "markdown",
-            "section_order": 11,
-        })
+        available_docs.append(
+            {
+                "key": "full",
+                "title": "Complete Master Blueprint",
+                "format": "markdown",
+                "section_order": 11,
+            }
+        )
 
         return {
             "document_key": document_key,

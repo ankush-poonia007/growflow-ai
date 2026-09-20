@@ -5,3 +5,5 @@ export * from './BlueprintGeneratingProgress';
 export * from './BlueprintFailureView';
 export * from './BlueprintReviewApproval';
 export * from './BlueprintApprovedView';
+export * from './BlueprintCancelModal';
+export * from './BlueprintCancelledView';

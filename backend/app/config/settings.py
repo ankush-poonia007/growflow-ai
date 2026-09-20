@@ -121,6 +121,9 @@ class AISettings(BaseSettings):
     MAX_RETRIES: int = Field(default=3, alias="AI_MAX_RETRIES")
     RETRY_INITIAL_DELAY_SECONDS: int = Field(default=1, alias="AI_RETRY_INITIAL_DELAY_SECONDS")
     RETRY_MAX_DELAY_SECONDS: int = Field(default=8, alias="AI_RETRY_MAX_DELAY_SECONDS")
+    RATE_LIMIT_COOLDOWN_SECONDS: int = Field(default=60, alias="AI_RATE_LIMIT_COOLDOWN_SECONDS")
+    TRANSIENT_COOLDOWN_SECONDS: int = Field(default=30, alias="AI_TRANSIENT_COOLDOWN_SECONDS")
+    MOCK_PROVIDER: bool = Field(default=False, alias="AI_MOCK_PROVIDER")
 
     @property
     def active_keys(self) -> list[str]:
