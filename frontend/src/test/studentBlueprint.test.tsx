@@ -876,21 +876,33 @@ describe('Student Blueprint Workflow (S12–S14) & Global Navigation Corrections
 
         const unsubscribe = await apiClient.subscribeBlueprintEvents('proj-123', onUpdate, onError);
         const esInstance = mockEventSourceInstances[0];
+        expect(esInstance).toBeDefined();
+
+        if (!esInstance) {
+          throw new Error('MockEventSource instance was not created');
+        }
 
         // Emit malformed JSON
         const updateListeners = esInstance.listeners['update'] || [];
         expect(updateListeners.length).toBeGreaterThan(0);
 
+        const listener = updateListeners[0];
+        expect(listener).toBeDefined();
+
+        if (!listener) {
+          throw new Error('Update listener not found');
+        }
+
         // This should not throw or crash
         expect(() => {
-          updateListeners[0]({ data: 'INVALID_JSON{{{' });
+          listener({ data: 'INVALID_JSON{{{' });
         }).not.toThrow();
 
         // onUpdate should NOT be called with invalid JSON
         expect(onUpdate).not.toHaveBeenCalled();
 
         // Stream should still be alive and accept valid JSON next
-        updateListeners[0]({
+        listener({
           data: JSON.stringify(mockStatusGenerating),
         });
         expect(onUpdate).toHaveBeenCalledWith(mockStatusGenerating);
