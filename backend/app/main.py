@@ -15,21 +15,20 @@ import uvicorn
 from backend.app.config.settings import get_settings
 from backend.app.factory import create_app
 
+# Ensure compatible asyncio event loop policy for psycopg on Windows.
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
 app = create_app()
 
 if __name__ == "__main__":
     settings = get_settings()
     config = uvicorn.Config(
-        app,
+        "backend.app.main:app",
         host=settings.app.HOST,
         port=settings.app.PORT,
         log_level="info",
+        loop="asyncio:SelectorEventLoop" if sys.platform == "win32" else "auto",
     )
     server = uvicorn.Server(config)
-    if sys.platform == "win32":
-        asyncio.run(
-            server.serve(),
-            loop_factory=lambda: asyncio.SelectorEventLoop(selectors.SelectSelector()),
-        )
-    else:
-        server.run()
+    server.run()

@@ -17,6 +17,7 @@ SAFETY RULES (enforced by this module):
 
 from __future__ import annotations
 
+import asyncio
 from typing import TYPE_CHECKING
 
 from sqlalchemy import text
@@ -64,7 +65,12 @@ async def startup(db_settings: DatabaseSettings) -> None:
         )
         return
 
-    logger.info("Initialising database engine and session factory")
+    running_loop = asyncio.get_running_loop()
+    loop_cls = type(running_loop)
+    logger.info(
+        "Initialising database engine and session factory",
+        active_event_loop=f"{loop_cls.__module__}.{loop_cls.__name__}",
+    )
 
     _engine = build_async_engine(db_settings)
     _session_factory = build_async_session_factory(_engine)
