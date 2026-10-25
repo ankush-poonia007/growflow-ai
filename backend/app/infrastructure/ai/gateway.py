@@ -29,7 +29,7 @@ from typing import TYPE_CHECKING, Any, TypeVar
 
 from pydantic import BaseModel, ValidationError
 
-from backend.app.config.settings import AISettings, get_settings
+from backend.app.config.settings import AISettings, Environment, get_settings
 from backend.app.infrastructure.ai.adapters.mock import MockAIProviderAdapter
 from backend.app.infrastructure.ai.adapters.openrouter import OpenRouterAdapter
 
@@ -79,8 +79,14 @@ class AIProviderGateway:
         adapter: AIProviderAdapter | None = None,
         key_pool: APIKeyPoolManager | None = None,
         policy: AIModelPolicy | None = None,
+        app_env: Environment | str | None = None,
     ) -> None:
         self._settings = settings or get_settings().ai
+        self._app_env: Environment | str = (
+            app_env
+            if app_env is not None
+            else getattr(getattr(get_settings(), "app", None), "ENV", Environment.DEVELOPMENT)
+        )
         self._policy = policy or AIModelPolicy(self._settings)
         self._key_pool = key_pool or APIKeyPoolManager(self._settings)
 
@@ -90,6 +96,11 @@ class AIProviderGateway:
             self._adapter = MockAIProviderAdapter(self._settings)
         else:
             self._adapter = OpenRouterAdapter(self._settings)
+
+    @property
+    def is_fallback_enabled(self) -> bool:
+        """Evaluate if mock fallback is permitted in the current application environment."""
+        return self._settings.is_fallback_enabled(self._app_env)
 
     @property
     def has_live_keys(self) -> bool:
@@ -194,6 +205,23 @@ class AIProviderGateway:
                             )
                         except Exception as fb_err:
                             logger.warning("Model fallback evaluation failed", error=str(fb_err))
+
+                    # Resilient degraded execution fallback if live provider fails or key pool exhausted
+                    if (
+                        self.is_fallback_enabled
+                        and isinstance(self._adapter, OpenRouterAdapter)
+                    ):
+                        logger.warning(
+                            "AI key pool exhausted for OpenRouter; falling back to MockAIProviderAdapter for resilient execution",
+                            environment=(
+                                self._app_env.value
+                                if hasattr(self._app_env, "value")
+                                else str(self._app_env)
+                            ),
+                            error=pool_err.message,
+                            is_degraded=True,
+                        )
+                        return await self._execute_mock_fallback(request=request, schema=schema)
                     raise pool_err
 
                 raw_api_key = key_entry.raw_key
@@ -325,7 +353,24 @@ class AIProviderGateway:
 
                 rotations += 1
 
-        # If loop completed without returning, raise last classified failure or general exception
+        # If loop completed without returning, check if live provider failed all keys
+        if (
+            self.is_fallback_enabled
+            and isinstance(self._adapter, OpenRouterAdapter)
+            and last_error is not None
+        ):
+            logger.warning(
+                "All live OpenRouter keys failed during execution; falling back to MockAIProviderAdapter for resilient execution",
+                environment=(
+                    self._app_env.value
+                    if hasattr(self._app_env, "value")
+                    else str(self._app_env)
+                ),
+                last_error=str(last_error),
+                is_degraded=True,
+            )
+            return await self._execute_mock_fallback(request=request, schema=schema)
+
         if isinstance(last_error, AIException):
             raise last_error
         if isinstance(last_error, ProviderError):
@@ -333,6 +378,60 @@ class AIProviderGateway:
 
         raise AIProviderUnavailableException(
             "AI Provider Gateway exhausted all retry attempts and eligible keys without success."
+        )
+
+    async def _execute_mock_fallback(
+        self,
+        request: AIGenerationRequest,
+        schema: type[T] | None = None,
+    ) -> AIExecutionResult[Any]:
+        """Execute request using fallback MockAIProviderAdapter when live provider fails."""
+        fallback_adapter = MockAIProviderAdapter(settings=self._settings)
+        correlation_id = request.correlation_id or get_correlation_id()
+        timeout = request.timeout_seconds or float(self._settings.REQUEST_TIMEOUT_SECONDS)
+
+        if schema is None:
+            raw_resp = await fallback_adapter.generate_text(
+                prompt=request.prompt,
+                system_prompt=request.system_prompt,
+                model="mock/resilient-fallback",
+                api_key="mock_fallback_key",
+                key_alias="mock_fallback",
+                max_tokens=request.max_tokens,
+                temperature=request.temperature,
+                timeout_seconds=timeout,
+                correlation_id=correlation_id,
+            )
+            parsed_content: Any = raw_resp.text
+        else:
+            raw_resp = await fallback_adapter.generate_structured(
+                prompt=request.prompt,
+                system_prompt=request.system_prompt,
+                model="mock/resilient-fallback",
+                api_key="mock_fallback_key",
+                key_alias="mock_fallback",
+                schema=schema,
+                max_tokens=request.max_tokens,
+                temperature=request.temperature,
+                timeout_seconds=timeout,
+                correlation_id=correlation_id,
+            )
+            cleaned_json = _clean_json_markdown_fences(raw_resp.text)
+            parsed_content = schema.model_validate_json(cleaned_json)
+
+        return AIExecutionResult(
+            content=parsed_content,
+            raw_text=raw_resp.text,
+            provider="mock",
+            model="mock/resilient-fallback",
+            capability=request.capability,
+            key_alias="mock_fallback",
+            latency_ms=raw_resp.latency_ms,
+            usage=raw_resp.usage,
+            retry_count=0,
+            correlation_id=correlation_id,
+            execution_id=request.execution_id,
+            is_degraded=True,
         )
 
     # ──────────────────────────────────────────────────────────────
@@ -354,6 +453,27 @@ class AIProviderGateway:
             str with completion text on success, or None on failure (matching legacy contract).
         """
         if not self.has_live_keys:
+            if (
+                self.is_fallback_enabled
+                and isinstance(self._adapter, OpenRouterAdapter)
+                and any(e.raw_key for e in self._key_pool._pool)
+            ):
+                try:
+                    fallback_res = await self._execute_mock_fallback(
+                        AIGenerationRequest(
+                            prompt=prompt,
+                            system_prompt=system_prompt,
+                            capability=ProviderCapability.STANDARD,
+                            model=model,
+                            max_tokens=max_tokens,
+                            temperature=temperature,
+                        ),
+                        schema=None,
+                    )
+                    return str(fallback_res.content)
+                except Exception as exc:
+                    logger.warning("execute_prompt fallback failed", error=str(exc))
+                    return None
             return None
 
         request = AIGenerationRequest(

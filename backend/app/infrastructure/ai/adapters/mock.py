@@ -12,10 +12,13 @@ Architecture ref:
 
 from __future__ import annotations
 
+import enum
 import json
+import typing
 from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel
+from pydantic_core import PydanticUndefined
 
 from backend.app.infrastructure.ai.adapters.base import AIProviderAdapter
 from backend.app.infrastructure.ai.models import (
@@ -30,6 +33,156 @@ if TYPE_CHECKING:
     from backend.app.config.settings import AISettings
 
 logger = get_logger("growflow.infrastructure.ai.adapters.mock")
+
+
+def _synthesize_mock_value(field_name: str, annotation: Any, field_info: Any) -> Any:
+    """Deterministically synthesize a valid value conforming to a Pydantic field."""
+    # 1. Default value if defined, not None, and not PydanticUndefined
+    if field_info is not None:
+        if (
+            field_info.default is not None
+            and field_info.default is not PydanticUndefined
+            and field_info.default != ...
+        ):
+            return field_info.default
+
+        # 2. Default factory
+        if field_info.default_factory is not None:
+            try:
+                val = field_info.default_factory()
+                if isinstance(val, BaseModel):
+                    return val.model_dump(mode="json")
+                return val
+            except Exception:
+                pass
+
+    # 3. Unwrap Optional / Union
+    origin = typing.get_origin(annotation)
+    args = typing.get_args(annotation)
+
+    if origin is typing.Union:
+        non_none_args = [a for a in args if a is not type(None)]
+        if non_none_args:
+            return _synthesize_mock_value(field_name, non_none_args[0], field_info)
+
+    # 4. Enums
+    if isinstance(annotation, type) and issubclass(annotation, enum.Enum):
+        enum_members = list(annotation)
+        if enum_members:
+            return enum_members[0].value
+
+    # 5. Nested BaseModel
+    if isinstance(annotation, type) and issubclass(annotation, BaseModel):
+        return _synthesize_mock_dict(annotation)
+
+    # 6. Lists and Sequences
+    if origin in (list, typing.Sequence, typing.Iterable):
+        inner_type = args[0] if args else str
+        min_len = 1
+        for meta in getattr(field_info, "metadata", []):
+            if hasattr(meta, "min_length") and meta.min_length:
+                min_len = max(min_len, meta.min_length)
+        count = max(min_len, 2)
+        items = []
+        for i in range(count):
+            if isinstance(inner_type, type) and issubclass(inner_type, BaseModel):
+                item = _synthesize_mock_dict(inner_type)
+                for k, v in list(item.items()):
+                    if (
+                        k.endswith("_id")
+                        and isinstance(v, str)
+                        and len(v) >= 3
+                        and v[0].isalpha()
+                        and v[1:].isdigit()
+                    ):
+                        item[k] = f"{v[0]}{i+1:02d}"
+                if "priority" in item and i < 2:
+                    p_info = inner_type.model_fields.get("priority")
+                    if p_info and isinstance(p_info.annotation, type) and issubclass(p_info.annotation, enum.Enum):
+                        if any(m.value == "P0" for m in p_info.annotation):
+                            item["priority"] = "P0"
+                    else:
+                        item["priority"] = "P0"
+                items.append(item)
+            elif isinstance(inner_type, type) and issubclass(inner_type, enum.Enum):
+                members = list(inner_type)
+                items.append(members[i % len(members)].value)
+            else:
+                items.append(_synthesize_mock_value(field_name, inner_type, None))
+        return items
+
+    # 7. Dicts
+    if origin is dict:
+        return {}
+
+    # 8. Primitives
+    ann_str = str(annotation)
+    if "str" in ann_str or annotation is str:
+        for meta in getattr(field_info, "metadata", []):
+            pattern = getattr(meta, "pattern", None)
+            if pattern:
+                import re
+                match = re.match(r"\^?([A-Za-z]+)(?:\\d|\d|\.)", pattern)
+                if match:
+                    return f"{match.group(1)}01"
+                if "F" in pattern and r"\d" in pattern:
+                    return "F01"
+                if "T" in pattern and r"\d" in pattern:
+                    return "T01"
+                if "M" in pattern and r"\d" in pattern:
+                    return "M1"
+                if "R" in pattern and r"\d" in pattern:
+                    return "R01"
+                if "C" in pattern and r"\d" in pattern:
+                    return "C01"
+        return f"Mock {field_name.replace('_', ' ').capitalize()}"
+
+    if "int" in ann_str or annotation is int:
+        ge = 1
+        for meta in getattr(field_info, "metadata", []):
+            if hasattr(meta, "ge") and meta.ge is not None:
+                ge = max(ge, int(meta.ge))
+        return ge
+
+    if "float" in ann_str or annotation is float:
+        return 0.95
+
+    if "bool" in ann_str or annotation is bool:
+        return True
+
+    return f"mock_{field_name}"
+
+
+def _synthesize_mock_dict(schema: type[BaseModel]) -> dict[str, Any]:
+    """Recursively synthesize a mock dictionary for a Pydantic schema."""
+    result: dict[str, Any] = {}
+    schema_name = getattr(schema, "__name__", "")
+    canonical_agent_name = None
+    if schema_name == "QAJudgeAgentOutput":
+        canonical_agent_name = "qa_judge_agent"
+    elif schema_name.endswith("AgentOutput"):
+        canonical_agent_name = f"{schema_name[:-11].lower()}_agent"
+
+    for name, info in schema.model_fields.items():
+        if name == "agent_name" and canonical_agent_name:
+            result[name] = canonical_agent_name
+            continue
+        result[name] = _synthesize_mock_value(name, info.annotation, info)
+
+    # Post-process known domain cross-field validation rules
+    if schema_name == "TimelineAgentOutput" and "phases" in result:
+        total = sum(p.get("duration_weeks", 0) for p in result["phases"])
+        result["estimated_total_weeks"] = max(total, 1)
+
+    if schema_name == "RiskAgentOutput" and "risks" in result and result["risks"]:
+        # Ensure at least one risk is SECURITY
+        result["risks"][0]["category"] = "SECURITY"
+
+    if schema_name == "MilestoneAgentOutput" and "milestones" in result:
+        for idx, m in enumerate(result["milestones"]):
+            m["milestone_id"] = f"M{idx + 1}"
+
+    return result
 
 
 class MockAIProviderAdapter(AIProviderAdapter):
@@ -93,7 +246,7 @@ class MockAIProviderAdapter(AIProviderAdapter):
     ) -> None:
         """Register a canned structured response for a specific schema name."""
         if isinstance(response_data, BaseModel):
-            self._canned_structured_responses[schema_name] = response_data.model_dump()
+            self._canned_structured_responses[schema_name] = response_data.model_dump(mode="json")
         else:
             self._canned_structured_responses[schema_name] = response_data
 
@@ -224,28 +377,15 @@ class MockAIProviderAdapter(AIProviderAdapter):
             data = self._canned_structured_responses[schema_name]
             json_text = json.dumps(data)
         else:
-            # Deterministically synthesize default payload conforming to the Pydantic schema
-            mock_dict: dict[str, Any] = {}
-            for field_name, field_info in schema.model_fields.items():
-                annotation = field_info.annotation
-                ann_str = str(annotation)
-                if field_info.default is not None and field_info.default != ...:
-                    mock_dict[field_name] = field_info.default
-                elif "str" in ann_str:
-                    mock_dict[field_name] = f"mock_{field_name}"
-                elif "int" in ann_str:
-                    mock_dict[field_name] = 42
-                elif "float" in ann_str:
-                    mock_dict[field_name] = 3.14
-                elif "bool" in ann_str:
-                    mock_dict[field_name] = True
-                elif "list" in ann_str:
-                    mock_dict[field_name] = []
-                elif "dict" in ann_str:
-                    mock_dict[field_name] = {}
-                else:
-                    mock_dict[field_name] = f"mock_{field_name}"
-            json_text = json.dumps(mock_dict)
+            from backend.app.domain.ai.contracts.seeds import get_canonical_agent_output
+
+            canonical_seed = get_canonical_agent_output(schema_name)
+            if canonical_seed is not None:
+                json_text = canonical_seed.model_dump_json()
+            else:
+                # Deterministically synthesize default payload conforming to the Pydantic schema
+                mock_dict = _synthesize_mock_dict(schema)
+                json_text = json.dumps(mock_dict)
 
         usage = AIUsageMetadata(prompt_tokens=25, completion_tokens=50, total_tokens=75)
         return ProviderRawResponse(

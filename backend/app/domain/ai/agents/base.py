@@ -160,6 +160,7 @@ class BaseAgent[TInput: BaseAgentInput, TOutput: BaseAgentOutput](ABC):
             latency_ms=result.latency_ms,
             usage=result.usage or AIUsageMetadata(),
             retry_count=result.retry_count,
+            is_degraded=result.is_degraded,
             status="SUCCESS",
             started_at=started_at,
             completed_at=completed_at,

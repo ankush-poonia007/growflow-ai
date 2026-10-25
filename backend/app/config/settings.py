@@ -130,6 +130,36 @@ class AISettings(BaseSettings):
     RATE_LIMIT_COOLDOWN_SECONDS: int = Field(default=60, alias="AI_RATE_LIMIT_COOLDOWN_SECONDS")
     TRANSIENT_COOLDOWN_SECONDS: int = Field(default=30, alias="AI_TRANSIENT_COOLDOWN_SECONDS")
     MOCK_PROVIDER: bool = Field(default=False, alias="AI_MOCK_PROVIDER")
+    MOCK_FALLBACK: bool | None = Field(default=None, alias="AI_MOCK_FALLBACK")
+    ALLOW_PRODUCTION_MOCK_FALLBACK: bool = Field(
+        default=False, alias="AI_ALLOW_PRODUCTION_MOCK_FALLBACK"
+    )
+
+    def is_fallback_enabled(self, env: Environment | str = Environment.DEVELOPMENT) -> bool:
+        """
+        Determine if mock fallback is permitted for the given application environment.
+
+        Policy (GF-FIX-02A Gate B):
+        - In PRODUCTION and STAGING:
+          Mock fallback is strictly and unconditionally DISALLOWED (returns False).
+          Because existing client/API contracts do not surface an explicit user-facing
+          degradation indicator, synthetic mock output must never reach consumers in
+          production environments, even if override flags are configured. When keys fail,
+          the gateway fails closed (raising AIProviderUnavailableException).
+        - In DEVELOPMENT and TEST:
+          Mock fallback is ENABLED by default (if AI_MOCK_FALLBACK is None or True),
+          ensuring local developer workflow and automated testing remain resilient.
+        - If AI_MOCK_FALLBACK is explicitly False:
+          Disabled across all environments.
+        """
+        env_str = env.value if isinstance(env, Environment) else str(env).lower()
+        if env_str in (Environment.PRODUCTION.value, Environment.STAGING.value):
+            return False
+
+        # DEVELOPMENT / TEST
+        if self.MOCK_FALLBACK is False:
+            return False
+        return True
 
     @property
     def active_keys(self) -> list[str]:

@@ -7,8 +7,13 @@ and routing from the thin ASGI entrypoint in main.py.
 
 from __future__ import annotations
 
+import asyncio
 from contextlib import asynccontextmanager
+import sys
 from typing import TYPE_CHECKING
+
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 from fastapi import FastAPI
 
@@ -36,11 +41,14 @@ async def app_lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
     setup_logging(settings)
     logger = get_logger("growflow.lifecycle")
 
+    running_loop = asyncio.get_running_loop()
+    loop_cls = type(running_loop)
     logger.info(
         "Application starting up",
         app=settings.app.NAME,
         env=settings.app.ENV.value,
         port=settings.app.PORT,
+        active_event_loop=f"{loop_cls.__module__}.{loop_cls.__name__}",
     )
 
     # Gate 03: initialise database engine and session factory.

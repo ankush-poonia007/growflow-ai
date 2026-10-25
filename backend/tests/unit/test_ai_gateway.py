@@ -539,3 +539,316 @@ async def test_backward_compatibility_execute_prompt() -> None:
     gateway_offline = AIProviderGateway(settings=settings_offline)
     offline_resp = await gateway_offline.execute_prompt(prompt="Hello")
     assert offline_resp is None
+
+
+# ──────────────────────────────────────────────────────────────
+# 20. Resilient Fallback & Schema Synthesis Tests (Fix 2)
+# ──────────────────────────────────────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_openrouter_all_keys_failure_recovers_to_mock_fallback() -> None:
+    """When live OpenRouter keys are exhausted or rejected, gateway degrades to MockAIProviderAdapter."""
+    from backend.app.domain.ai.contracts.agents import IdeaAgentOutput
+    from backend.app.infrastructure.ai.adapters.openrouter import OpenRouterAdapter
+
+    settings = AISettings(
+        OPENROUTER_API_KEY_1="sk-bad-1",
+        OPENROUTER_API_KEY_2="sk-bad-2",
+        MOCK_PROVIDER=False,
+        MOCK_FALLBACK=True,
+    )
+    gateway = AIProviderGateway(settings=settings)
+    assert isinstance(gateway.adapter, OpenRouterAdapter)
+
+    # Simulate all keys having transitioned to FAILED
+    for entry in gateway.key_pool._pool:
+        entry.status = KeyHealthState.FAILED
+
+    # Structured execution should seamlessly degrade to mock provider
+    result = await gateway.execute_structured(
+        schema=IdeaAgentOutput,
+        prompt="Design resilient system architecture",
+    )
+    assert result.provider == "mock"
+    assert result.is_degraded is True
+    assert isinstance(result.content, IdeaAgentOutput)
+    assert result.content.agent_name == "idea_agent"
+
+
+@pytest.mark.asyncio
+async def test_unregistered_pydantic_schema_synthesis_without_undefined_error() -> None:
+    """Mock adapter recursively synthesizes arbitrary schemas with required fields without PydanticUndefined error."""
+    class SubItem(BaseModel):
+        code: str = Field(..., pattern=r"^F\d{2}$")
+        count: int = Field(..., ge=1)
+
+    class ComplexRequiredSchema(BaseModel):
+        name: str
+        required_int: int
+        sub_items: list[SubItem] = Field(..., min_length=2)
+
+    adapter = MockAIProviderAdapter()
+    raw_resp = await adapter.generate_structured(
+        prompt="Synthesize schema",
+        system_prompt="Test system",
+        model="mock-model",
+        api_key="mock-key",
+        key_alias="key_1",
+        schema=ComplexRequiredSchema,
+    )
+
+    # Verify no PydanticUndefinedType serialization error occurred
+    assert "PydanticUndefined" not in raw_resp.text
+    validated = ComplexRequiredSchema.model_validate_json(raw_resp.text)
+    assert isinstance(validated, ComplexRequiredSchema)
+    assert len(validated.sub_items) >= 2
+
+
+@pytest.mark.asyncio
+async def test_execute_prompt_recovers_via_mock_fallback_when_keys_failed() -> None:
+    """execute_prompt returns mock completion when live OpenRouter keys have failed."""
+    settings = AISettings(
+        OPENROUTER_API_KEY_1="sk-key-1",
+        OPENROUTER_API_KEY_2="sk-key-2",
+        MOCK_PROVIDER=False,
+        MOCK_FALLBACK=True,
+    )
+    gateway = AIProviderGateway(settings=settings)
+
+    # Fail all keys
+    for entry in gateway.key_pool._pool:
+        entry.status = KeyHealthState.FAILED
+
+    response = await gateway.execute_prompt(prompt="Mentor advice query")
+    assert response is not None
+    assert "Mock deterministic architectural completion" in response
+
+
+# ──────────────────────────────────────────────────────────────
+# 21. Explicit Fallback Policy & Degradation Identification (Fix 2A)
+# ──────────────────────────────────────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_live_provider_success_is_not_degraded() -> None:
+    """Successful primary provider execution explicitly marks result as not degraded."""
+    settings = create_test_settings(keys=["key-a", None, None, None, None])
+    mock_adapter = MockAIProviderAdapter(settings=settings)
+    gateway = AIProviderGateway(settings=settings, adapter=mock_adapter)
+
+    req = AIGenerationRequest(prompt="Normal operation")
+    result = await gateway.execute(req)
+
+    assert result.is_degraded is False
+    assert result.content == mock_adapter.default_text
+
+
+@pytest.mark.asyncio
+async def test_fallback_disabled_raises_unavailable_when_keys_fail() -> None:
+    """When fallback is explicitly disabled, key exhaustion raises AIProviderUnavailableException."""
+    from backend.app.domain.ai.contracts.agents import IdeaAgentOutput
+
+    settings = AISettings(
+        OPENROUTER_API_KEY_1="sk-key-1",
+        MOCK_PROVIDER=False,
+        MOCK_FALLBACK=False,
+    )
+    gateway = AIProviderGateway(settings=settings, app_env="development")
+    assert gateway.is_fallback_enabled is False
+
+    # Fail all keys
+    for entry in gateway.key_pool._pool:
+        entry.status = KeyHealthState.FAILED
+
+    with pytest.raises(AIProviderUnavailableException) as exc_info:
+        await gateway.execute_structured(
+            schema=IdeaAgentOutput,
+            prompt="Design architecture",
+        )
+    assert exc_info.value.code == "PROVIDER_UNAVAILABLE"
+
+
+@pytest.mark.asyncio
+async def test_production_environment_blocks_accidental_fallback() -> None:
+    """In production, fallback is disabled by default even if environment alias is omitted or empty."""
+    from backend.app.config.settings import Environment
+    from backend.app.domain.ai.contracts.agents import IdeaAgentOutput
+
+    # Default settings in production (MOCK_FALLBACK is None)
+    settings = AISettings(
+        OPENROUTER_API_KEY_1="sk-live-prod-key",
+        MOCK_PROVIDER=False,
+    )
+    gateway = AIProviderGateway(settings=settings, app_env=Environment.PRODUCTION)
+    assert gateway.is_fallback_enabled is False
+
+    # Fail all keys
+    for entry in gateway.key_pool._pool:
+        entry.status = KeyHealthState.FAILED
+
+    with pytest.raises(AIProviderUnavailableException) as exc_info:
+        await gateway.execute_structured(
+            schema=IdeaAgentOutput,
+            prompt="Production prompt",
+        )
+    assert exc_info.value.code == "PROVIDER_UNAVAILABLE"
+
+
+@pytest.mark.asyncio
+async def test_production_fallback_disallowed_even_with_override_flags() -> None:
+    """In production, mock fallback is disallowed unconditionally, even if override flags are configured."""
+    from backend.app.config.settings import Environment
+    from backend.app.domain.ai.contracts.agents import IdeaAgentOutput
+
+    settings_override = AISettings(
+        OPENROUTER_API_KEY_1="sk-key-1",
+        MOCK_PROVIDER=False,
+        MOCK_FALLBACK=True,
+        ALLOW_PRODUCTION_MOCK_FALLBACK=True,
+    )
+    gateway = AIProviderGateway(settings=settings_override, app_env=Environment.PRODUCTION)
+    # Must remain False per Gate B policy
+    assert gateway.is_fallback_enabled is False
+
+    # Fail keys
+    for entry in gateway.key_pool._pool:
+        entry.status = KeyHealthState.FAILED
+
+    # Must raise AIProviderUnavailableException rather than returning synthetic mock output
+    with pytest.raises(AIProviderUnavailableException) as exc_info:
+        await gateway.execute_structured(schema=IdeaAgentOutput, prompt="Production test")
+    assert exc_info.value.code == "PROVIDER_UNAVAILABLE"
+
+
+@pytest.mark.asyncio
+async def test_consumer_preserves_degraded_state() -> None:
+    """Downstream agent consumer does not drop is_degraded state in execution provenance."""
+    from backend.app.domain.ai.agents.idea import IdeaAgent
+    from backend.tests.unit.ai.fixtures import make_idea_input
+
+    settings = AISettings(
+        OPENROUTER_API_KEY_1="sk-bad-1",
+        MOCK_PROVIDER=False,
+        MOCK_FALLBACK=True,
+    )
+    gateway = AIProviderGateway(settings=settings, app_env="development")
+    for entry in gateway.key_pool._pool:
+        entry.status = KeyHealthState.FAILED
+
+    agent = IdeaAgent(gateway=gateway)
+    input_data = make_idea_input()
+    output, provenance = await agent.execute(input_data)
+    assert provenance.provider == "mock"
+    assert provenance.is_degraded is True
+
+
+@pytest.mark.asyncio
+async def test_missing_provider_configuration_no_fallback() -> None:
+    """When no keys are configured and fallback is disabled, raises immediately with clear error."""
+    settings = create_test_settings(
+        keys=[None, None, None, None, None],
+        mock_provider=False,
+    )
+    settings.MOCK_FALLBACK = False
+
+    gateway = AIProviderGateway(settings=settings, app_env="development")
+    assert gateway.has_live_keys is False
+    assert gateway.is_fallback_enabled is False
+
+    with pytest.raises(AIProviderUnavailableException) as exc_info:
+        await gateway.execute(AIGenerationRequest(prompt="Test unconfigured"))
+    assert exc_info.value.code == "PROVIDER_UNAVAILABLE"
+
+
+# ──────────────────────────────────────────────────────────────
+# 22. Runtime Mock Independence from Test Fixtures (Fix 2A)
+# ──────────────────────────────────────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_runtime_mock_generation_when_test_fixtures_blocked() -> None:
+    """Mock adapter generates valid structured output for all 12 agent contracts even if backend.tests is blocked."""
+    import sys
+    from unittest.mock import patch
+
+    from backend.app.domain.ai.contracts.agents import (
+        FeaturesAgentOutput,
+        IdeaAgentOutput,
+        MVPAgentOutput,
+        MilestoneAgentOutput,
+        ReadmeAgentOutput,
+        RiskAgentOutput,
+        ScopeAgentOutput,
+        SpecificationAgentOutput,
+        TaskAgentOutput,
+        TechnologyAgentOutput,
+        TimelineAgentOutput,
+    )
+    from backend.app.domain.ai.contracts.qa import QAJudgeAgentOutput
+
+    agent_contracts = [
+        IdeaAgentOutput,
+        FeaturesAgentOutput,
+        ScopeAgentOutput,
+        TechnologyAgentOutput,
+        MVPAgentOutput,
+        TaskAgentOutput,
+        TimelineAgentOutput,
+        RiskAgentOutput,
+        MilestoneAgentOutput,
+        SpecificationAgentOutput,
+        ReadmeAgentOutput,
+        QAJudgeAgentOutput,
+    ]
+
+    adapter = MockAIProviderAdapter()
+
+    # Deliberately block backend.tests to prove runtime isolation
+    with patch.dict(sys.modules, {"backend.tests": None, "backend.tests.unit.ai.fixtures": None}):
+        for contract in agent_contracts:
+            raw_resp = await adapter.generate_structured(
+                prompt=f"Generate {contract.__name__}",
+                system_prompt="Deterministic runtime test",
+                model="mock-model",
+                api_key="mock-key",
+                key_alias="key_1",
+                schema=contract,
+            )
+            validated = contract.model_validate_json(raw_resp.text)
+            assert isinstance(validated, contract)
+
+
+@pytest.mark.asyncio
+async def test_runtime_mock_arbitrary_nested_pydantic_schema_synthesis() -> None:
+    """Mock adapter dynamically synthesizes deeply nested schemas with complex constraints and enums."""
+    from enum import Enum
+
+    class Priority(str, Enum):
+        LOW = "low"
+        MEDIUM = "medium"
+        CRITICAL = "critical"
+
+    class DeepChild(BaseModel):
+        child_id: str = Field(..., pattern=r"^C\d+$")
+        scores: list[float] = Field(..., min_length=1)
+        priority: Priority
+
+    class ParentModel(BaseModel):
+        title: str = Field(..., min_length=3)
+        children: list[DeepChild] = Field(..., min_length=2)
+        metadata_map: dict[str, str]
+
+    adapter = MockAIProviderAdapter()
+    raw = await adapter.generate_structured(
+        prompt="Generate deeply nested schema",
+        system_prompt="System",
+        model="mock",
+        api_key="mock",
+        key_alias="k1",
+        schema=ParentModel,
+    )
+    validated = ParentModel.model_validate_json(raw.text)
+    assert isinstance(validated, ParentModel)
+    assert len(validated.children) >= 2
+    assert isinstance(validated.children[0].priority, Priority)

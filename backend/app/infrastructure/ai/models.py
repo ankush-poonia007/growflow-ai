@@ -169,6 +169,7 @@ class AIExecutionResult[T]:
     retry_count: int = 0
     correlation_id: str | None = None
     execution_id: str | None = None
+    is_degraded: bool = False
 
 
 @dataclass(frozen=True)

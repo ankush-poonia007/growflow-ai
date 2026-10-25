@@ -128,6 +128,10 @@ class AgentExecutionProvenance(BaseModel):
     latency_ms: float = Field(..., ge=0.0)
     usage: AIUsageMetadata
     retry_count: int = Field(default=0, ge=0)
+    is_degraded: bool = Field(
+        default=False,
+        description="True if output was generated via mock fallback.",
+    )
     status: str = "SUCCESS"
     started_at: datetime
     completed_at: datetime
