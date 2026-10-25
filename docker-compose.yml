@@ -1,0 +1,69 @@
+# ============================================================
+# GrowFlow — Local Docker Compose Orchestration
+# ============================================================
+# Services:
+# - backend: FastAPI Python 3.12 service (Port 8000)
+# - frontend: React 19 + Vite compiled into Nginx (Port 5173)
+# - database: Hosted Supabase PostgreSQL (via DATABASE_URL)
+# ============================================================
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: growflow-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      # Core application settings
+      - APP_ENV=${APP_ENV:-development}
+      - APP_NAME=${APP_NAME:-GrowFlow}
+      - APP_HOST=0.0.0.0
+      - APP_PORT=8000
+      - APP_LOG_LEVEL=${APP_LOG_LEVEL:-INFO}
+      - APP_SECRET_KEY=${APP_SECRET_KEY:-local-development-secret-key-min-32-chars-long!}
+      - APP_CORS_ORIGINS=${APP_CORS_ORIGINS:-http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173}
+      # Database connection (Supabase hosted PostgreSQL)
+      - DATABASE_URL=${DATABASE_URL:-}
+      # Supabase Auth and client verification
+      - SUPABASE_URL=${SUPABASE_URL:-}
+      - SUPABASE_PUBLISHABLE_KEY=${SUPABASE_PUBLISHABLE_KEY:-}
+      - SUPABASE_SECRET_KEY=${SUPABASE_SECRET_KEY:-}
+      - SUPABASE_JWT_SECRET=${SUPABASE_JWT_SECRET:-}
+      # OpenRouter multi-key pool (Optional for local development; mock fallback available)
+      - OPENROUTER_API_KEY_1=${OPENROUTER_API_KEY_1:-}
+      - OPENROUTER_API_KEY_2=${OPENROUTER_API_KEY_2:-}
+      - OPENROUTER_API_KEY_3=${OPENROUTER_API_KEY_3:-}
+      - OPENROUTER_API_KEY_4=${OPENROUTER_API_KEY_4:-}
+      - OPENROUTER_API_KEY_5=${OPENROUTER_API_KEY_5:-}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/live')"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=${VITE_API_BASE_URL:-}
+        - VITE_SUPABASE_URL=${VITE_SUPABASE_URL:-}
+        - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY:-}
+        - VITE_APP_ENV=${APP_ENV:-development}
+    container_name: growflow-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/nginx-health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 5s

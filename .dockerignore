@@ -1,0 +1,63 @@
+# Version control
+.git
+.gitignore
+
+# Virtual environments and dependencies
+.venv
+venv
+env
+node_modules
+
+# Python bytecode and caches
+**/__pycache__
+**/*.py[cod]
+*.so
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.coverage
+coverage.xml
+htmlcov
+
+# Node / frontend build output
+frontend/dist
+frontend/coverage
+frontend/.turbo
+frontend/npm-debug.log*
+
+# Local environment files and secrets
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+*.pem
+*.key
+*.crt
+
+# Internal reports and development records
+GROWFLOW_*.md
+docs/implementation
+docs/gate*
+docs/backend_hosting_analysis.md
+docs/frontend_hosting_analysis.md
+
+# OS and Editor metadata
+.vscode
+.idea
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Logs and scratch files
+*.log
+logs
+tmp
+storage
+data
+uploads
