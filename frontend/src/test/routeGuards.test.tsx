@@ -47,6 +47,42 @@ describe('ProtectedRoute', () => {
     expect(screen.getByText('Verifying workspace credentials...')).toBeInTheDocument();
   });
 
+  it('renders loading state while backend role resolution is in progress (isRoleResolving: true)', () => {
+    renderWithAuth(
+      <ProtectedRoute>
+        <div>Protected Secret</div>
+      </ProtectedRoute>,
+      { status: 'AUTHENTICATED', isAuthenticated: true, isRoleResolving: true },
+    );
+
+    expect(screen.queryByText('Protected Secret')).not.toBeInTheDocument();
+    expect(screen.getByText('Verifying workspace credentials...')).toBeInTheDocument();
+  });
+
+  it('redirects to sign-in when authentication status is ERROR', () => {
+    renderWithAuth(
+      <Routes>
+        <Route
+          path="/student/dashboard"
+          element={
+            <ProtectedRoute>
+              <div>Protected Dashboard</div>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/auth/student/sign-in"
+          element={<div data-testid="login-page">Sign In Page</div>}
+        />
+      </Routes>,
+      { status: 'ERROR', isAuthenticated: false, error: 'Network failure' },
+      '/student/dashboard',
+    );
+
+    expect(screen.queryByText('Protected Dashboard')).not.toBeInTheDocument();
+    expect(screen.getByTestId('login-page')).toBeInTheDocument();
+  });
+
   it('redirects unauthenticated users to sign-in with returnTo parameter', () => {
     renderWithAuth(
       <Routes>
@@ -132,6 +168,185 @@ describe('ProtectedRoute', () => {
     );
 
     expect(screen.getByText('Protected Student Content')).toBeInTheDocument();
+  });
+
+  it('renders 403 ForbiddenView when user role is null on Student route (unresolved role fails closed)', () => {
+    renderWithAuth(
+      <ProtectedRoute requiredRole="STUDENT">
+        <div>Protected Student Content</div>
+      </ProtectedRoute>,
+      {
+        status: 'AUTHENTICATED',
+        isAuthenticated: true,
+        user: {
+          id: 'unresolved-user-1',
+          email: 'unresolved@growflow.ai',
+          role: null,
+          status: 'ACTIVE',
+        },
+      },
+    );
+
+    expect(screen.queryByText('Protected Student Content')).not.toBeInTheDocument();
+    expect(screen.getByText('Access Restricted')).toBeInTheDocument();
+    expect(screen.getByText(/account role could not be verified/i)).toBeInTheDocument();
+  });
+
+  it('renders 403 ForbiddenView when user role is null on Mentor route (unresolved role fails closed)', () => {
+    renderWithAuth(
+      <ProtectedRoute requiredRole="MENTOR" loginPath="/auth/mentor/sign-in">
+        <div>Protected Mentor Workspace</div>
+      </ProtectedRoute>,
+      {
+        status: 'AUTHENTICATED',
+        isAuthenticated: true,
+        user: {
+          id: 'unresolved-user-2',
+          email: 'unresolved-mentor@growflow.ai',
+          role: null,
+          status: 'ACTIVE',
+        },
+      },
+      '/mentor/overview',
+    );
+
+    expect(screen.queryByText('Protected Mentor Workspace')).not.toBeInTheDocument();
+    expect(screen.getByText('Access Restricted')).toBeInTheDocument();
+    expect(screen.getByText(/account role could not be verified/i)).toBeInTheDocument();
+  });
+
+  it('renders 403 ForbiddenView when user has unknown or malformed role', () => {
+    renderWithAuth(
+      <ProtectedRoute requiredRole="STUDENT">
+        <div>Protected Student Content</div>
+      </ProtectedRoute>,
+      {
+        status: 'AUTHENTICATED',
+        isAuthenticated: true,
+        user: {
+          id: 'unknown-role-user',
+          email: 'hacker@growflow.ai',
+          role: 'UNKNOWN_ROLE' as any,
+          status: 'ACTIVE',
+        },
+      },
+    );
+
+    expect(screen.queryByText('Protected Student Content')).not.toBeInTheDocument();
+    expect(screen.getByText('Access Restricted')).toBeInTheDocument();
+    expect(screen.getByText(/authorized as UNKNOWN_ROLE/i)).toBeInTheDocument();
+  });
+
+  it('renders 403 ForbiddenView when user status is null (unresolved status fails closed)', () => {
+    renderWithAuth(
+      <ProtectedRoute requiredRole="STUDENT" requiredStatus="ACTIVE">
+        <div>Protected Student Content</div>
+      </ProtectedRoute>,
+      {
+        status: 'AUTHENTICATED',
+        isAuthenticated: true,
+        user: {
+          id: 'null-status-user',
+          email: 'nullstatus@growflow.ai',
+          role: 'STUDENT',
+          status: null,
+        },
+      },
+    );
+
+    expect(screen.queryByText('Protected Student Content')).not.toBeInTheDocument();
+    expect(screen.getByText('Access Restricted')).toBeInTheDocument();
+    expect(screen.getByText(/does not meet the status requirements/i)).toBeInTheDocument();
+  });
+
+  it('denies Student user attempting to access Mentor route', () => {
+    renderWithAuth(
+      <ProtectedRoute requiredRole="MENTOR">
+        <div>Protected Mentor Workspace</div>
+      </ProtectedRoute>,
+      {
+        status: 'AUTHENTICATED',
+        isAuthenticated: true,
+        user: {
+          id: 'student-user-1',
+          email: 'student@growflow.ai',
+          role: 'STUDENT',
+          status: 'ACTIVE',
+        },
+      },
+      '/mentor/overview',
+    );
+
+    expect(screen.queryByText('Protected Mentor Workspace')).not.toBeInTheDocument();
+    expect(screen.getByText('Access Restricted')).toBeInTheDocument();
+    expect(screen.getByText(/authorized as STUDENT/i)).toBeInTheDocument();
+  });
+
+  it('denies Student user attempting to access Admin route', () => {
+    renderWithAuth(
+      <ProtectedRoute requiredRole="ADMIN" loginPath="/auth/admin/sign-in">
+        <div>Protected Admin Panel</div>
+      </ProtectedRoute>,
+      {
+        status: 'AUTHENTICATED',
+        isAuthenticated: true,
+        user: {
+          id: 'student-user-2',
+          email: 'student2@growflow.ai',
+          role: 'STUDENT',
+          status: 'ACTIVE',
+        },
+      },
+      '/admin/overview',
+    );
+
+    expect(screen.queryByText('Protected Admin Panel')).not.toBeInTheDocument();
+    expect(screen.getByText('Access Restricted')).toBeInTheDocument();
+    expect(screen.getByText(/authorized as STUDENT/i)).toBeInTheDocument();
+  });
+
+  it('denies Mentor user attempting to access Admin route', () => {
+    renderWithAuth(
+      <ProtectedRoute requiredRole="ADMIN" loginPath="/auth/admin/sign-in">
+        <div>Protected Admin Panel</div>
+      </ProtectedRoute>,
+      {
+        status: 'AUTHENTICATED',
+        isAuthenticated: true,
+        user: {
+          id: 'mentor-user-2',
+          email: 'mentor2@growflow.ai',
+          role: 'MENTOR',
+          status: 'ACTIVE',
+        },
+      },
+      '/admin/overview',
+    );
+
+    expect(screen.queryByText('Protected Admin Panel')).not.toBeInTheDocument();
+    expect(screen.getByText('Access Restricted')).toBeInTheDocument();
+    expect(screen.getByText(/authorized as MENTOR/i)).toBeInTheDocument();
+  });
+
+  it('allows Admin user to access Admin route', () => {
+    renderWithAuth(
+      <ProtectedRoute requiredRole="ADMIN" loginPath="/auth/admin/sign-in">
+        <div>Protected Admin Panel</div>
+      </ProtectedRoute>,
+      {
+        status: 'AUTHENTICATED',
+        isAuthenticated: true,
+        user: {
+          id: 'admin-user-1',
+          email: 'admin@growflow.ai',
+          role: 'ADMIN',
+          status: 'ACTIVE',
+        },
+      },
+      '/admin/overview',
+    );
+
+    expect(screen.getByText('Protected Admin Panel')).toBeInTheDocument();
   });
 });
 

@@ -1,8 +1,7 @@
 import { useState, type FormEvent } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router';
+import { Link } from 'react-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/auth/useAuth';
-import { getSafeReturnTo, DEFAULT_MENTOR_DESTINATION } from '@/auth/returnTo';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import './MentorRegister.css';
@@ -10,8 +9,6 @@ import './MentorRegister.css';
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function MentorRegister() {
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const { refreshAuthorization } = useAuth();
 
   // Form input states
@@ -36,6 +33,7 @@ export function MentorRegister() {
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isVerificationRequired, setIsVerificationRequired] = useState(false);
+  const [isApplicationSubmitted, setIsApplicationSubmitted] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState('');
 
   const validate = (): boolean => {
@@ -148,13 +146,15 @@ export function MentorRegister() {
       }
 
       // Case B: Immediate active session returned
+      // Option A — Mentor Candidate Registration:
+      // Public registration creates a candidate user, not an authorized Mentor.
+      // Applicants must never be automatically redirected into the Mentor workspace (/mentor/overview).
+      // Display the truthful account created confirmation explaining that formal mentor application
+      // submission and administrative review workflows are in development.
       if (data.session) {
-        // Refresh canonical backend identity/role
         await refreshAuthorization();
-
-        // Destination resolution
-        const destination = getSafeReturnTo(searchParams, DEFAULT_MENTOR_DESTINATION);
-        navigate(destination, { replace: true });
+        setRegisteredEmail(trimmedEmail);
+        setIsApplicationSubmitted(true);
         return;
       }
 
@@ -190,7 +190,7 @@ export function MentorRegister() {
             <p className="gf-mentor-register__subtitle">
               We sent a verification link to{' '}
               <strong className="gf-mentor-register__highlighted-email">{registeredEmail}</strong>.
-              Verify your account before continuing to your Mentor workspace.
+              Verify your email address to complete your account setup.
             </p>
 
             <div className="gf-mentor-register__verification-info">
@@ -247,6 +247,76 @@ export function MentorRegister() {
     );
   }
 
+  // Dedicated Post-Registration Account Created View
+  if (isApplicationSubmitted) {
+    return (
+      <div className="gf-mentor-register">
+        <div className="gf-mentor-register__container">
+          <div className="gf-mentor-register__form-area gf-mentor-register__verification-view">
+            <span className="gf-mentor-register__eyebrow">
+              <span className="gf-mentor-register__context-badge-dot" aria-hidden="true" />
+              ACCOUNT CREATED
+            </span>
+            <h1 className="gf-mentor-register__title">Account created.</h1>
+            <p className="gf-mentor-register__subtitle">
+              Your GrowFlow account has been created successfully. The formal Mentor application submission and administrative review workflow is currently in development and will open in a future release.
+            </p>
+
+            <div className="gf-mentor-register__verification-info">
+              <div className="gf-mentor-register__verification-card">
+                <svg
+                  className="gf-mentor-register__verification-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                <div className="gf-mentor-register__verification-text">
+                  <span className="gf-mentor-register__verification-heading">Mentor Workspace Notice</span>
+                  <span className="gf-mentor-register__verification-detail">
+                    Access to the Mentor workspace requires an approved Mentor role, which is not granted by public registration. You will be invited to complete your application when mentor onboarding opens.
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="gf-mentor-register__actions">
+              <Button as="link" to="/auth/mentor/sign-in" variant="secondary" size="lg" fullWidth>
+                Back to sign in
+              </Button>
+            </div>
+          </div>
+
+          <aside className="gf-mentor-register__context-area" aria-label="Mentor Workspace Context">
+            <div className="gf-mentor-register__context-header">
+              <div className="gf-mentor-register__context-badge">
+                <span className="gf-mentor-register__context-badge-dot" aria-hidden="true" />
+                SUPERVISE WORKPLACE
+              </div>
+              <h2 className="gf-mentor-register__context-heading">
+                Structured project oversight.
+              </h2>
+              <p className="gf-mentor-register__context-desc">
+                Designed specifically for mentors and faculty advisors supervising
+                capstone engineering teams and student project milestones.
+              </p>
+            </div>
+            <div className="gf-mentor-register__context-footer">
+              GrowFlow Soft Intelligence Foundation · All sessions protected with cryptographic identity
+            </div>
+          </aside>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="gf-mentor-register">
       <div className="gf-mentor-register__container">
@@ -254,11 +324,11 @@ export function MentorRegister() {
         <div className="gf-mentor-register__form-area">
           <span className="gf-mentor-register__eyebrow">
             <span className="gf-mentor-register__context-badge-dot" aria-hidden="true" />
-            SUPERVISE — MENTOR WORKSPACE
+            SUPERVISE — MENTOR REGISTRATION
           </span>
-          <h1 className="gf-mentor-register__title">Start guiding better projects.</h1>
+          <h1 className="gf-mentor-register__title">Register for Mentor updates.</h1>
           <p className="gf-mentor-register__subtitle">
-            Create your Mentor account to support students and help projects move from plans to meaningful progress.
+            Create your account to prepare for mentor onboarding and receive updates when application submissions open.
           </p>
 
           {/* Form-level Error Alert */}
@@ -453,7 +523,7 @@ export function MentorRegister() {
                 fullWidth
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Creating account...' : 'Create Mentor Account'}
+                {isSubmitting ? 'Creating account...' : 'Create Candidate Account'}
               </Button>
             </div>
           </form>

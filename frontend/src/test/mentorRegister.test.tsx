@@ -75,11 +75,11 @@ describe('A05 — Mentor Registration Page', () => {
   it('renders all registration form elements, labels, headings, and contextual sidebar', () => {
     renderMentorRegister();
 
-    expect(screen.getByText('SUPERVISE — MENTOR WORKSPACE')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Start guiding better projects.' })).toBeInTheDocument();
+    expect(screen.getByText('SUPERVISE — MENTOR REGISTRATION')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Register for Mentor updates.' })).toBeInTheDocument();
     expect(
       screen.getByText(
-        'Create your Mentor account to support students and help projects move from plans to meaningful progress.',
+        'Create your account to prepare for mentor onboarding and receive updates when application submissions open.',
       ),
     ).toBeInTheDocument();
     expect(screen.getByLabelText(/first name/i)).toBeInTheDocument();
@@ -87,7 +87,7 @@ describe('A05 — Mentor Registration Page', () => {
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/^Password/i, { selector: 'input' })).toBeInTheDocument();
     expect(screen.getByLabelText(/^Confirm Password/i, { selector: 'input' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Create Mentor Account' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Create Candidate Account' })).toBeInTheDocument();
     expect(screen.getByText('Already have an account?')).toBeInTheDocument();
     expect(screen.getByText('Sign in')).toBeInTheDocument();
 
@@ -108,7 +108,7 @@ describe('A05 — Mentor Registration Page', () => {
   it('validates empty inputs on submit', async () => {
     renderMentorRegister();
 
-    const submitBtn = screen.getByRole('button', { name: 'Create Mentor Account' });
+    const submitBtn = screen.getByRole('button', { name: 'Create Candidate Account' });
     fireEvent.click(submitBtn);
 
     await waitFor(() => {
@@ -135,7 +135,7 @@ describe('A05 — Mentor Registration Page', () => {
       target: { value: 'MentorPass123!' },
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Create Mentor Account' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Create Candidate Account' }));
 
     await waitFor(() => {
       expect(screen.getByText('Please enter a valid email address.')).toBeInTheDocument();
@@ -157,7 +157,7 @@ describe('A05 — Mentor Registration Page', () => {
       target: { value: 'PasswordTwo2!' },
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Create Mentor Account' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Create Candidate Account' }));
 
     await waitFor(() => {
       expect(screen.getByText('Passwords do not match.')).toBeInTheDocument();
@@ -219,7 +219,7 @@ describe('A05 — Mentor Registration Page', () => {
       target: { value: 'MentorPass123!' },
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Create Mentor Account' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Create Candidate Account' }));
 
     await waitFor(() => {
       expect(screen.getByText('Check your email.')).toBeInTheDocument();
@@ -227,6 +227,7 @@ describe('A05 — Mentor Registration Page', () => {
       expect(
         screen.getByText(/We sent a verification link to/i),
       ).toBeInTheDocument();
+      expect(screen.getByText(/Verify your email address to complete your account setup/i)).toBeInTheDocument();
       expect(screen.getByText('Back to sign in')).toBeInTheDocument();
     });
 
@@ -243,7 +244,7 @@ describe('A05 — Mentor Registration Page', () => {
     });
   });
 
-  it('redirects to /mentor/overview on immediate session signup', async () => {
+  it('displays account created screen on immediate session signup and denies immediate mentor redirect', async () => {
     vi.mocked(supabase.auth.signUp).mockResolvedValue({
       data: {
         user: { id: 'mentor-123', email: 'katherine@university.edu' } as unknown as User,
@@ -264,14 +265,21 @@ describe('A05 — Mentor Registration Page', () => {
       target: { value: 'MentorPass123!' },
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Create Mentor Account' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Create Candidate Account' }));
 
     await waitFor(() => {
-      expect(screen.getByTestId('mentor-overview-dest')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Account created.' })).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          /The formal Mentor application submission and administrative review workflow is currently in development and will open in a future release/i,
+        ),
+      ).toBeInTheDocument();
+      expect(screen.queryByTestId('mentor-overview-dest')).not.toBeInTheDocument();
+      expect(screen.getByText('Back to sign in')).toBeInTheDocument();
     });
   });
 
-  it('redirects to safe returnTo destination on immediate session signup', async () => {
+  it('does not redirect to returnTo destination on immediate session signup and displays account created screen', async () => {
     vi.mocked(supabase.auth.signUp).mockResolvedValue({
       data: {
         user: { id: 'mentor-123', email: 'katherine@university.edu' } as unknown as User,
@@ -292,10 +300,12 @@ describe('A05 — Mentor Registration Page', () => {
       target: { value: 'MentorPass123!' },
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Create Mentor Account' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Create Candidate Account' }));
 
     await waitFor(() => {
-      expect(screen.getByTestId('deep-dest')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Account created.' })).toBeInTheDocument();
+      expect(screen.queryByTestId('deep-dest')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('mentor-overview-dest')).not.toBeInTheDocument();
     });
   });
 
@@ -317,7 +327,7 @@ describe('A05 — Mentor Registration Page', () => {
       target: { value: 'MentorPass123!' },
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Create Mentor Account' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Create Candidate Account' }));
 
     await waitFor(() => {
       expect(screen.getByRole('alert')).toHaveTextContent(
@@ -341,7 +351,7 @@ describe('A05 — Mentor Registration Page', () => {
       target: { value: 'MentorPass123!' },
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Create Mentor Account' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Create Candidate Account' }));
 
     await waitFor(() => {
       expect(screen.getByRole('alert')).toHaveTextContent(
@@ -362,7 +372,7 @@ describe('A05 — Mentor Registration Page', () => {
       },
     });
 
-    expect(screen.queryByRole('heading', { name: 'Start guiding better projects.' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Register for Mentor updates.' })).not.toBeInTheDocument();
     expect(screen.getByTestId('mentor-overview-dest')).toBeInTheDocument();
   });
 });

@@ -54,19 +54,27 @@ export function ProtectedRoute({
     return <AccountStatusView status="INACTIVE" />;
   }
 
-  // 4. Role authorization boundary enforcement
-  if (requiredRole && user?.role && user.role !== requiredRole) {
+  // 4. Role authorization boundary enforcement (fail closed)
+  if (requiredRole && (!user?.role || user.role !== requiredRole)) {
+    const roleMismatchMsg = user?.role
+      ? `This workspace is designated for ${requiredRole} accounts. Your account is currently authorized as ${user.role}.`
+      : `This workspace requires an authorized ${requiredRole} role, but your account role could not be verified.`;
     return (
       <ForbiddenView
         reason="ROLE_MISMATCH"
-        message={`This workspace is designated for ${requiredRole} accounts. Your account is currently authorized as ${user.role}.`}
+        message={roleMismatchMsg}
       />
     );
   }
 
-  // If status check required
-  if (requiredStatus && user?.status && user.status !== requiredStatus) {
-    return <ForbiddenView reason="GENERIC" message="Your account does not meet the status requirements for this workspace." />;
+  // 5. Account status boundary enforcement (fail closed)
+  if (requiredStatus && (!user?.status || user.status !== requiredStatus)) {
+    return (
+      <ForbiddenView
+        reason="GENERIC"
+        message="Your account does not meet the status requirements for this workspace."
+      />
+    );
   }
 
   // 5. Authorized
